@@ -1,0 +1,1626 @@
+{
+  "workers": [
+    {
+      "id": "820",
+      "name": "محمد إبراهيم محمد إسماعيل",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "828",
+      "name": "محمد حسن معروف",
+      "areaId": "مراسل - المحافظة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "832",
+      "name": "خالد رمضان محمد ابراهيم",
+      "areaId": "حنينا  - أحمد سعيد الرواجيح",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "833",
+      "name": "عمرو محمد شحاته محمد",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "855",
+      "name": "ابراهيم حسن قنديل احمد",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "856",
+      "name": "إبراهيم عبدالمحسن امين عثمان",
+      "areaId": "حي الزراعة - احمد سعيد",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "861",
+      "name": "نادي سرحان عبداللطيف إبراهيم",
+      "areaId": "حي الازايدة - احمد القطيش",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "899",
+      "name": "أشرف محمد ذكي محمد",
+      "areaId": "مسائي - مالك العبابسة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "910",
+      "name": "محمد حسن محمد احمد",
+      "areaId": "جلال ابوعيسى - الحي الشرقي",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "930",
+      "name": "رضا مططفى حمدي مرسي",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "999",
+      "name": "حجازي شحاته شحاته محمد",
+      "areaId": "حي الازايدة - احمد القطيش",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "1023",
+      "name": "علاء محمد محمد عبدالوهاب",
+      "areaId": "المخيم - حمزة الكراملة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "1045",
+      "name": "احمد جاد علي حافظ",
+      "areaId": "وسط المدينة - عثمان الرفاعي",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "1050",
+      "name": "محمد زغلول عبدالمطلب علي",
+      "areaId": "حي الزراعة - احمد سعيد",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "1068",
+      "name": "اشرف محمود إبراهيم محمد",
+      "areaId": "النطافة -احمد القطيش",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "1298",
+      "name": "حسن حسني حسن عبدالمجيد",
+      "areaId": "حي الزراعة - احمد سعيد",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "1311",
+      "name": "احمد عبدالغني احمد احمد",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "1357",
+      "name": "خالد محمد علي ابوزيد",
+      "areaId": "المخيم - حمزة الكراملة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "1421",
+      "name": "محمد ابراهيم عبدالغني",
+      "areaId": "حنينا  - أحمد سعيد الرواجيح",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "1440",
+      "name": "اشرف عشري محمد مهني",
+      "areaId": "مسائي - مالك العبابسة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "3004",
+      "name": "خالد فالح نجيب محمد",
+      "areaId": "حي الازايدة - احمد القطيش",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "3006",
+      "name": "ياسر عبدالعزيز حسن غنيم",
+      "areaId": "جلال ابوعيسى - الحي الشرقي",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "3015",
+      "name": "عدلي فوزي سلامة اندراوس",
+      "areaId": "وسط المدينة - عثمان الرفاعي",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "3017",
+      "name": "ربيع صبيح محمد احمد",
+      "areaId": "مسائي - مالك العبابسة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "3018",
+      "name": "ابوبكر مهد ي زكي السيد",
+      "areaId": "وسط المدينة - عثمان الرفاعي",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "3019",
+      "name": "إبراهيم زكي عياد رزق",
+      "areaId": "مسائي - مالك العبابسة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "3020",
+      "name": "محمد عبدالرازق ابوزيد محمد علي",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "3022",
+      "name": "مختار محمد عبدالحميد مرسي",
+      "areaId": "جلال ابوعيسى - الحي الشرقي",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "3026",
+      "name": "عبدالرحمن عبدالحليم عبدالرحمن حسن",
+      "areaId": "حي الزراعة - احمد سعيد",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "3039",
+      "name": "اسماعيل حسن محمود اسماعيل",
+      "areaId": "مسائي - مالك العبابسة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "3042",
+      "name": "احمد ابراهيم محمد اسماعيل",
+      "areaId": "حي الزراعة - احمد سعيد",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "3048",
+      "name": "رمضان إبراهيم رمضان محمد",
+      "areaId": "جلال ابوعيسى - الحي الشرقي",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "3049",
+      "name": "احمد إبراهيم عبدالغني محمد",
+      "areaId": "حنينا  - أحمد سعيد الرواجيح",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "3052",
+      "name": "وليد محمد سعد حبشي",
+      "areaId": "مراسل - الزراعة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "3054",
+      "name": "ايمن عبدالباسط ابراهيم مرسي",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "3055",
+      "name": "رمضان حسين محمد حسين",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "3057",
+      "name": "سعيد عبدالحليم محمد محمد طلبة",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "3059",
+      "name": "حجازي الدخلي جلوي محمد",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "3060",
+      "name": "حليم صدقي ناشد اندرواس",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "3066",
+      "name": "رمضان صلاح رجب",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "3073",
+      "name": "عبد الحميد ضاحي مصطفى احمد",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "3080",
+      "name": "خلف إبراهيم محمد إبراهيم",
+      "areaId": "مسائي - مالك العبابسة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "3082",
+      "name": "إسماعيل حسن احمد عبدالله",
+      "areaId": "حي الازايدة - احمد القطيش",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "3083",
+      "name": "احمد زكي احمد احمد",
+      "areaId": "مراسل - المحافظة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "3085",
+      "name": "سامح محي امين احمد",
+      "areaId": "المخيم - حمزة الكراملة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "3093",
+      "name": "حجاج عبدالله محمد عبدالرحمن",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4004",
+      "name": "محمد حسين محمد خالد",
+      "areaId": "المخيم - حمزة الكراملة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4006",
+      "name": "خالد محمد علي العطيفي",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4009",
+      "name": "عمرو عبدالفتاح الريدي فتح الباب",
+      "areaId": "مراسل - محكمة البلدية",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4012",
+      "name": "سيد علي ابراهيم عبدالعظيم",
+      "areaId": "مراسل - مسجد الحسين بن طلال",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4013",
+      "name": "محمد احمد خالد احمد",
+      "areaId": "مراسل - البلدية - الادارة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4015",
+      "name": "علاء علي حسين مخلوف",
+      "areaId": "مراسل - البلدية - الادارة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4017",
+      "name": "احمد حسن توفيق حسن",
+      "areaId": "مراسل - البلدية - الادارة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4021",
+      "name": "محمد جمال فتحي محمد",
+      "areaId": "حي الازايدة - احمد القطيش",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4025",
+      "name": "رضا محمد عبدالفتاح ابوالخير",
+      "areaId": "جلال ابوعيسى - الحي الشرقي",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4026",
+      "name": "وليد خلف عبدالحليم طلبة",
+      "areaId": "حي الزراعة - احمد سعيد",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4033",
+      "name": "رضا محمد عبدالحميد مرسي",
+      "areaId": "حي الازايدة - احمد القطيش",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4036",
+      "name": "إبراهيم مرسي كامل مرسي",
+      "areaId": "المخيم - حمزة الكراملة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4038",
+      "name": "كامل احمد امين محمد",
+      "areaId": "الاشغال ",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4078",
+      "name": "ياسر عيد عبدالوهاب علي",
+      "areaId": "حي الزراعة - احمد سعيد",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4081",
+      "name": "محمد حسن عبدالعظيم الهادي",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4084",
+      "name": "محمد عيد وزير أحمد",
+      "areaId": "مراسل - مجلس المحافظة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4092",
+      "name": "محروس بشرى مرزوق يوسف",
+      "areaId": "مراسل - البلدية - الادارة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4093",
+      "name": "محمد خلف السيد علي",
+      "areaId": "النطافة -احمد القطيش",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4101",
+      "name": "علاء حسن رشاد عبدالله",
+      "areaId": "مراسل - البلدية - الادارة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4102",
+      "name": "رضا خلف عبدالحميد السيد",
+      "areaId": "جلال ابوعيسى - الحي الشرقي",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4106",
+      "name": "ياسر عيد محمد شحاته",
+      "areaId": "ليلي - مالك العبابسة",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4110",
+      "name": "ابراهيم يوسف السيد ",
+      "areaId": "مراسل - البلدية - خطاط",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4111",
+      "name": "محمود رشيد محمود رشيد",
+      "areaId": "الاشغال",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4113",
+      "name": "عاطف فانوس رزق بطرس",
+      "areaId": "جلال ابوعيسى - الحي الشرقي",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "4116",
+      "name": "عبدالله محمد محمد عبدالوهاب",
+      "areaId": "حي الازايدة - احمد القطيش",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4118",
+      "name": "سيد رضا سيد عبدالهادي",
+      "areaId": "مراسل - البلدية - الادارة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4119",
+      "name": "ياسر جمعه احمد علي",
+      "areaId": "حي الزراعة - احمد سعيد",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4121",
+      "name": "محمود علي احمد علي",
+      "areaId": "جلال ابوعيسى - الحي الشرقي",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4123",
+      "name": "ابوغنيمة سيد حسن محمد",
+      "areaId": "حنينا  - أحمد سعيد الرواجيح",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4124",
+      "name": "محروس جمعه احمد علي",
+      "areaId": "الاشغال",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4128",
+      "name": "خالد جمال فتحي محمد",
+      "areaId": "المخيم - حمزة الكراملة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4129",
+      "name": "عبدالمنعم صلاح راضي شحاته",
+      "areaId": "مسائي - مالك العبابسة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4131",
+      "name": "محمد خالد محمد عبدالحميد",
+      "areaId": "المخيم - حمزة الكراملة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4134",
+      "name": "عمرو صلاح إسماعيل إبراهيم",
+      "areaId": "مسائي - مالك العبابسة",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4136",
+      "name": "عثمان كساب عثمان طه",
+      "areaId": "حي الزراعة - احمد سعيد",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4139",
+      "name": "محمد جمعة عيد عقل",
+      "areaId": "حي الزراعة - احمد سعيد",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "4140",
+      "name": "حمدي محمد احمد كامل",
+      "areaId": "حي الزراعة - احمد سعيد",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "5057",
+      "name": "احمد جمعه احمد علي",
+      "areaId": "النطافة -احمد القطيش",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "5071",
+      "name": "محمود رضا السيد عبدالهادي",
+      "areaId": "مراسل - ديوان المحاسية",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "7051",
+      "name": "عبدالرازق علي حسن حسين",
+      "areaId": "جلال ابوعيسى - الحي الشرقي",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "9097",
+      "name": "جمعه ابو غنيمه السيد جويلي",
+      "areaId": "حنينا  - أحمد سعيد الرواجيح",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "30023",
+      "name": "خالد محمد عبدالحميد مرسي",
+      "areaId": "جلال ابوعيسى - الحي الشرقي",
+      "baseSalary": 270,
+      "dayValue": 9
+    },
+    {
+      "id": "50507",
+      "name": "إبراهيم فتحي إبراهيم حسن",
+      "areaId": "وسط المدينة - عثمان الرفاعي",
+      "baseSalary": 247.5,
+      "dayValue": 8.25
+    },
+    {
+      "id": "50553",
+      "name": "امين عبدالفتاح علي سيف ",
+      "areaId": "مراسل - البلدية - الادارة",
+      "baseSalary": 270,
+      "dayValue": 9
+    }
+  ],
+  "attendance": [
+    {
+      "id": "820-11-2025",
+      "workerId": "820",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 2,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 35,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "828-11-2025",
+      "workerId": "828",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "832-11-2025",
+      "workerId": "832",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "833-11-2025",
+      "workerId": "833",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "855-11-2025",
+      "workerId": "855",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "856-11-2025",
+      "workerId": "856",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "861-11-2025",
+      "workerId": "861",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 2,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 35,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "899-11-2025",
+      "workerId": "899",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "910-11-2025",
+      "workerId": "910",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 4,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 36,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "930-11-2025",
+      "workerId": "930",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "999-11-2025",
+      "workerId": "999",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 28,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 28,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "1023-11-2025",
+      "workerId": "1023",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 14,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 41,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "1045-11-2025",
+      "workerId": "1045",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 12,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 40,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "1050-11-2025",
+      "workerId": "1050",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "1068-11-2025",
+      "workerId": "1068",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 2,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 35,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "1298-11-2025",
+      "workerId": "1298",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 8,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 38,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "1311-11-2025",
+      "workerId": "1311",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "1357-11-2025",
+      "workerId": "1357",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 14,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 41,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "1421-11-2025",
+      "workerId": "1421",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "1440-11-2025",
+      "workerId": "1440",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3004-11-2025",
+      "workerId": "3004",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 8,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 38,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3006-11-2025",
+      "workerId": "3006",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3015-11-2025",
+      "workerId": "3015",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3017-11-2025",
+      "workerId": "3017",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3018-11-2025",
+      "workerId": "3018",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 4,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 36,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3019-11-2025",
+      "workerId": "3019",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 8,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 38,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3020-11-2025",
+      "workerId": "3020",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 3,
+      "totalCalculatedDays": 33,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3022-11-2025",
+      "workerId": "3022",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3026-11-2025",
+      "workerId": "3026",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 8,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 38,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3039-11-2025",
+      "workerId": "3039",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3042-11-2025",
+      "workerId": "3042",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 30,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3048-11-2025",
+      "workerId": "3048",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3049-11-2025",
+      "workerId": "3049",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3052-11-2025",
+      "workerId": "3052",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 12,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 40,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3054-11-2025",
+      "workerId": "3054",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3055-11-2025",
+      "workerId": "3055",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3057-11-2025",
+      "workerId": "3057",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3059-11-2025",
+      "workerId": "3059",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3060-11-2025",
+      "workerId": "3060",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3066-11-2025",
+      "workerId": "3066",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3073-11-2025",
+      "workerId": "3073",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3080-11-2025",
+      "workerId": "3080",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3082-11-2025",
+      "workerId": "3082",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 30,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3083-11-2025",
+      "workerId": "3083",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3085-11-2025",
+      "workerId": "3085",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "3093-11-2025",
+      "workerId": "3093",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4004-11-2025",
+      "workerId": "4004",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 14,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 41,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4006-11-2025",
+      "workerId": "4006",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4009-11-2025",
+      "workerId": "4009",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 30,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4012-11-2025",
+      "workerId": "4012",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 30,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4013-11-2025",
+      "workerId": "4013",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 15,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 37.5,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4015-11-2025",
+      "workerId": "4015",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4017-11-2025",
+      "workerId": "4017",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 35,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4021-11-2025",
+      "workerId": "4021",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 6,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 37,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4025-11-2025",
+      "workerId": "4025",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4026-11-2025",
+      "workerId": "4026",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4033-11-2025",
+      "workerId": "4033",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 11,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 1,
+      "totalCalculatedDays": 12,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4036-11-2025",
+      "workerId": "4036",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 14,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 41,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4038-11-2025",
+      "workerId": "4038",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 35,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4078-11-2025",
+      "workerId": "4078",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 4,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 36,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4081-11-2025",
+      "workerId": "4081",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 2,
+      "totalCalculatedDays": 32,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4084-11-2025",
+      "workerId": "4084",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 15,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 41.5,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4092-11-2025",
+      "workerId": "4092",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 35,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4093-11-2025",
+      "workerId": "4093",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 30,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4101-11-2025",
+      "workerId": "4101",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 15,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 37.5,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4102-11-2025",
+      "workerId": "4102",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4106-11-2025",
+      "workerId": "4106",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 5,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 36.5,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4110-11-2025",
+      "workerId": "4110",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 8,
+      "overtimeHolidayDays": 3,
+      "totalCalculatedDays": 37,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4111-11-2025",
+      "workerId": "4111",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 30,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4113-11-2025",
+      "workerId": "4113",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4116-11-2025",
+      "workerId": "4116",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 2,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 35,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4118-11-2025",
+      "workerId": "4118",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 30,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4119-11-2025",
+      "workerId": "4119",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4121-11-2025",
+      "workerId": "4121",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4123-11-2025",
+      "workerId": "4123",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4124-11-2025",
+      "workerId": "4124",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 35,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4128-11-2025",
+      "workerId": "4128",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4129-11-2025",
+      "workerId": "4129",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4131-11-2025",
+      "workerId": "4131",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 2,
+      "totalCalculatedDays": 32,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4134-11-2025",
+      "workerId": "4134",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4136-11-2025",
+      "workerId": "4136",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 16,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 38,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4139-11-2025",
+      "workerId": "4139",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "4140-11-2025",
+      "workerId": "4140",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 8,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 38,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "5057-11-2025",
+      "workerId": "5057",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 19,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 19,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "5071-11-2025",
+      "workerId": "5071",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "7051-11-2025",
+      "workerId": "7051",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 10,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 39,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "9097-11-2025",
+      "workerId": "9097",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 8,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 38,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "30023-11-2025",
+      "workerId": "30023",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 0,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 34,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "50507-11-2025",
+      "workerId": "50507",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 30,
+      "overtimeNormalDays": 12,
+      "overtimeHolidayDays": 4,
+      "totalCalculatedDays": 40,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    },
+    {
+      "id": "50553-11-2025",
+      "workerId": "50553",
+      "month": 11,
+      "year": 2025,
+      "normalDays": 16,
+      "overtimeNormalDays": 1,
+      "overtimeHolidayDays": 0,
+      "totalCalculatedDays": 16.5,
+      "updatedAt": "2025-12-16T13:33:18.219Z"
+    }
+  ]
+}

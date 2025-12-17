@@ -1,0 +1,73 @@
+import { supabase } from '@/lib/supabase';
+import { workerToDb, attendanceToDb } from '@/lib/data-transformer';
+import initialData from '@/data/initialData.json';
+
+/**
+ * Migration script to import initial data from JSON to Supabase
+ */
+async function migrateData() {
+    console.log('🚀 Starting data migration to Supabase...\n');
+
+    try {
+        // Test connection first
+        console.log('📡 Testing Supabase connection...');
+        const { data: testData, error: testError } = await supabase
+            .from('workers')
+            .select('count', { count: 'exact', head: true });
+
+        if (testError) {
+            throw new Error(`Connection failed: ${testError.message}`);
+        }
+        console.log('✅ Connection successful!\n');
+
+        // Migrate Workers
+        console.log('👷 Migrating workers...');
+        const workersToInsert = initialData.workers.map(workerToDb);
+
+        const { data: workersData, error: workersError } = await supabase
+            .from('workers')
+            .upsert(workersToInsert, { onConflict: 'id' })
+            .select();
+
+        if (workersError) {
+            throw new Error(`Workers migration failed: ${workersError.message}`);
+        }
+        console.log(`✅ Migrated ${workersData?.length || 0} workers\n`);
+
+        // Migrate Attendance Records
+        console.log('📋 Migrating attendance records...');
+        const attendanceToInsert = initialData.attendance.map((record) => {
+            const dbRecord = attendanceToDb(record);
+            // Calculate total_calculated_days (will be auto-calculated by trigger, but we include it)
+            return {
+                ...dbRecord,
+                total_calculated_days: record.totalCalculatedDays,
+            };
+        });
+
+        const { data: attendanceData, error: attendanceError } = await supabase
+            .from('attendance_records')
+            .upsert(attendanceToInsert, { onConflict: 'id' })
+            .select();
+
+        if (attendanceError) {
+            throw new Error(`Attendance migration failed: ${attendanceError.message}`);
+        }
+        console.log(`✅ Migrated ${attendanceData?.length || 0} attendance records\n`);
+
+        // Summary
+        console.log('🎉 Migration completed successfully!');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log(`📊 Summary:`);
+        console.log(`   Workers: ${workersData?.length || 0}`);
+        console.log(`   Attendance Records: ${attendanceData?.length || 0}`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
+    } catch (error) {
+        console.error('❌ Migration failed:', error);
+        process.exit(1);
+    }
+}
+
+// Run migration
+migrateData();
