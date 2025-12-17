@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase, workersAPI, attendanceAPI } from "@/lib/supabase";
 import { workerFromDb, attendanceFromDb, attendanceToDb } from "@/lib/data-transformer";
+import { useAuth } from "@/context/AuthContext";
 
 // --- Types ---
 
@@ -35,22 +36,10 @@ export interface AttendanceRecord {
     updatedAt: string;
 }
 
-// --- Mock Users ---
-
-const MOCK_USERS: User[] = [
-    { id: "sup1", name: "مراقب - ليلي - مالك العبابسة", role: "SUPERVISOR", areaId: "ليلي - مالك العبابسة" },
-    { id: "sup_gen", name: "مراقب عام", role: "SUPERVISOR", areaId: "ALL" },
-    { id: "sup_other", name: "مراقب - مراسل - المحافظة", role: "SUPERVISOR", areaId: "مراسل - المحافظة" },
-    { id: "hr1", name: "مدير الموارد البشرية", role: "HR" },
-    { id: "fin1", name: "المسؤول المالي", role: "FINANCE" },
-];
-
 // --- Context ---
 
 interface AttendanceContextType {
     currentUser: User | null;
-    login: (role: UserRole) => void;
-    logout: () => void;
     workers: Worker[];
     attendanceRecords: AttendanceRecord[];
     isLoading: boolean;
@@ -63,7 +52,7 @@ interface AttendanceContextType {
 const AttendanceContext = createContext<AttendanceContextType | undefined>(undefined);
 
 export function AttendanceProvider({ children }: { children: React.ReactNode }) {
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const { appUser } = useAuth();
     const [workers, setWorkers] = useState<Worker[]>([]);
     const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -153,15 +142,6 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         await loadData();
     };
 
-    const login = (role: UserRole) => {
-        const user = MOCK_USERS.find((u) => u.role === role);
-        if (user) setCurrentUser(user);
-    };
-
-    const logout = () => {
-        setCurrentUser(null);
-    };
-
     const getWorkerAttendance = (workerId: string, month: number, year: number) => {
         return attendanceRecords.find(
             (r) => r.workerId === workerId && r.month === month && r.year === year
@@ -201,9 +181,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
     return (
         <AttendanceContext.Provider value={{
-            currentUser,
-            login,
-            logout,
+            currentUser: appUser,
             workers,
             attendanceRecords,
             isLoading,

@@ -10,6 +10,8 @@
     "migrate": "tsx --env-file=.env.local scripts/migrate-data.ts"
   },
   "dependencies": {
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.88.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.561.0",

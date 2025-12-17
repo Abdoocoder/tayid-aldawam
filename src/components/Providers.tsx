@@ -1,11 +1,14 @@
 "use client";
 
 import { AttendanceProvider } from "@/context/AttendanceContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
-        <AttendanceProvider>
-            {children}
-        </AttendanceProvider>
+        <AuthProvider>
+            <AttendanceProvider>
+                {children}
+            </AttendanceProvider>
+        </AuthProvider>
     );
 }

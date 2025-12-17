@@ -2,17 +2,19 @@
 
 import React from "react";
 import { useAttendance } from "@/context/AttendanceContext";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "../ui/button";
 import { LogOut, User as UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export function Header() {
-    const { currentUser, logout } = useAttendance();
+    const { currentUser } = useAttendance();
+    const { signOut } = useAuth();
     const router = useRouter();
 
-    const handleLogout = () => {
-        logout();
-        router.push("/");
+    const handleLogout = async () => {
+        await signOut();
+        router.push("/login");
     };
 
     return (
