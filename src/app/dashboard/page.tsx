@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { SupervisorView } from "@/components/views/SupervisorView";
 import { HRView } from "@/components/views/HRView";
 import { FinanceView } from "@/components/views/FinanceView";
+import { AdminView } from "@/components/views/AdminView";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -29,6 +30,7 @@ export default function DashboardPage() {
                 {currentUser.role === "SUPERVISOR" && <SupervisorView />}
                 {currentUser.role === "HR" && <HRView />}
                 {currentUser.role === "FINANCE" && <FinanceView />}
+                {currentUser.role === "ADMIN" && <AdminView />}
             </main>
         </div>
     );

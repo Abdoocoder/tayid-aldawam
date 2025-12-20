@@ -166,6 +166,7 @@ export default function RegisterPage() {
                                     <option value="SUPERVISOR">مراقب</option>
                                     <option value="HR">موارد بشرية</option>
                                     <option value="FINANCE">قسم مالي</option>
+                                    <option value="ADMIN">مدير النظام</option>
                                 </Select>
                             </div>
 

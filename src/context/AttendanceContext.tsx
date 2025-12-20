@@ -1,19 +1,20 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { supabase, workersAPI, attendanceAPI } from "@/lib/supabase";
+import { supabase, workersAPI, attendanceAPI, usersAPI } from "@/lib/supabase";
 import { workerFromDb, attendanceFromDb, attendanceToDb } from "@/lib/data-transformer";
 import { useAuth } from "@/context/AuthContext";
 
 // --- Types ---
 
-export type UserRole = "SUPERVISOR" | "HR" | "FINANCE";
+export type UserRole = "SUPERVISOR" | "HR" | "FINANCE" | "ADMIN";
 
 export interface User {
     id: string;
+    username: string;
     name: string;
     role: UserRole;
-    areaId?: string; // Only for Supervisor
+    areaId?: string;
 }
 
 export interface Worker {
@@ -44,6 +45,8 @@ interface AttendanceContextType {
     attendanceRecords: AttendanceRecord[];
     isLoading: boolean;
     error: string | null;
+    users: User[];
+    auditLogs: any[];
     getWorkerAttendance: (workerId: string, month: number, year: number) => AttendanceRecord | undefined;
     saveAttendance: (record: Omit<AttendanceRecord, "id" | "updatedAt" | "totalCalculatedDays">) => Promise<void>;
     refreshData: () => Promise<void>;
@@ -55,6 +58,8 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     const { appUser } = useAuth();
     const [workers, setWorkers] = useState<Worker[]>([]);
     const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
+    const [auditLogs, setAuditLogs] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -107,7 +112,12 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         setError(null);
 
         try {
-            await Promise.all([loadWorkers(), loadAttendance()]);
+            await Promise.all([
+                loadWorkers(),
+                loadAttendance(),
+                appUser?.role === 'ADMIN' ? loadUsers() : Promise.resolve(),
+                appUser?.role === 'ADMIN' ? loadAuditLogs() : Promise.resolve(),
+            ]);
         } catch (err) {
             console.error('Failed to load data:', err);
             setError(err instanceof Error ? err.message : 'فشل تحميل البيانات');
@@ -135,6 +145,36 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         } catch (err) {
             console.error('Failed to load attendance:', err);
             throw err;
+        }
+    };
+
+    const loadUsers = async () => {
+        try {
+            const dbUsers = await usersAPI.getAll();
+            const formattedUsers: User[] = dbUsers.map(u => ({
+                id: u.id,
+                username: u.username,
+                name: u.name,
+                role: u.role as UserRole,
+                areaId: u.area_id || undefined
+            }));
+            setUsers(formattedUsers);
+        } catch (err) {
+            console.error('Failed to load users:', err);
+        }
+    };
+
+    const loadAuditLogs = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('audit_logs')
+                .select('*')
+                .order('changed_at', { ascending: false })
+                .limit(50);
+            if (error) throw error;
+            setAuditLogs(data || []);
+        } catch (err) {
+            console.error('Failed to load audit logs:', err);
         }
     };
 
@@ -186,6 +226,8 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             attendanceRecords,
             isLoading,
             error,
+            users,
+            auditLogs,
             getWorkerAttendance,
             saveAttendance,
             refreshData,

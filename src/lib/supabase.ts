@@ -57,7 +57,7 @@ export interface User {
     id: string;
     username: string;
     name: string;
-    role: 'SUPERVISOR' | 'HR' | 'FINANCE';
+    role: 'SUPERVISOR' | 'HR' | 'FINANCE' | 'ADMIN';
     area_id?: string | null;
     is_active: boolean;
     created_at?: string;
@@ -245,7 +245,7 @@ export const usersAPI = {
         return data;
     },
 
-    async getByRole(role: 'SUPERVISOR' | 'HR' | 'FINANCE'): Promise<User[]> {
+    async getByRole(role: 'SUPERVISOR' | 'HR' | 'FINANCE' | 'ADMIN'): Promise<User[]> {
         const { data, error } = await supabase
             .from('users')
             .select('*')

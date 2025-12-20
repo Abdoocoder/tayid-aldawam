@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [appUser, setAppUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const supabase = createClient();
+    const [supabase] = useState(() => createClient()); // Initialize once and persist
 
     // Load user on mount and subscribe to auth changes
     useEffect(() => {
@@ -67,6 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (data) {
                 setAppUser({
                     id: data.id,
+                    username: data.username,
                     name: data.name,
                     role: data.role as UserRole,
                     areaId: data.area_id,
