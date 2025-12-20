@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS users (
     name TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('SUPERVISOR', 'HR', 'FINANCE', 'ADMIN')),
     area_id TEXT,  -- Only for SUPERVISOR role
+    auth_user_id UUID UNIQUE, -- Link to auth.users
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()

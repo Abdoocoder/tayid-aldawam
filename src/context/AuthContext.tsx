@@ -62,7 +62,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 .eq('auth_user_id', authUserId)
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Database error loading app user:', error);
+                throw error;
+            }
 
             if (data) {
                 setAppUser({
@@ -72,6 +75,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     role: data.role as UserRole,
                     areaId: data.area_id,
                 });
+            } else {
+                console.warn('No app user profile found for auth user:', authUserId);
+                setAppUser(null);
             }
         } catch (err) {
             console.error('Failed to load app user:', err);
