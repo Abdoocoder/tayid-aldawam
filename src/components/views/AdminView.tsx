@@ -16,13 +16,63 @@ import {
     Edit2,
     Trash2,
     UserPlus,
-    Activity
+    Activity,
+    X,
+    Loader2,
+    LayoutDashboard,
+    Save
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
 export const AdminView = () => {
-    const { workers, attendanceRecords, users, auditLogs, isLoading } = useAttendance();
+    const { workers, attendanceRecords, users, auditLogs, isLoading, addWorker, updateWorker, deleteWorker, updateUser } = useAttendance();
     const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'workers' | 'logs'>('overview');
+
+    // Management states
+    const [editingItem, setEditingItem] = useState<{ type: 'worker' | 'user', data: any } | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSaveWorker = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingItem) return;
+        setIsSaving(true);
+        try {
+            if (editingItem.data.id && editingItem.data.id !== 'NEW') {
+                await updateWorker(editingItem.data.id, editingItem.data);
+            } else {
+                await addWorker(editingItem.data);
+            }
+            setEditingItem(null);
+        } catch (err) {
+            alert('فشل حفظ البيانات');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleSaveUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingItem) return;
+        setIsSaving(true);
+        try {
+            await updateUser(editingItem.data.id, editingItem.data);
+            setEditingItem(null);
+        } catch (err) {
+            alert('فشل حفظ البيانات');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDeleteWorker = async (id: string) => {
+        if (!window.confirm('هل أنت متأكد من حذف هذا العامل؟')) return;
+        try {
+            await deleteWorker(id);
+        } catch (err) {
+            alert('فشل حذف العامل');
+        }
+    };
 
     const stats = [
         { title: 'إجمالي العمال', value: workers.length, icon: HardHat, color: 'text-blue-600', bg: 'bg-blue-100' },
@@ -76,6 +126,86 @@ export const AdminView = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Editing/Adding Form Overlay */}
+            {editingItem && (activeTab === 'users' || activeTab === 'workers') && (
+                <Card className="border-2 border-blue-200 shadow-xl animate-in zoom-in-95 duration-200">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>{editingItem.data.id === 'NEW' ? 'إضافة جديد' : 'تعديل البيانات'}</CardTitle>
+                            <CardDescription>أدخل البيانات المطلوبة واضغط حفظ</CardDescription>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => setEditingItem(null)}>
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={editingItem.type === 'worker' ? handleSaveWorker : handleSaveUser} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-500">الاسم</label>
+                                <Input
+                                    value={editingItem.data.name}
+                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-500">المنطقة / القطاع</label>
+                                <Input
+                                    value={editingItem.data.areaId || ''}
+                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } })}
+                                />
+                            </div>
+                            {editingItem.type === 'worker' && (
+                                <>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-gray-500">الأجر اليومي (د.ل)</label>
+                                        <Input
+                                            type="number"
+                                            step="0.01"
+                                            value={editingItem.data.dayValue}
+                                            onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, dayValue: parseFloat(e.target.value) } })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-gray-500">الراتب الأساسي</label>
+                                        <Input
+                                            type="number"
+                                            step="0.01"
+                                            value={editingItem.data.baseSalary}
+                                            onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, baseSalary: parseFloat(e.target.value) } })}
+                                            required
+                                        />
+                                    </div>
+                                </>
+                            )}
+                            {editingItem.type === 'user' && (
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-gray-500">الدور</label>
+                                    <select
+                                        className="w-full p-2 border rounded-md text-sm"
+                                        value={editingItem.data.role}
+                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value } })}
+                                    >
+                                        <option value="SUPERVISOR">SUPERVISOR</option>
+                                        <option value="HR">HR</option>
+                                        <option value="FINANCE">FINANCE</option>
+                                        <option value="ADMIN">ADMIN</option>
+                                    </select>
+                                </div>
+                            )}
+                            <div className="col-span-full flex justify-end gap-2 mt-2 font-sans" dir="rtl">
+                                <Button type="button" variant="outline" onClick={() => setEditingItem(null)}>إلغاء</Button>
+                                <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white" disabled={isSaving}>
+                                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin ml-2" /> : <Save className="h-4 w-4 ml-2" />}
+                                    حفظ التغييرات
+                                </Button>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
+            )}
 
             {/* Content based on active tab */}
             {activeTab === 'overview' && (
@@ -176,7 +306,7 @@ export const AdminView = () => {
                             <CardTitle>إدارة المستخدمين</CardTitle>
                             <CardDescription>إضافة وتعديل صلاحيات المستخدمين في النظام</CardDescription>
                         </div>
-                        <Button className="bg-blue-600">
+                        <Button className="bg-blue-600" onClick={() => setEditingItem({ type: 'user', data: { id: 'NEW', name: '', username: '', role: 'SUPERVISOR', areaId: '' } })}>
                             <UserPlus className="h-4 w-4 ml-2" />
                             مستخدم جديد
                         </Button>
@@ -206,11 +336,8 @@ export const AdminView = () => {
                                             <td className="py-4 px-4 text-sm text-gray-500">{u.areaId || 'الكل'}</td>
                                             <td className="py-4 pl-4">
                                                 <div className="flex justify-center gap-2">
-                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600">
+                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600" onClick={() => setEditingItem({ type: 'user', data: u })}>
                                                         <Edit2 className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600">
-                                                        <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>
                                             </td>
@@ -230,7 +357,7 @@ export const AdminView = () => {
                             <CardTitle>إدارة العمال</CardTitle>
                             <CardDescription>قائمة بجميع العمال المسجلين في النظام عبر كافة القطاعات</CardDescription>
                         </div>
-                        <Button className="bg-green-600">
+                        <Button className="bg-green-600" onClick={() => setEditingItem({ type: 'worker', data: { id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0 } })}>
                             <Plus className="h-4 w-4 ml-2" />
                             إضافة عامل
                         </Button>
@@ -260,10 +387,10 @@ export const AdminView = () => {
                                             <td className="py-4 px-4 text-sm font-bold">{w.dayValue} د.ل</td>
                                             <td className="py-4 pl-4">
                                                 <div className="flex justify-center gap-2">
-                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600">
+                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600" onClick={() => setEditingItem({ type: 'worker', data: w })}>
                                                         <Edit2 className="h-4 w-4" />
                                                     </Button>
-                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600">
+                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600" onClick={() => handleDeleteWorker(w.id)}>
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase, workersAPI, attendanceAPI, usersAPI } from "@/lib/supabase";
-import { workerFromDb, attendanceFromDb, attendanceToDb } from "@/lib/data-transformer";
+import { workerFromDb, workerToDb, attendanceFromDb, attendanceToDb } from "@/lib/data-transformer";
 import { useAuth } from "@/context/AuthContext";
 
 // --- Types ---
@@ -49,6 +49,11 @@ interface AttendanceContextType {
     auditLogs: any[];
     getWorkerAttendance: (workerId: string, month: number, year: number) => AttendanceRecord | undefined;
     saveAttendance: (record: Omit<AttendanceRecord, "id" | "updatedAt" | "totalCalculatedDays">) => Promise<void>;
+    addWorker: (worker: Omit<Worker, "id">) => Promise<void>;
+    updateWorker: (workerId: string, updates: Partial<Worker>) => Promise<void>;
+    deleteWorker: (workerId: string) => Promise<void>;
+    updateUser: (userId: string, updates: Partial<User>) => Promise<void>;
+    deleteUser: (userId: string) => Promise<void>;
     refreshData: () => Promise<void>;
 }
 
@@ -105,10 +110,29 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             )
             .subscribe();
 
+        const usersSubscription = supabase
+            .channel('users_changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'users',
+                },
+                () => {
+                    // Reload users when changes occur
+                    if (appUser?.role === 'ADMIN' || appUser?.role === 'HR') {
+                        loadUsers();
+                    }
+                }
+            )
+            .subscribe();
+
         // Cleanup subscriptions
         return () => {
             attendanceSubscription.unsubscribe();
             workersSubscription.unsubscribe();
+            usersSubscription.unsubscribe();
         };
     }, [appUser?.id, appUser?.role]); // Re-run when user ID or role changes
 
@@ -123,8 +147,8 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
                 loadAttendance(),
             ];
 
-            if (appUser?.role === 'ADMIN') {
-                console.log('AttendanceContext: User is ADMIN, also loading users and logs...');
+            if (appUser?.role === 'ADMIN' || appUser?.role === 'HR') {
+                console.log('AttendanceContext: User is ADMIN or HR, loading users and logs...');
                 promises.push(loadUsers());
                 promises.push(loadAuditLogs());
             }
@@ -238,6 +262,80 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     };
 
+    const addWorker = async (worker: Omit<Worker, "id">) => {
+        try {
+            const id = Math.floor(1000 + Math.random() * 9000).toString(); // Generate simple numeric ID
+            const dbWorker = workerToDb({ ...worker, id });
+            await workersAPI.create(dbWorker);
+            // State will be updated by real-time subscription
+        } catch (err) {
+            console.error('Failed to add worker:', err);
+            throw err;
+        }
+    };
+
+    const updateWorker = async (workerId: string, updates: Partial<Worker>) => {
+        try {
+            // Transform updates to snake_case if needed
+            const dbUpdates: any = {};
+            if (updates.name) dbUpdates.name = updates.name;
+            if (updates.areaId) dbUpdates.area_id = updates.areaId;
+            if (updates.baseSalary !== undefined) dbUpdates.base_salary = updates.baseSalary;
+            if (updates.dayValue !== undefined) dbUpdates.day_value = updates.dayValue;
+
+            await workersAPI.update(workerId, dbUpdates);
+            // State will be updated by real-time subscription
+        } catch (err) {
+            console.error('Failed to update worker:', err);
+            throw err;
+        }
+    };
+
+    const deleteWorker = async (workerId: string) => {
+        try {
+            await workersAPI.delete(workerId);
+            // State will be updated by real-time subscription
+        } catch (err) {
+            console.error('Failed to delete worker:', err);
+            throw err;
+        }
+    };
+
+    const updateUser = async (userId: string, updates: Partial<User>) => {
+        try {
+            const dbUpdates: any = {};
+            if (updates.name) dbUpdates.name = updates.name;
+            if (updates.role) dbUpdates.role = updates.role;
+            if (updates.areaId !== undefined) dbUpdates.area_id = updates.areaId;
+            if (updates.username) dbUpdates.username = updates.username;
+
+            const { error } = await supabase
+                .from('users')
+                .update(dbUpdates)
+                .eq('id', userId);
+
+            if (error) throw error;
+            // State will be updated by real-time subscription
+        } catch (err) {
+            console.error('Failed to update user:', err);
+            throw err;
+        }
+    };
+
+    const deleteUser = async (userId: string) => {
+        try {
+            const { error } = await supabase
+                .from('users')
+                .delete()
+                .eq('id', userId);
+
+            if (error) throw error;
+        } catch (err) {
+            console.error('Failed to delete user:', err);
+            throw err;
+        }
+    };
+
     return (
         <AttendanceContext.Provider value={{
             currentUser: appUser,
@@ -249,6 +347,11 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             auditLogs,
             getWorkerAttendance,
             saveAttendance,
+            addWorker,
+            updateWorker,
+            deleteWorker,
+            updateUser,
+            deleteUser,
             refreshData,
         }}>
             {children}

@@ -17,18 +17,20 @@ DECLARE
 BEGIN
   -- We use a nested block to capture errors specifically during the insert
   BEGIN
-    INSERT INTO public.users (id, auth_user_id, username, name, role, is_active)
+    INSERT INTO public.users (id, auth_user_id, username, name, role, area_id, is_active)
     VALUES (
       uuid_generate_v4(),
       NEW.id,
       NEW.email,
       COALESCE(NEW.raw_user_meta_data->>'name', NEW.email, 'User'),
       COALESCE(NEW.raw_user_meta_data->>'role', default_role),
+      NEW.raw_user_meta_data->>'areaId',
       true
     )
     ON CONFLICT (auth_user_id) DO UPDATE SET
       name = EXCLUDED.name,
       role = EXCLUDED.role,
+      area_id = EXCLUDED.area_id,
       updated_at = NOW();
   EXCEPTION 
     WHEN unique_violation THEN
@@ -36,7 +38,8 @@ BEGIN
       UPDATE public.users 
       SET auth_user_id = NEW.id,
           name = COALESCE(NEW.raw_user_meta_data->>'name', name),
-          role = COALESCE(NEW.raw_user_meta_data->>'role', role)
+          role = COALESCE(NEW.raw_user_meta_data->>'role', role),
+          area_id = COALESCE(NEW.raw_user_meta_data->>'areaId', area_id)
       WHERE username = NEW.email;
     WHEN OTHERS THEN
       RAISE LOG 'Supabase Profile Trigger Error: %', SQLERRM;

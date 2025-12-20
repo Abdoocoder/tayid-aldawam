@@ -11,7 +11,7 @@ interface AuthContextType {
     isLoading: boolean;
     error: string | null;
     signIn: (email: string, password: string) => Promise<void>;
-    signUp: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
+    signUp: (email: string, password: string, name: string, role: UserRole, areaId?: string) => Promise<void>;
     signInWithGoogle: () => Promise<void>;
     signInWithGithub: () => Promise<void>;
     signOut: () => Promise<void>;
@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const signUp = async (email: string, password: string, name: string, role: UserRole) => {
+    const signUp = async (email: string, password: string, name: string, role: UserRole, areaId?: string) => {
         try {
             setError(null);
             setIsLoading(true);
@@ -121,6 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     data: {
                         name,
                         role,
+                        areaId,
                     },
                 },
             });
