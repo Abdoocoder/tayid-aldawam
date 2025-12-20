@@ -1,33 +1,12 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient as createBrowserClient } from './supabase-browser';
 
 // Supabase configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-// Validate environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-        'Missing Supabase environment variables. Please check your .env.local file.\n' +
-        'Required:\n' +
-        '  - NEXT_PUBLIC_SUPABASE_URL\n' +
-        '  - NEXT_PUBLIC_SUPABASE_ANON_KEY'
-    );
-}
-
 // Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-        persistSession: false, // We're not using Supabase Auth yet
-    },
-    db: {
-        schema: 'public',
-    },
-    global: {
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    },
-});
+// Use the shared browser client to prevent multiple GoTrueClient instances
+export const supabase = createBrowserClient();
 
 // Database Types
 export interface Worker {

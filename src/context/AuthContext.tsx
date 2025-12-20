@@ -60,7 +60,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 .from('users')
                 .select('*')
                 .eq('auth_user_id', authUserId)
-                .single();
+                .eq('auth_user_id', authUserId)
+                .maybeSingle();
 
             if (error) {
                 console.error('Database error loading app user:', error);
