@@ -60,7 +60,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 .from('users')
                 .select('*')
                 .eq('auth_user_id', authUserId)
-                .eq('auth_user_id', authUserId)
                 .maybeSingle();
 
             if (error) {

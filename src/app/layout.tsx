@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Cairo } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
+import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -34,6 +35,7 @@ export default function RootLayout({
         className={`${cairo.variable} antialiased font-sans bg-gray-50 text-gray-900`}
       >
         <Providers>
+          <ServiceWorkerCleaner />
           <main className="min-h-screen">
             {children}
           </main>

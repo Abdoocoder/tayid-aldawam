@@ -63,9 +63,14 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Load data from Supabase on mount
+    // Load data from Supabase on mount and when appUser changes
     useEffect(() => {
-        loadData();
+        const fetchInitialData = async () => {
+            console.log('AttendanceContext: Triggering loadData with role:', appUser?.role);
+            await loadData();
+        };
+
+        fetchInitialData();
 
         // Subscribe to real-time changes
         const attendanceSubscription = supabase
@@ -105,21 +110,29 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             attendanceSubscription.unsubscribe();
             workersSubscription.unsubscribe();
         };
-    }, []);
+    }, [appUser?.id, appUser?.role]); // Re-run when user ID or role changes
 
     const loadData = async () => {
         setIsLoading(true);
         setError(null);
 
         try {
-            await Promise.all([
+            console.log('AttendanceContext: Loading basic data (workers, attendance)...');
+            const promises: Promise<any>[] = [
                 loadWorkers(),
                 loadAttendance(),
-                appUser?.role === 'ADMIN' ? loadUsers() : Promise.resolve(),
-                appUser?.role === 'ADMIN' ? loadAuditLogs() : Promise.resolve(),
-            ]);
+            ];
+
+            if (appUser?.role === 'ADMIN') {
+                console.log('AttendanceContext: User is ADMIN, also loading users and logs...');
+                promises.push(loadUsers());
+                promises.push(loadAuditLogs());
+            }
+
+            await Promise.all(promises);
+            console.log('AttendanceContext: All data loaded successfully');
         } catch (err) {
-            console.error('Failed to load data:', err);
+            console.error('AttendanceContext: Failed to load data:', err);
             setError(err instanceof Error ? err.message : 'فشل تحميل البيانات');
         } finally {
             setIsLoading(false);
@@ -131,11 +144,13 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             const dbWorkers = await workersAPI.getAll();
             const frontendWorkers = dbWorkers.map(workerFromDb);
             setWorkers(frontendWorkers);
+            console.log(`AttendanceContext: Loaded ${frontendWorkers.length} workers`);
         } catch (err) {
             console.error('Failed to load workers:', err);
             throw err;
         }
     };
+
 
     const loadAttendance = async () => {
         try {
@@ -150,7 +165,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
     const loadUsers = async () => {
         try {
+            console.log('AttendanceContext: Fetching users from API...');
             const dbUsers = await usersAPI.getAll();
+            console.log('AttendanceContext: Users API returned:', dbUsers.length, 'users');
             const formattedUsers: User[] = dbUsers.map(u => ({
                 id: u.id,
                 username: u.username,
@@ -160,21 +177,23 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             }));
             setUsers(formattedUsers);
         } catch (err) {
-            console.error('Failed to load users:', err);
+            console.error('AttendanceContext: Failed to load users:', err);
         }
     };
 
     const loadAuditLogs = async () => {
         try {
+            console.log('AttendanceContext: Fetching audit logs from Supabase...');
             const { data, error } = await supabase
                 .from('audit_logs')
                 .select('*')
                 .order('changed_at', { ascending: false })
                 .limit(50);
             if (error) throw error;
+            console.log('AttendanceContext: Loaded', data?.length || 0, 'audit logs');
             setAuditLogs(data || []);
         } catch (err) {
-            console.error('Failed to load audit logs:', err);
+            console.error('AttendanceContext: Failed to load audit logs:', err);
         }
     };
 
