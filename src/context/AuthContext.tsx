@@ -114,14 +114,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setError(null);
             setIsLoading(true);
 
+            // Ensure email format is valid for Supabase by using a standardized domain
+            let prefix = email.trim().toLowerCase().split('@')[0].replace(/[^a-z0-9]/g, '');
+            const finalEmail = `${prefix}.sv@example.com`;
+
+            console.log(`AuthContext: Attempting signup with generated email: [${finalEmail}]`);
+
             const { data, error } = await supabase.auth.signUp({
-                email,
-                password,
+                email: finalEmail,
+                password: password.trim(),
                 options: {
                     data: {
-                        name,
+                        name: name.trim(),
                         role,
-                        areaId,
+                        areaId: areaId?.trim(),
                     },
                 },
             });

@@ -94,11 +94,11 @@ export function HRView() {
                     return;
                 }
                 await signUp(
-                    editingItem.data.username,
-                    editingItem.data.password,
-                    editingItem.data.name,
+                    editingItem.data.username.trim(),
+                    editingItem.data.password.trim(),
+                    editingItem.data.name.trim(),
                     'SUPERVISOR',
-                    editingItem.data.areaId
+                    editingItem.data.areaId?.trim()
                 );
                 // After signup, we might need to update the areaId as signUp only takes name/role
                 // But the user profile is created by a trigger. 
@@ -249,13 +249,13 @@ export function HRView() {
                             {editingItem.type === 'supervisor' && (
                                 <>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold text-gray-500">اسم المستخدم (إيميل)</label>
+                                        <label className="text-xs font-bold text-gray-500">اسم المستخدم (للتسجيل)</label>
                                         <Input
                                             value={editingItem.data.username}
                                             onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, username: e.target.value } })}
                                             readOnly={editingItem.data.id !== 'NEW'}
                                             className={editingItem.data.id !== 'NEW' ? "bg-gray-50" : ""}
-                                            placeholder="example@email.com"
+                                            placeholder="مثلاً: ahmed.ali"
                                             required
                                         />
                                     </div>
