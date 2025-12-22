@@ -9,14 +9,22 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 export const supabase = createBrowserClient();
 
 // Database Types
+export interface Area {
+    id: string;
+    name: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
 export interface Worker {
     id: string;
     name: string;
-    area_id: string;
+    area_id: string; // This will now be a UUID referencing Areas table
     base_salary: number;
     day_value: number;
     created_at?: string;
     updated_at?: string;
+    area?: Area; // Optional joined area
 }
 
 export interface AttendanceRecord {
@@ -37,7 +45,8 @@ export interface User {
     username: string;
     name: string;
     role: 'SUPERVISOR' | 'HR' | 'FINANCE' | 'ADMIN';
-    area_id?: string | null;
+    area_id?: string | null; // Keep for compatibility/single selection
+    areas?: Area[]; // For multi-area support
     is_active: boolean;
     created_at?: string;
     updated_at?: string;
@@ -234,6 +243,73 @@ export const usersAPI = {
         if (error) throw error;
         return data || [];
     },
+
+    async getUserAreas(userId: string): Promise<Area[]> {
+        const { data, error } = await supabase
+            .from('user_areas')
+            .select('areas (*)')
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        return data?.map(item => (item as any).areas) || [];
+    },
+
+    async setUserAreas(userId: string, areaIds: string[]): Promise<void> {
+        // First delete existing
+        await supabase.from('user_areas').delete().eq('user_id', userId);
+        // Then insert new
+        if (areaIds.length > 0) {
+            const { error } = await supabase
+                .from('user_areas')
+                .insert(areaIds.map(areaId => ({ user_id: userId, area_id: areaId })));
+            if (error) throw error;
+        }
+    }
+};
+
+// Areas API
+export const areasAPI = {
+    async getAll(): Promise<Area[]> {
+        const { data, error } = await supabase
+            .from('areas')
+            .select('*')
+            .order('name', { ascending: true });
+
+        if (error) throw error;
+        return data || [];
+    },
+
+    async create(name: string): Promise<Area> {
+        const { data, error } = await supabase
+            .from('areas')
+            .insert([{ name }])
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    async update(id: string, name: string): Promise<Area> {
+        const { data, error } = await supabase
+            .from('areas')
+            .update({ name })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    async delete(id: string): Promise<void> {
+        const { error } = await supabase
+            .from('areas')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+    }
 };
 
 // Real-time subscriptions

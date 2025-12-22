@@ -45,11 +45,15 @@ export function HRView() {
         updateWorker,
         deleteWorker,
         updateUser,
-        deleteUser
+        deleteUser,
+        areas,
+        addArea,
+        updateArea,
+        deleteArea
     } = useAttendance();
     const { signUp } = useAuth();
 
-    const [activeTab, setActiveTab] = useState<'reports' | 'supervisors' | 'workers'>('reports');
+    const [activeTab, setActiveTab] = useState<'reports' | 'supervisors' | 'workers' | 'areas'>('reports');
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
 
@@ -57,6 +61,8 @@ export function HRView() {
     const [searchTerm, setSearchTerm] = useState("");
     const [editingItem, setEditingItem] = useState<{ type: 'worker', data: Worker | (Partial<Worker> & { id: 'NEW' }) } | { type: 'supervisor', data: SupervisorEditingData } | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [selectedAreaIds, setSelectedAreaIds] = useState<string[]>([]);
+    const [areaInput, setAreaInput] = useState("");
 
     // Filter supervisors (users with SUPERVISOR role)
     const supervisors = users.filter(u => u.role === 'SUPERVISOR');
@@ -69,7 +75,11 @@ export function HRView() {
     );
 
     const filteredSupervisors = supervisors.filter(s =>
-        s.name.includes(searchTerm) || s.username.includes(searchTerm) || (s.areaId || "").includes(searchTerm)
+        s.name.includes(searchTerm) || s.username.includes(searchTerm)
+    );
+
+    const filteredAreas = areas.filter(a =>
+        a.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const handleSaveWorker = async (e: React.FormEvent) => {
@@ -103,19 +113,29 @@ export function HRView() {
                 const data = editingItem.data;
                 if (!data.password || !data.username || !data.name) {
                     alert('يرجى إدخال جميع البيانات المطلوبة للمراقب الجديد');
+                    setIsSaving(false);
                     return;
                 }
+                const username = data.username.trim();
                 await signUp(
-                    data.username.trim(),
+                    username,
                     data.password.trim(),
                     data.name.trim(),
                     'SUPERVISOR',
                     data.areaId?.trim()
                 );
+                // Also link areas
+                if (selectedAreaIds.length > 0) {
+                    const newUser = users.find(u => u.username === username);
+                    if (newUser) {
+                        await updateUser(newUser.id, {}, selectedAreaIds);
+                    }
+                }
             } else {
-                await updateUser(editingItem.data.id, editingItem.data as Partial<User>);
+                await updateUser(editingItem.data.id, editingItem.data as Partial<User>, selectedAreaIds);
             }
             setEditingItem(null);
+            setSelectedAreaIds([]);
         } catch (err: any) {
             console.error(err);
             alert('فشل حفظ البيانات: ' + (err.message || 'خطأ غير معروف'));
@@ -227,6 +247,12 @@ export function HRView() {
                     >
                         العمال
                     </button>
+                    <button
+                        onClick={() => setActiveTab('areas')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'areas' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        المناطق
+                    </button>
                 </div>
             </div>
 
@@ -260,7 +286,8 @@ export function HRView() {
                             </div>
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-gray-500">المنطقة / القطاع</label>
-                                <Input
+                                <select
+                                    className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600"
                                     value={editingItem.data.areaId || ''}
                                     onChange={e => {
                                         if (editingItem.type === 'worker') {
@@ -270,7 +297,13 @@ export function HRView() {
                                         }
                                     }}
                                     required
-                                />
+                                >
+                                    <option value="">اختر المنطقة...</option>
+                                    {areas.map(a => (
+                                        <option key={a.id} value={a.id}>{a.name}</option>
+                                    ))}
+                                    {editingItem.type === 'supervisor' && <option value="ALL">كل المناطق (ADMIN)</option>}
+                                </select>
                             </div>
                             {editingItem.type === 'worker' && (
                                 <>
@@ -336,6 +369,28 @@ export function HRView() {
                                             />
                                         </div>
                                     )}
+                                    <div className="col-span-full space-y-2 border-t pt-4 mt-2">
+                                        <label className="text-sm font-bold text-gray-700 block">تخصيص مناطق إضافية (اختياري)</label>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-lg border">
+                                            {areas.map(area => (
+                                                <label key={area.id} className="flex items-center gap-2 text-sm p-1 hover:bg-gray-100 rounded cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedAreaIds.includes(area.id)}
+                                                        onChange={e => {
+                                                            if (e.target.checked) {
+                                                                setSelectedAreaIds(prev => [...prev, area.id]);
+                                                            } else {
+                                                                setSelectedAreaIds(prev => prev.filter(id => id !== area.id));
+                                                            }
+                                                        }}
+                                                        className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-600"
+                                                    />
+                                                    {area.name}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </>
                             )}
                             <div className="col-span-full flex justify-end gap-2 mt-2">
@@ -393,10 +448,11 @@ export function HRView() {
                                 <tbody className="divide-y divide-gray-100">
                                     {workers.map((worker) => {
                                         const record = getWorkerAttendance(worker.id, month, year);
+                                        const areaName = areas.find(a => a.id === worker.areaId)?.name || worker.areaId;
                                         return (
                                             <tr key={worker.id} className="hover:bg-gray-50/50">
                                                 <td className="p-4 font-medium">{worker.name}</td>
-                                                <td className="p-4 text-gray-500">{worker.areaId}</td>
+                                                <td className="p-4 text-gray-500">{areaName}</td>
                                                 <td className="p-4 text-center">{record ? record.normalDays : "-"}</td>
                                                 <td className="p-4 text-center">{record ? record.overtimeNormalDays : "-"}</td>
                                                 <td className="p-4 text-center">{record ? record.overtimeHolidayDays : "-"}</td>
@@ -422,13 +478,14 @@ export function HRView() {
                             <CardTitle>إدارة المراقبين</CardTitle>
                             <CardDescription>إضافة وتعديل وحذف المراقبين ومناطق إشرافهم</CardDescription>
                         </div>
-                        <div className="flex gap-2">
-                            <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setEditingItem({ type: 'supervisor', data: { id: 'NEW', name: '', username: '', areaId: '', password: '' } })}>
-                                <Plus className="h-4 w-4 ml-2" />
-                                إضافة مراقب
-                            </Button>
-                            <Users className="h-5 w-5 text-gray-400 self-center" />
-                        </div>
+                        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => {
+                            setEditingItem({ type: 'supervisor', data: { id: 'NEW', name: '', username: '', areaId: '', password: '' } });
+                            setSelectedAreaIds([]);
+                        }}>
+                            <Plus className="h-4 w-4 ml-2" />
+                            إضافة مراقب
+                        </Button>
+                        <Users className="h-5 w-5 text-gray-400 self-center" />
                     </CardHeader>
                     <CardContent className="p-0 overflow-x-auto">
                         <table className="w-full text-right">
@@ -446,14 +503,30 @@ export function HRView() {
                                         <td className="p-4 font-medium">{s.name}</td>
                                         <td className="p-4 text-sm text-gray-500">{s.username}</td>
                                         <td className="p-4">
-                                            <Badge variant="outline" className="flex items-center gap-1 w-fit">
-                                                <MapPin className="h-3 w-3" />
-                                                {s.areaId || 'غير محدد'}
-                                            </Badge>
+                                            <div className="flex flex-wrap gap-1">
+                                                {s.areaId && (
+                                                    <Badge variant="outline" className="flex items-center gap-1 w-fit bg-blue-50">
+                                                        <MapPin className="h-3 w-3" />
+                                                        {areas.find(a => a.id === s.areaId)?.name || s.areaId}
+                                                    </Badge>
+                                                )}
+                                                {s.areas?.map(area => (
+                                                    <Badge key={area.id} variant="outline" className="flex items-center gap-1 w-fit">
+                                                        <MapPin className="h-3 w-3" />
+                                                        {area.name}
+                                                    </Badge>
+                                                ))}
+                                                {(!s.areaId && (!s.areas || s.areas.length === 0)) && (
+                                                    <span className="text-gray-400 text-xs italic">لا توجد مناطق</span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="p-4">
                                             <div className="flex justify-center gap-2">
-                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600" onClick={() => setEditingItem({ type: 'supervisor', data: s })}>
+                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600" onClick={() => {
+                                                    setEditingItem({ type: 'supervisor', data: s });
+                                                    setSelectedAreaIds(s.areas?.map(a => a.id) || []);
+                                                }}>
                                                     <Edit2 className="h-4 w-4" />
                                                 </Button>
                                                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600" onClick={() => handleDeleteSupervisor(s.id)}>
@@ -498,11 +571,11 @@ export function HRView() {
                             <tbody className="divide-y divide-gray-100">
                                 {filteredWorkers.map(w => (
                                     <tr key={w.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="p-4 text-xs font-mono text-gray-400">{w.id}</td>
+                                        <td className="p-4 font-xs font-mono text-gray-400">{w.id}</td>
                                         <td className="p-4 font-medium">{w.name}</td>
                                         <td className="p-4">
                                             <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-none">
-                                                {w.areaId}
+                                                {areas.find(a => a.id === w.areaId)?.name || w.areaId}
                                             </Badge>
                                         </td>
                                         <td className="p-4 font-bold text-green-700">

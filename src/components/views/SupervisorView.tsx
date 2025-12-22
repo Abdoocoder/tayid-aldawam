@@ -14,8 +14,15 @@ export function SupervisorView() {
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
 
-    // Filter workers by area
-    const myWorkers = workers.filter((w) => w.areaId === currentUser?.areaId);
+    // Filter workers by area(s)
+    const myWorkers = workers.filter((w) => {
+        if (currentUser?.areaId === 'ALL') return true;
+
+        const isPrimaryArea = w.areaId === currentUser?.areaId;
+        const isInAssignedAreas = currentUser?.areas?.some(a => a.id === w.areaId);
+
+        return isPrimaryArea || isInAssignedAreas;
+    });
 
     // Show loading state
     if (isLoading) {

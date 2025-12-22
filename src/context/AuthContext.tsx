@@ -68,12 +68,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
 
             if (data) {
+                // Fetch associated areas
+                const { data: areasData, error: areasError } = await supabase
+                    .from('user_areas')
+                    .select('areas (*)')
+                    .eq('user_id', data.id);
+
+                const userAreas = areasData?.map((item: any) => item.areas) || [];
+
                 setAppUser({
                     id: data.id,
                     username: data.username,
                     name: data.name,
                     role: data.role as UserRole,
                     areaId: data.area_id,
+                    areas: userAreas
                 });
             } else {
                 console.warn('No app user profile found for auth user:', authUserId);

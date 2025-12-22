@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { supabase, workersAPI, attendanceAPI, usersAPI } from "@/lib/supabase";
+import { supabase, workersAPI, attendanceAPI, usersAPI, areasAPI, type Area } from "@/lib/supabase";
 import { workerFromDb, workerToDb, attendanceFromDb, attendanceToDb } from "@/lib/data-transformer";
 import { useAuth } from "@/context/AuthContext";
 
@@ -14,7 +14,8 @@ export interface User {
     username: string;
     name: string;
     role: UserRole;
-    areaId?: string;
+    areaId?: string; // Legacy/Single Area
+    areas?: Area[]; // Multi-Area Support
 }
 
 export interface Worker {
@@ -46,14 +47,18 @@ interface AttendanceContextType {
     isLoading: boolean;
     error: string | null;
     users: User[];
+    areas: Area[];
     auditLogs: any[];
     getWorkerAttendance: (workerId: string, month: number, year: number) => AttendanceRecord | undefined;
     saveAttendance: (record: Omit<AttendanceRecord, "id" | "updatedAt" | "totalCalculatedDays">) => Promise<void>;
     addWorker: (worker: Omit<Worker, "id">) => Promise<void>;
     updateWorker: (workerId: string, updates: Partial<Worker>) => Promise<void>;
     deleteWorker: (workerId: string) => Promise<void>;
-    updateUser: (userId: string, updates: Partial<User>) => Promise<void>;
+    updateUser: (userId: string, updates: Partial<User>, areaIds?: string[]) => Promise<void>;
     deleteUser: (userId: string) => Promise<void>;
+    addArea: (name: string) => Promise<void>;
+    updateArea: (id: string, name: string) => Promise<void>;
+    deleteArea: (id: string) => Promise<void>;
     refreshData: () => Promise<void>;
 }
 
@@ -64,6 +69,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     const [workers, setWorkers] = useState<Worker[]>([]);
     const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
     const [users, setUsers] = useState<User[]>([]);
+    const [areas, setAreas] = useState<Area[]>([]);
     const [auditLogs, setAuditLogs] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -145,6 +151,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             const promises: Promise<any>[] = [
                 loadWorkers(),
                 loadAttendance(),
+                loadAreas(),
             ];
 
             if (appUser?.role === 'ADMIN' || appUser?.role === 'HR') {
@@ -195,16 +202,30 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             const dbUsers = await usersAPI.getAll();
             console.log('AttendanceContext: Users API returned:', dbUsers.length, 'users');
             console.log('AttendanceContext: Users list:', dbUsers.map(u => ({ username: u.username, role: u.role, is_active: u.is_active })));
-            const formattedUsers: User[] = dbUsers.map(u => ({
-                id: u.id,
-                username: u.username,
-                name: u.name,
-                role: u.role as UserRole,
-                areaId: u.area_id || undefined
+            const formattedUsers: User[] = await Promise.all(dbUsers.map(async u => {
+                const userAreas = await usersAPI.getUserAreas(u.id);
+                return {
+                    id: u.id,
+                    username: u.username,
+                    name: u.name,
+                    role: u.role as UserRole,
+                    areaId: u.area_id || undefined,
+                    areas: userAreas
+                };
             }));
             setUsers(formattedUsers);
         } catch (err) {
             console.error('AttendanceContext: Failed to load users:', err);
+        }
+    };
+
+    const loadAreas = async () => {
+        try {
+            const dbAreas = await areasAPI.getAll();
+            setAreas(dbAreas);
+            console.log(`AttendanceContext: Loaded ${dbAreas.length} areas`);
+        } catch (err) {
+            console.error('Failed to load areas:', err);
         }
     };
 
@@ -304,7 +325,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     };
 
-    const updateUser = async (userId: string, updates: Partial<User>) => {
+    const updateUser = async (userId: string, updates: Partial<User>, areaIds?: string[]) => {
         try {
             const dbUpdates: any = {};
             if (updates.name) dbUpdates.name = updates.name;
@@ -312,13 +333,21 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             if (updates.areaId !== undefined) dbUpdates.area_id = updates.areaId;
             if (updates.username) dbUpdates.username = updates.username;
 
-            const { error } = await supabase
-                .from('users')
-                .update(dbUpdates)
-                .eq('id', userId);
+            if (Object.keys(dbUpdates).length > 0) {
+                const { error } = await supabase
+                    .from('users')
+                    .update(dbUpdates)
+                    .eq('id', userId);
 
-            if (error) throw error;
+                if (error) throw error;
+            }
+
+            if (areaIds) {
+                await usersAPI.setUserAreas(userId, areaIds);
+            }
+
             // State will be updated by real-time subscription
+            await loadUsers(); // Need to reload to get new areas
         } catch (err) {
             console.error('Failed to update user:', err);
             throw err;
@@ -339,6 +368,37 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     };
 
+    const addArea = async (name: string) => {
+        try {
+            await areasAPI.create(name);
+            await loadAreas();
+        } catch (err) {
+            console.error('Failed to add area:', err);
+            throw err;
+        }
+    };
+
+    const updateArea = async (id: string, name: string) => {
+        try {
+            await areasAPI.update(id, name);
+            await loadAreas();
+            // Optional: update local workers/users too
+        } catch (err) {
+            console.error('Failed to update area:', err);
+            throw err;
+        }
+    };
+
+    const deleteArea = async (id: string) => {
+        try {
+            await areasAPI.delete(id);
+            await loadAreas();
+        } catch (err) {
+            console.error('Failed to delete area:', err);
+            throw err;
+        }
+    };
+
     return (
         <AttendanceContext.Provider value={{
             currentUser: appUser,
@@ -347,6 +407,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             isLoading,
             error,
             users,
+            areas,
             auditLogs,
             getWorkerAttendance,
             saveAttendance,
@@ -355,6 +416,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             deleteWorker,
             updateUser,
             deleteUser,
+            addArea,
+            updateArea,
+            deleteArea,
             refreshData,
         }}>
             {children}
