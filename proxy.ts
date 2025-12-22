@@ -1,6 +1,7 @@
+import { type NextRequest } from 'next/server'
 import { updateSession } from './src/proxy'
 
-export async function proxy(request: any) {
+export async function proxy(request: NextRequest) {
     return await updateSession(request)
 }
 

@@ -5,7 +5,9 @@ import { useAttendance } from "@/context/AttendanceContext";
 import { MonthYearPicker } from "../ui/month-year-picker";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
-import { Banknote, Loader2, AlertCircle } from "lucide-react";
+import { Banknote, Loader2, AlertCircle, Download } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 
 export function FinanceView() {
     const { workers, getWorkerAttendance, isLoading, error } = useAttendance();
@@ -20,6 +22,31 @@ export function FinanceView() {
         }
         return acc;
     }, 0);
+
+    const handleExportCSV = () => {
+        const headers = ["الرقم", "الاسم", "الأيام المحتسبة", "قيمة اليوم", "الصافي"];
+        const rows = workers.map(worker => {
+            const record = getWorkerAttendance(worker.id, month, year);
+            return [
+                worker.id,
+                worker.name,
+                record ? record.totalCalculatedDays : 0,
+                worker.dayValue,
+                record ? (record.totalCalculatedDays * worker.dayValue).toFixed(2) : 0
+            ];
+        });
+
+        const csvContent = "\ufeff" + [headers, ...rows].map(e => e.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `payroll_${month}_${year}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     // Show loading state
     if (isLoading) {
@@ -58,15 +85,19 @@ export function FinanceView() {
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="bg-green-100 px-4 py-2 rounded-lg text-green-800 font-bold border border-green-200">
-                        الإجمالي: {totalAmount.toFixed(2)} دينار
+                        الإجمالي: {totalAmount.toFixed(2)} د.ل
                     </div>
                     <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                 </div>
             </div>
 
             <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>مسير الرواتب - {month} / {year}</CardTitle>
+                    <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-2">
+                        <Download className="h-4 w-4" />
+                        تصدير CSV
+                    </Button>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
                     <table className="w-full text-sm text-right">
@@ -90,7 +121,7 @@ export function FinanceView() {
                                         <td className="p-3">{worker.id}</td>
                                         <td className="p-3 font-medium">{worker.name}</td>
                                         <td className="p-3 text-center">{record ? record.totalCalculatedDays : "-"}</td>
-                                        <td className="p-3 text-center">{worker.dayValue} د.أ</td>
+                                        <td className="p-3 text-center">{worker.dayValue} د.ل</td>
                                         <td className="p-3 text-center font-bold text-green-700 bg-green-50/30">
                                             {record ? total.toFixed(2) : "-"}
                                         </td>

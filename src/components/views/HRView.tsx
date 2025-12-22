@@ -1,8 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAttendance, User, Worker } from "@/context/AttendanceContext";
+import { useAttendance, User, Worker, UserRole } from "@/context/AttendanceContext";
 import { useAuth } from "@/context/AuthContext";
+interface SupervisorEditingData extends Partial<User> {
+    id: string;
+    username?: string;
+    password?: string;
+    name?: string;
+    role?: UserRole;
+    areaId?: string;
+}
+
 import { MonthYearPicker } from "../ui/month-year-picker";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -21,7 +30,8 @@ import {
     MapPin,
     DollarSign,
     Save,
-    X
+    X,
+    Download
 } from "lucide-react";
 
 export function HRView() {
@@ -45,7 +55,7 @@ export function HRView() {
 
     // Management states
     const [searchTerm, setSearchTerm] = useState("");
-    const [editingItem, setEditingItem] = useState<{ type: 'worker' | 'supervisor', data: any } | null>(null);
+    const [editingItem, setEditingItem] = useState<{ type: 'worker', data: Worker | (Partial<Worker> & { id: 'NEW' }) } | { type: 'supervisor', data: SupervisorEditingData } | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
     // Filter supervisors (users with SUPERVISOR role)
@@ -53,7 +63,9 @@ export function HRView() {
 
     // Filtered lists for search
     const filteredWorkers = workers.filter(w =>
-        w.name.includes(searchTerm) || w.id.includes(searchTerm) || w.areaId.includes(searchTerm)
+        w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        w.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        w.areaId.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const filteredSupervisors = supervisors.filter(s =>
@@ -62,17 +74,19 @@ export function HRView() {
 
     const handleSaveWorker = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingItem) return;
+        if (!editingItem || editingItem.type !== 'worker') return;
 
         setIsSaving(true);
         try {
-            if (editingItem.data.id && editingItem.data.id !== 'NEW') {
-                await updateWorker(editingItem.data.id, editingItem.data);
+            if (editingItem.data.id !== 'NEW') {
+                await updateWorker(editingItem.data.id, editingItem.data as Partial<Worker>);
             } else {
-                await addWorker(editingItem.data);
+                const { id, ...workerWithoutId } = editingItem.data;
+                await addWorker(workerWithoutId as Omit<Worker, "id">);
             }
             setEditingItem(null);
         } catch (err) {
+            console.error(err);
             alert('فشل حفظ البيانات');
         } finally {
             setIsSaving(false);
@@ -81,34 +95,29 @@ export function HRView() {
 
     const handleSaveSupervisor = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingItem) return;
+        if (!editingItem || editingItem.type !== 'supervisor') return;
 
         setIsSaving(true);
         try {
             if (editingItem.data.id === 'NEW') {
-                // For new supervisors, we use the signUp function from AuthContext
-                // Note: In a real app, HR shouldn't be logged out. 
-                // We'll use the existing signUp for now as it's the provided method.
-                if (!editingItem.data.password) {
-                    alert('يرجى إدخال كلمة مرور للمراقب الجديد');
+                const data = editingItem.data;
+                if (!data.password || !data.username || !data.name) {
+                    alert('يرجى إدخال جميع البيانات المطلوبة للمراقب الجديد');
                     return;
                 }
                 await signUp(
-                    editingItem.data.username.trim(),
-                    editingItem.data.password.trim(),
-                    editingItem.data.name.trim(),
+                    data.username.trim(),
+                    data.password.trim(),
+                    data.name.trim(),
                     'SUPERVISOR',
-                    editingItem.data.areaId?.trim()
+                    data.areaId?.trim()
                 );
-                // After signup, we might need to update the areaId as signUp only takes name/role
-                // But the user profile is created by a trigger. 
-                // We'll wait a bit or the trigger should handle role/name from metadata.
-                // To set areaId, we might need another update call if the trigger doesn't handle it.
             } else {
-                await updateUser(editingItem.data.id, editingItem.data);
+                await updateUser(editingItem.data.id, editingItem.data as Partial<User>);
             }
             setEditingItem(null);
         } catch (err: any) {
+            console.error(err);
             alert('فشل حفظ البيانات: ' + (err.message || 'خطأ غير معروف'));
         } finally {
             setIsSaving(false);
@@ -120,6 +129,7 @@ export function HRView() {
         try {
             await deleteUser(id);
         } catch (err) {
+            console.error(err);
             alert('فشل حذف المراقب');
         }
     };
@@ -129,8 +139,36 @@ export function HRView() {
         try {
             await deleteWorker(id);
         } catch (err) {
+            console.error(err);
             alert('فشل حذف العامل');
         }
+    };
+
+    const handleExportCSV = () => {
+        const headers = ["الرقم", "الاسم", "القطاع", "أيام عادية", "إضافي عادي", "إضافي عطلة", "الإجمالي"];
+        const rows = workers.map(worker => {
+            const record = getWorkerAttendance(worker.id, month, year);
+            return [
+                worker.id,
+                worker.name,
+                worker.areaId,
+                record ? record.normalDays : 0,
+                record ? record.overtimeNormalDays : 0,
+                record ? record.overtimeHolidayDays : 0,
+                record ? record.totalCalculatedDays : 0
+            ];
+        });
+
+        const csvContent = "\ufeff" + [headers, ...rows].map(e => e.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `attendance_report_${month}_${year}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     // Show loading state
@@ -210,15 +248,27 @@ export function HRView() {
                                 <label className="text-xs font-bold text-gray-500">الاسم</label>
                                 <Input
                                     value={editingItem.data.name}
-                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
+                                    onChange={e => {
+                                        if (editingItem.type === 'worker') {
+                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } });
+                                        } else if (editingItem.type === 'supervisor') {
+                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } });
+                                        }
+                                    }}
                                     required
                                 />
                             </div>
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-gray-500">المنطقة / القطاع</label>
                                 <Input
-                                    value={editingItem.data.areaId}
-                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } })}
+                                    value={editingItem.data.areaId || ''}
+                                    onChange={e => {
+                                        if (editingItem.type === 'worker') {
+                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } });
+                                        } else if (editingItem.type === 'supervisor') {
+                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } });
+                                        }
+                                    }}
                                     required
                                 />
                             </div>
@@ -229,8 +279,12 @@ export function HRView() {
                                         <Input
                                             type="number"
                                             step="0.01"
-                                            value={editingItem.data.dayValue}
-                                            onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, dayValue: parseFloat(e.target.value) } })}
+                                            value={editingItem.type === 'worker' ? editingItem.data.dayValue : 0}
+                                            onChange={e => {
+                                                if (editingItem.type === 'worker') {
+                                                    setEditingItem({ ...editingItem, data: { ...editingItem.data, dayValue: parseFloat(e.target.value) } });
+                                                }
+                                            }}
                                             required
                                         />
                                     </div>
@@ -239,8 +293,12 @@ export function HRView() {
                                         <Input
                                             type="number"
                                             step="0.01"
-                                            value={editingItem.data.baseSalary}
-                                            onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, baseSalary: parseFloat(e.target.value) } })}
+                                            value={editingItem.type === 'worker' ? editingItem.data.baseSalary : 0}
+                                            onChange={e => {
+                                                if (editingItem.type === 'worker') {
+                                                    setEditingItem({ ...editingItem, data: { ...editingItem.data, baseSalary: parseFloat(e.target.value) } });
+                                                }
+                                            }}
                                             required
                                         />
                                     </div>
@@ -251,8 +309,12 @@ export function HRView() {
                                     <div className="space-y-1">
                                         <label className="text-xs font-bold text-gray-500">اسم المستخدم (للتسجيل)</label>
                                         <Input
-                                            value={editingItem.data.username}
-                                            onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, username: e.target.value } })}
+                                            value={editingItem.type === 'supervisor' ? (editingItem.data.username || '') : ''}
+                                            onChange={e => {
+                                                if (editingItem.type === 'supervisor') {
+                                                    setEditingItem({ ...editingItem, data: { ...editingItem.data, username: e.target.value } });
+                                                }
+                                            }}
                                             readOnly={editingItem.data.id !== 'NEW'}
                                             className={editingItem.data.id !== 'NEW' ? "bg-gray-50" : ""}
                                             placeholder="مثلاً: ahmed.ali"
@@ -264,8 +326,12 @@ export function HRView() {
                                             <label className="text-xs font-bold text-gray-500">كلمة المرور</label>
                                             <Input
                                                 type="password"
-                                                value={editingItem.data.password || ""}
-                                                onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, password: e.target.value } })}
+                                                value={editingItem.type === 'supervisor' ? (editingItem.data.password || '') : ''}
+                                                onChange={e => {
+                                                    if (editingItem.type === 'supervisor') {
+                                                        setEditingItem({ ...editingItem, data: { ...editingItem.data, password: e.target.value } });
+                                                    }
+                                                }}
                                                 required
                                             />
                                         </div>
@@ -304,8 +370,12 @@ export function HRView() {
                         <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                     </div>
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>سجل الحضور - {month} / {year}</CardTitle>
+                            <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-2">
+                                <Download className="h-4 w-4" />
+                                تصدير CSV
+                            </Button>
                         </CardHeader>
                         <CardContent className="overflow-x-auto p-0">
                             <table className="w-full text-sm text-right">

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useAttendance } from '@/context/AttendanceContext';
+import { useAttendance, User, Worker, UserRole } from '@/context/AttendanceContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,21 +30,25 @@ export const AdminView = () => {
     const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'workers' | 'logs'>('overview');
 
     // Management states
-    const [editingItem, setEditingItem] = useState<{ type: 'worker' | 'user', data: any } | null>(null);
+    const [editingItem, setEditingItem] = useState<{ type: 'worker', data: Worker | (Partial<Worker> & { id: 'NEW' }) } | { type: 'user', data: User | (Partial<User> & { id: 'NEW' }) } | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSaveWorker = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingItem) return;
+        if (!editingItem || editingItem.type !== 'worker') return;
         setIsSaving(true);
         try {
-            if (editingItem.data.id && editingItem.data.id !== 'NEW') {
-                await updateWorker(editingItem.data.id, editingItem.data);
+            if (editingItem.data.id !== 'NEW') {
+                await updateWorker(editingItem.data.id, editingItem.data as Partial<Worker>);
             } else {
-                await addWorker(editingItem.data);
+                // For NEW worker, editingItem.data is Partial<Worker> & { id: 'NEW' }
+                // addWorker takes Omit<Worker, "id">
+                const { id, ...workerWithoutId } = editingItem.data;
+                await addWorker(workerWithoutId as Omit<Worker, "id">);
             }
             setEditingItem(null);
         } catch (err) {
+            console.error(err);
             alert('فشل حفظ البيانات');
         } finally {
             setIsSaving(false);
@@ -53,12 +57,15 @@ export const AdminView = () => {
 
     const handleSaveUser = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingItem) return;
+        if (!editingItem || editingItem.type !== 'user') return;
         setIsSaving(true);
         try {
-            await updateUser(editingItem.data.id, editingItem.data);
+            if (editingItem.data.id !== 'NEW') {
+                await updateUser(editingItem.data.id, editingItem.data as Partial<User>);
+            }
             setEditingItem(null);
         } catch (err) {
+            console.error(err);
             alert('فشل حفظ البيانات');
         } finally {
             setIsSaving(false);
@@ -70,6 +77,7 @@ export const AdminView = () => {
         try {
             await deleteWorker(id);
         } catch (err) {
+            console.error(err);
             alert('فشل حذف العامل');
         }
     };
@@ -145,7 +153,13 @@ export const AdminView = () => {
                                 <label className="text-xs font-bold text-gray-500">الاسم</label>
                                 <Input
                                     value={editingItem.data.name}
-                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
+                                    onChange={e => {
+                                        if (editingItem.type === 'worker') {
+                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } });
+                                        } else if (editingItem.type === 'user') {
+                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } });
+                                        }
+                                    }}
                                     required
                                 />
                             </div>
@@ -153,7 +167,13 @@ export const AdminView = () => {
                                 <label className="text-xs font-bold text-gray-500">المنطقة / القطاع</label>
                                 <Input
                                     value={editingItem.data.areaId || ''}
-                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } })}
+                                    onChange={e => {
+                                        if (editingItem.type === 'worker') {
+                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } });
+                                        } else if (editingItem.type === 'user') {
+                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } });
+                                        }
+                                    }}
                                 />
                             </div>
                             {editingItem.type === 'worker' && (
@@ -163,8 +183,12 @@ export const AdminView = () => {
                                         <Input
                                             type="number"
                                             step="0.01"
-                                            value={editingItem.data.dayValue}
-                                            onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, dayValue: parseFloat(e.target.value) } })}
+                                            value={editingItem.type === 'worker' ? editingItem.data.dayValue : 0}
+                                            onChange={e => {
+                                                if (editingItem.type === 'worker') {
+                                                    setEditingItem({ ...editingItem, data: { ...editingItem.data, dayValue: parseFloat(e.target.value) } });
+                                                }
+                                            }}
                                             required
                                         />
                                     </div>
@@ -173,8 +197,12 @@ export const AdminView = () => {
                                         <Input
                                             type="number"
                                             step="0.01"
-                                            value={editingItem.data.baseSalary}
-                                            onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, baseSalary: parseFloat(e.target.value) } })}
+                                            value={editingItem.type === 'worker' ? editingItem.data.baseSalary : 0}
+                                            onChange={e => {
+                                                if (editingItem.type === 'worker') {
+                                                    setEditingItem({ ...editingItem, data: { ...editingItem.data, baseSalary: parseFloat(e.target.value) } });
+                                                }
+                                            }}
                                             required
                                         />
                                     </div>
@@ -185,8 +213,12 @@ export const AdminView = () => {
                                     <label className="text-xs font-bold text-gray-500">الدور</label>
                                     <select
                                         className="w-full p-2 border rounded-md text-sm"
-                                        value={editingItem.data.role}
-                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value } })}
+                                        value={editingItem.data.id !== 'NEW' ? (editingItem.data as User).role : 'SUPERVISOR'}
+                                        onChange={e => {
+                                            if (editingItem.type === 'user') {
+                                                setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value as UserRole } });
+                                            }
+                                        }}
                                     >
                                         <option value="SUPERVISOR">SUPERVISOR</option>
                                         <option value="HR">HR</option>
