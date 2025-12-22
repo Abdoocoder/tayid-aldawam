@@ -97,7 +97,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 password,
             });
 
-            if (error) throw error;
+            if (error) {
+                if (error.message.includes('Email not confirmed')) {
+                    throw new Error('يرجى تأكيد البريد الإلكتروني أو طلب تعطيل تأكيد البريد من المسؤول');
+                }
+                throw error;
+            }
 
             // User will be loaded via onAuthStateChange
         } catch (err: any) {
@@ -142,26 +147,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
 
             console.log('AuthContext: Signup successful, user ID:', data.user?.id);
-            console.log('AuthContext: User identities:', data.user?.identities);
 
             if (data.user && data.user.identities && data.user.identities.length === 0) {
-                console.warn('AuthContext: User created but identities are empty. THIS MEANS THE USER ALREADY EXISTS in auth.users but re-signup was attempted.');
+                console.warn('AuthContext: User created but identities are empty. This means the user might already exist in auth.users.');
             }
 
-            // Immediately check if the profile exists in public.users
+            // --- Robustness Fallback: Manually ensure profile exists in public.users ---
             if (data.user) {
-                const { data: profile, error: profileError } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('auth_user_id', data.user.id)
-                    .maybeSingle();
+                console.log('AuthContext: Ensuring public profile exists...');
+                const { error: profileError } = await supabase.from('users').upsert({
+                    auth_user_id: data.user.id,
+                    username: finalEmail, // Using generated email as username
+                    name: name.trim(),
+                    role: role,
+                    area_id: areaId?.trim(),
+                    is_active: true
+                }, { onConflict: 'auth_user_id' });
 
                 if (profileError) {
-                    console.error('AuthContext: Error checking for public profile:', profileError);
-                } else if (profile) {
-                    console.log('AuthContext: Public profile found immediately after signup:', profile);
+                    console.error('AuthContext: Manual profile creation/update failed:', profileError);
                 } else {
-                    console.warn('AuthContext: Public profile NOT FOUND in public.users immediately after signup. The trigger might have failed or not fired.');
+                    console.log('AuthContext: Public profile ensured successfully.');
                 }
             }
 
