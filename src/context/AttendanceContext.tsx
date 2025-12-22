@@ -189,9 +189,12 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
     const loadUsers = async () => {
         try {
-            console.log('AttendanceContext: Fetching users from API...');
+            const { count: totalCount } = await supabase.from('users').select('*', { count: 'exact', head: true });
+            console.log('AttendanceContext: Total users count in DB (all):', totalCount);
+
             const dbUsers = await usersAPI.getAll();
             console.log('AttendanceContext: Users API returned:', dbUsers.length, 'users');
+            console.log('AttendanceContext: Users list:', dbUsers.map(u => ({ username: u.username, role: u.role, is_active: u.is_active })));
             const formattedUsers: User[] = dbUsers.map(u => ({
                 id: u.id,
                 username: u.username,

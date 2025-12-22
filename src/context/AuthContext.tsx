@@ -115,10 +115,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setIsLoading(true);
 
             // Ensure email format is valid for Supabase by using a standardized domain
-            let prefix = email.trim().toLowerCase().split('@')[0].replace(/[^a-z0-9]/g, '');
-            const finalEmail = `${prefix}.sv@example.com`;
+            let finalEmail = email.trim().toLowerCase();
+            if (!finalEmail.includes('@')) {
+                // It's a username/prefix, generate a standardized email
+                let prefix = finalEmail.replace(/[^a-z0-9]/g, '');
+                finalEmail = `${prefix}.sv@tayid-attendance.com`;
+            }
 
-            console.log(`AuthContext: Attempting signup with generated email: [${finalEmail}]`);
+            console.log(`AuthContext: Attempting signup with email: [${finalEmail}]`);
 
             const { data, error } = await supabase.auth.signUp({
                 email: finalEmail,
@@ -132,7 +136,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 },
             });
 
-            if (error) throw error;
+            if (error) {
+                console.error('AuthContext: Signup error:', error);
+                throw error;
+            }
+
+            console.log('AuthContext: Signup successful, result data:', data);
+
+            if (data.user && data.user.identities && data.user.identities.length === 0) {
+                console.warn('AuthContext: User created but identities are empty. This usually means the email already exists.');
+            }
 
             // Note: User might need to verify email depending on Supabase settings
         } catch (err: any) {
