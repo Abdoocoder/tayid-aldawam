@@ -7,6 +7,7 @@ import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { ArrowRight, Save, Calculator } from "lucide-react";
 
 export default function EntryPage() {
@@ -63,6 +64,10 @@ export default function EntryPage() {
         router.push("/dashboard"); // Return to list
     };
 
+    // Calculate days in current month for the dropdown
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const dayOptions = Array.from({ length: daysInMonth + 1 }, (_, i) => i);
+
     return (
         <div className="min-h-screen bg-gray-50 pb-10">
             <Header />
@@ -83,41 +88,44 @@ export default function EntryPage() {
                             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">أيام العمل العادية</label>
-                                    <Input
-                                        type="number"
-                                        min={0}
-                                        max={31}
+                                    <Select
                                         value={normalDays}
                                         onChange={(e) => setNormalDays(Number(e.target.value))}
                                         className="font-mono text-lg"
-                                    />
+                                    >
+                                        {dayOptions.map(day => (
+                                            <option key={day} value={day}>{day}</option>
+                                        ))}
+                                    </Select>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">إضافي (أيام عادية)</label>
                                     <div className="relative">
-                                        <Input
-                                            type="number"
-                                            min={0}
-                                            max={31}
+                                        <Select
                                             value={otNormal}
                                             onChange={(e) => setOtNormal(Number(e.target.value))}
-                                            className="font-mono text-lg pl-12"
-                                        />
-                                        <span className="absolute left-3 top-2.5 text-xs bg-gray-100 px-1 rounded text-gray-500">x 0.5</span>
+                                            className="font-mono text-lg"
+                                        >
+                                            {dayOptions.map(day => (
+                                                <option key={day} value={day}>{day}</option>
+                                            ))}
+                                        </Select>
+                                        <span className="absolute left-10 top-2.5 text-xs bg-gray-100 px-1 rounded text-gray-500 z-10">x 0.5</span>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">إضافي (عطل/جمع)</label>
                                     <div className="relative">
-                                        <Input
-                                            type="number"
-                                            min={0}
-                                            max={10}
+                                        <Select
                                             value={otHoliday}
                                             onChange={(e) => setOtHoliday(Number(e.target.value))}
-                                            className="font-mono text-lg pl-12"
-                                        />
-                                        <span className="absolute left-3 top-2.5 text-xs bg-gray-100 px-1 rounded text-gray-500">x 1.0</span>
+                                            className="font-mono text-lg"
+                                        >
+                                            {dayOptions.map(day => (
+                                                <option key={day} value={day}>{day}</option>
+                                            ))}
+                                        </Select>
+                                        <span className="absolute left-10 top-2.5 text-xs bg-gray-100 px-1 rounded text-gray-500 z-10">x 1.0</span>
                                     </div>
                                 </div>
                             </div>

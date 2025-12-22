@@ -17,6 +17,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../ui
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { Select } from "../ui/select";
 import {
     FileText,
     Users,
@@ -286,8 +287,7 @@ export function HRView() {
                             </div>
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-gray-500">المنطقة / القطاع</label>
-                                <select
-                                    className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600"
+                                <Select
                                     value={editingItem.data.areaId || ''}
                                     onChange={e => {
                                         if (editingItem.type === 'worker') {
@@ -303,7 +303,7 @@ export function HRView() {
                                         <option key={a.id} value={a.id}>{a.name}</option>
                                     ))}
                                     {editingItem.type === 'supervisor' && <option value="ALL">كل المناطق (ADMIN)</option>}
-                                </select>
+                                </Select>
                             </div>
                             {editingItem.type === 'worker' && (
                                 <>
