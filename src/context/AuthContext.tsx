@@ -141,10 +141,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 throw error;
             }
 
-            console.log('AuthContext: Signup successful, result data:', data);
+            console.log('AuthContext: Signup successful, user ID:', data.user?.id);
+            console.log('AuthContext: User identities:', data.user?.identities);
 
             if (data.user && data.user.identities && data.user.identities.length === 0) {
-                console.warn('AuthContext: User created but identities are empty. This usually means the email already exists.');
+                console.warn('AuthContext: User created but identities are empty. THIS MEANS THE USER ALREADY EXISTS in auth.users but re-signup was attempted.');
+            }
+
+            // Immediately check if the profile exists in public.users
+            if (data.user) {
+                const { data: profile, error: profileError } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('auth_user_id', data.user.id)
+                    .maybeSingle();
+
+                if (profileError) {
+                    console.error('AuthContext: Error checking for public profile:', profileError);
+                } else if (profile) {
+                    console.log('AuthContext: Public profile found immediately after signup:', profile);
+                } else {
+                    console.warn('AuthContext: Public profile NOT FOUND in public.users immediately after signup. The trigger might have failed or not fired.');
+                }
             }
 
             // Note: User might need to verify email depending on Supabase settings
