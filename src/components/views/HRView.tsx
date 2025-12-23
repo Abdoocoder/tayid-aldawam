@@ -65,7 +65,7 @@ export function HRView() {
     // Actually, searching is implemented in sub-sections like WorkerSection, which takes searchTerm.
     const [searchTerm, setSearchTerm] = useState('');
     const [isSaving, setIsSaving] = useState(false);
-    const [editingItem, setEditingItem] = useState<{ type: 'worker', data: Worker | (Partial<Worker> & { id: 'NEW' }) } | { type: 'supervisor', data: SupervisorEditingData } | null>(null);
+    const [editingItem, setEditingItem] = useState<{ type: 'worker', data: (Worker | (Partial<Worker> & { id: 'NEW' })) & { id_entered?: string } } | { type: 'supervisor', data: SupervisorEditingData } | null>(null);
     const [selectedAreaIds, setSelectedAreaIds] = useState<string[]>([]);
     const [areaForm, setAreaForm] = useState<{ id?: string, name: string }>({ name: '' });
 
@@ -118,9 +118,27 @@ export function HRView() {
             if (editingItem.data.id !== 'NEW') {
                 await updateWorker(editingItem.data.id, editingItem.data as Partial<Worker>);
             } else {
-                const workerWithoutId = { ...editingItem.data };
-                delete (workerWithoutId as { id?: string }).id;
-                await addWorker(workerWithoutId as Omit<Worker, "id">);
+                const workerData = editingItem.data as any;
+                if (!workerData.id_entered || workerData.id_entered.trim() === '') {
+                    showToast('خطأ في البيانات', 'يجب إدخال الرقم الوظيفي للبلدية', 'warning');
+                    setIsSaving(false);
+                    return;
+                }
+
+                // Check if ID already exists
+                if (workers.some(w => w.id === workerData.id_entered.trim())) {
+                    showToast('خطأ في البيانات', 'هذا الرقم الوظيفي مسجل مسبقاً لعامل آخر', 'warning');
+                    setIsSaving(false);
+                    return;
+                }
+
+                await addWorker({
+                    id: workerData.id_entered.trim(),
+                    name: workerData.name,
+                    areaId: workerData.areaId,
+                    dayValue: workerData.dayValue,
+                    baseSalary: workerData.baseSalary,
+                });
             }
             setEditingItem(null);
             showToast('تم حفظ بيانات العامل بنجاح');
@@ -420,6 +438,23 @@ export function HRView() {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={editingItem.type === 'worker' ? handleSaveWorker : handleSaveSupervisor} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {editingItem.type === 'worker' && (
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-gray-500">الرقم الوظيفي (البلدية)</label>
+                                    <Input
+                                        value={editingItem.data.id === 'NEW' ? ((editingItem.data as any).id_entered || '') : editingItem.data.id}
+                                        onChange={e => {
+                                            if (editingItem.data.id === 'NEW') {
+                                                setEditingItem({ ...editingItem, data: { ...editingItem.data, id_entered: e.target.value } });
+                                            }
+                                        }}
+                                        readOnly={editingItem.data.id !== 'NEW'}
+                                        placeholder="الرقم في نظام البلدية"
+                                        className={editingItem.data.id !== 'NEW' ? "bg-gray-100 font-mono" : "font-mono border-purple-200 focus:border-purple-500"}
+                                        required
+                                    />
+                                </div>
+                            )}
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-gray-500">الاسم</label>
                                 <Input

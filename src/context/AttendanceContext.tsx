@@ -55,7 +55,7 @@ interface AttendanceContextType {
     auditLogs: AuditLog[];
     getWorkerAttendance: (workerId: string, month: number, year: number) => AttendanceRecord | undefined;
     saveAttendance: (record: Omit<AttendanceRecord, "id" | "updatedAt" | "totalCalculatedDays">) => Promise<void>;
-    addWorker: (worker: Omit<Worker, "id">) => Promise<void>;
+    addWorker: (worker: Worker) => Promise<void>;
     updateWorker: (workerId: string, updates: Partial<Worker>) => Promise<void>;
     deleteWorker: (workerId: string) => Promise<void>;
     updateUser: (userId: string, updates: Partial<User>, areaIds?: string[]) => Promise<void>;
@@ -249,10 +249,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     }, []);
 
-    const addWorker = useCallback(async (worker: Omit<Worker, "id">) => {
+    const addWorker = useCallback(async (worker: Worker) => {
         try {
-            const id = Math.floor(1000 + Math.random() * 9000).toString();
-            const dbWorker = workerToDb({ ...worker, id });
+            const dbWorker = workerToDb(worker);
             await workersAPI.create(dbWorker);
         } catch (err) {
             console.error('Failed to add worker:', err);

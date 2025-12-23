@@ -33,7 +33,7 @@ export const AdminView = () => {
 
     // Management states
     const [searchTerm, setSearchTerm] = useState("");
-    const [editingItem, setEditingItem] = useState<{ type: 'worker', data: Worker | (Partial<Worker> & { id: 'NEW' }) } | { type: 'user', data: User | (Partial<User> & { id: 'NEW' }) } | null>(null);
+    const [editingItem, setEditingItem] = useState<{ type: 'worker', data: (Worker | (Partial<Worker> & { id: 'NEW' })) & { id_entered?: string } } | { type: 'user', data: User | (Partial<User> & { id: 'NEW' }) } | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [selectedAreaIds, setSelectedAreaIds] = useState<string[]>([]);
 
@@ -62,9 +62,27 @@ export const AdminView = () => {
                 await updateWorker(editingItem.data.id, editingItem.data as Partial<Worker>);
                 showToast('تم تحديث بيانات العامل بنجاح');
             } else {
-                const workerWithoutId = { ...editingItem.data };
-                delete (workerWithoutId as { id?: string }).id;
-                await addWorker(workerWithoutId as Omit<Worker, "id">);
+                const workerData = editingItem.data as any;
+                if (!workerData.id_entered || workerData.id_entered.trim() === '') {
+                    showToast('خطأ في البيانات', 'يجب إدخال الرقم الوظيفي للبلدية', 'warning');
+                    setIsSaving(false);
+                    return;
+                }
+
+                // Check if ID already exists
+                if (workers.some(w => w.id === workerData.id_entered.trim())) {
+                    showToast('خطأ في البيانات', 'هذا الرقم الوظيفي مسجل مسبقاً لعامل آخر', 'warning');
+                    setIsSaving(false);
+                    return;
+                }
+
+                await addWorker({
+                    id: workerData.id_entered.trim(),
+                    name: workerData.name,
+                    areaId: workerData.areaId,
+                    dayValue: workerData.dayValue,
+                    baseSalary: workerData.baseSalary || 0,
+                });
                 showToast('تم إضافة العامل بنجاح');
             }
             setEditingItem(null);
@@ -167,6 +185,23 @@ export const AdminView = () => {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={editingItem.type === 'worker' ? handleSaveWorker : handleSaveUser} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {editingItem.type === 'worker' && (
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-gray-500">الرقم الوظيفي (البلدية)</label>
+                                    <Input
+                                        className="bg-gray-50/50 border-gray-200 font-mono"
+                                        value={editingItem.data.id === 'NEW' ? ((editingItem.data as any).id_entered || '') : editingItem.data.id}
+                                        onChange={e => {
+                                            if (editingItem.data.id === 'NEW') {
+                                                setEditingItem({ ...editingItem, data: { ...editingItem.data, id_entered: e.target.value } });
+                                            }
+                                        }}
+                                        readOnly={editingItem.data.id !== 'NEW'}
+                                        placeholder="الرقم في نظام البلدية"
+                                        required
+                                    />
+                                </div>
+                            )}
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-gray-500">الاسم</label>
                                 <Input
