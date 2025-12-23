@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { supabase, workersAPI, attendanceAPI, usersAPI, areasAPI, type Area } from "@/lib/supabase";
+import { supabase, workersAPI, attendanceAPI, usersAPI, areasAPI, type Area, type AuditLog } from "@/lib/supabase";
 import { workerFromDb, workerToDb, attendanceFromDb, attendanceToDb } from "@/lib/data-transformer";
 import { useAuth } from "@/context/AuthContext";
 
@@ -51,7 +51,7 @@ interface AttendanceContextType {
     error: string | null;
     users: User[];
     areas: Area[];
-    auditLogs: any[];
+    auditLogs: AuditLog[];
     getWorkerAttendance: (workerId: string, month: number, year: number) => AttendanceRecord | undefined;
     saveAttendance: (record: Omit<AttendanceRecord, "id" | "updatedAt" | "totalCalculatedDays">) => Promise<void>;
     addWorker: (worker: Omit<Worker, "id">) => Promise<void>;
@@ -74,7 +74,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [areas, setAreas] = useState<Area[]>([]);
-    const [auditLogs, setAuditLogs] = useState<any[]>([]);
+    const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
