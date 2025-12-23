@@ -28,6 +28,11 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 
+interface WorkerEditingData extends Partial<Worker> {
+    id: string; // 'NEW' or existing ID
+    id_entered?: string;
+}
+
 interface SupervisorEditingData extends Partial<User> {
     id: string;
     username?: string;
@@ -36,6 +41,10 @@ interface SupervisorEditingData extends Partial<User> {
     role?: UserRole;
     areaId?: string;
 }
+
+type EditingItem =
+    | { type: 'worker', data: WorkerEditingData }
+    | { type: 'supervisor', data: SupervisorEditingData };
 
 export function HRView() {
     const {
@@ -61,11 +70,9 @@ export function HRView() {
 
     // UI State
     const [activeTab, setActiveTab] = useState<'reports' | 'supervisors' | 'workers' | 'areas'>('reports');
-    // searchTerm is used by sub-sections, so we keep the state but remove unused setter if not needed.
-    // Actually, searching is implemented in sub-sections like WorkerSection, which takes searchTerm.
     const [searchTerm, setSearchTerm] = useState('');
     const [isSaving, setIsSaving] = useState(false);
-    const [editingItem, setEditingItem] = useState<{ type: 'worker', data: (Worker | (Partial<Worker> & { id: 'NEW' })) & { id_entered?: string } } | { type: 'supervisor', data: SupervisorEditingData } | null>(null);
+    const [editingItem, setEditingItem] = useState<EditingItem | null>(null);
     const [selectedAreaIds, setSelectedAreaIds] = useState<string[]>([]);
     const [areaForm, setAreaForm] = useState<{ id?: string, name: string }>({ name: '' });
 
@@ -118,26 +125,27 @@ export function HRView() {
             if (editingItem.data.id !== 'NEW') {
                 await updateWorker(editingItem.data.id, editingItem.data as Partial<Worker>);
             } else {
-                const workerData = editingItem.data as any;
-                if (!workerData.id_entered || workerData.id_entered.trim() === '') {
+                const workerData = editingItem.data as WorkerEditingData;
+                const finalId = (workerData.id_entered || '').trim();
+                if (!finalId) {
                     showToast('خطأ في البيانات', 'يجب إدخال الرقم الوظيفي للبلدية', 'warning');
                     setIsSaving(false);
                     return;
                 }
 
                 // Check if ID already exists
-                if (workers.some(w => w.id === workerData.id_entered.trim())) {
+                if (workers.some(w => w.id === finalId)) {
                     showToast('خطأ في البيانات', 'هذا الرقم الوظيفي مسجل مسبقاً لعامل آخر', 'warning');
                     setIsSaving(false);
                     return;
                 }
 
                 await addWorker({
-                    id: workerData.id_entered.trim(),
-                    name: workerData.name,
-                    areaId: workerData.areaId,
-                    dayValue: workerData.dayValue,
-                    baseSalary: workerData.baseSalary,
+                    id: finalId,
+                    name: workerData.name || '',
+                    areaId: workerData.areaId || '',
+                    dayValue: workerData.dayValue || 0,
+                    baseSalary: workerData.baseSalary || 0,
                 });
             }
             setEditingItem(null);
@@ -442,7 +450,7 @@ export function HRView() {
                                 <div className="space-y-1">
                                     <label className="text-xs font-bold text-gray-500">الرقم الوظيفي (البلدية)</label>
                                     <Input
-                                        value={editingItem.data.id === 'NEW' ? ((editingItem.data as any).id_entered || '') : editingItem.data.id}
+                                        value={editingItem.data.id === 'NEW' ? ((editingItem.data as WorkerEditingData).id_entered || '') : editingItem.data.id}
                                         onChange={e => {
                                             if (editingItem.data.id === 'NEW') {
                                                 setEditingItem({ ...editingItem, data: { ...editingItem.data, id_entered: e.target.value } });

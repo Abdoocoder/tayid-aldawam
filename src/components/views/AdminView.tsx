@@ -26,6 +26,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
+interface WorkerEditingData extends Partial<Worker> {
+    id: string;
+    id_entered?: string;
+}
+
 export const AdminView = () => {
     const { workers, attendanceRecords, users, auditLogs, areas, isLoading, addWorker, updateWorker, deleteWorker, updateUser } = useAttendance();
     const { showToast } = useToast();
@@ -33,7 +38,7 @@ export const AdminView = () => {
 
     // Management states
     const [searchTerm, setSearchTerm] = useState("");
-    const [editingItem, setEditingItem] = useState<{ type: 'worker', data: (Worker | (Partial<Worker> & { id: 'NEW' })) & { id_entered?: string } } | { type: 'user', data: User | (Partial<User> & { id: 'NEW' }) } | null>(null);
+    const [editingItem, setEditingItem] = useState<{ type: 'worker', data: WorkerEditingData } | { type: 'user', data: User | (Partial<User> & { id: 'NEW' }) } | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [selectedAreaIds, setSelectedAreaIds] = useState<string[]>([]);
 
@@ -62,25 +67,26 @@ export const AdminView = () => {
                 await updateWorker(editingItem.data.id, editingItem.data as Partial<Worker>);
                 showToast('تم تحديث بيانات العامل بنجاح');
             } else {
-                const workerData = editingItem.data as any;
-                if (!workerData.id_entered || workerData.id_entered.trim() === '') {
+                const workerData = editingItem.data as WorkerEditingData;
+                const finalId = (workerData.id_entered || '').trim();
+                if (!finalId) {
                     showToast('خطأ في البيانات', 'يجب إدخال الرقم الوظيفي للبلدية', 'warning');
                     setIsSaving(false);
                     return;
                 }
 
                 // Check if ID already exists
-                if (workers.some(w => w.id === workerData.id_entered.trim())) {
+                if (workers.some(w => w.id === finalId)) {
                     showToast('خطأ في البيانات', 'هذا الرقم الوظيفي مسجل مسبقاً لعامل آخر', 'warning');
                     setIsSaving(false);
                     return;
                 }
 
                 await addWorker({
-                    id: workerData.id_entered.trim(),
-                    name: workerData.name,
-                    areaId: workerData.areaId,
-                    dayValue: workerData.dayValue,
+                    id: finalId,
+                    name: workerData.name || '',
+                    areaId: workerData.areaId || '',
+                    dayValue: workerData.dayValue || 0,
                     baseSalary: workerData.baseSalary || 0,
                 });
                 showToast('تم إضافة العامل بنجاح');
@@ -190,7 +196,7 @@ export const AdminView = () => {
                                     <label className="text-xs font-bold text-gray-500">الرقم الوظيفي (البلدية)</label>
                                     <Input
                                         className="bg-gray-50/50 border-gray-200 font-mono"
-                                        value={editingItem.data.id === 'NEW' ? ((editingItem.data as any).id_entered || '') : editingItem.data.id}
+                                        value={editingItem.data.id === 'NEW' ? ((editingItem.data as WorkerEditingData).id_entered || '') : editingItem.data.id}
                                         onChange={e => {
                                             if (editingItem.data.id === 'NEW') {
                                                 setEditingItem({ ...editingItem, data: { ...editingItem.data, id_entered: e.target.value } });
