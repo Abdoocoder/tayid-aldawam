@@ -44,6 +44,7 @@ export function attendanceToDb(
         normal_days: record.normalDays,
         overtime_normal_days: record.overtimeNormalDays,
         overtime_holiday_days: record.overtimeHolidayDays,
+        overtime_eid_days: record.overtimeEidDays,
     };
 }
 
@@ -60,6 +61,7 @@ export function attendanceFromDb(dbRecord: DbAttendanceRecord): FrontendAttendan
         normalDays: dbRecord.normal_days,
         overtimeNormalDays: dbRecord.overtime_normal_days,
         overtimeHolidayDays: dbRecord.overtime_holiday_days,
+        overtimeEidDays: dbRecord.overtime_eid_days || 0,
         totalCalculatedDays: dbRecord.total_calculated_days,
         updatedAt: dbRecord.updated_at || new Date().toISOString(),
     };

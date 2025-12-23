@@ -26,6 +26,7 @@ export default function EntryPage() {
     const [normalDays, setNormalDays] = useState(0);
     const [otNormal, setOtNormal] = useState(0);
     const [otHoliday, setOtHoliday] = useState(0);
+    const [otEid, setOtEid] = useState(0);
 
     // Load existing data
     useEffect(() => {
@@ -35,22 +36,21 @@ export default function EntryPage() {
                 setNormalDays(record.normalDays);
                 setOtNormal(record.overtimeNormalDays);
                 setOtHoliday(record.overtimeHolidayDays);
+                setOtEid(record.overtimeEidDays || 0);
             } else {
-                // Default: Assume full attendance? Or 0?
-                // SRS says "Entry". Usually better to start 0 or maybe auto-fill normal days?
-                // Let's start 0 for safety.
                 setNormalDays(0);
                 setOtNormal(0);
                 setOtHoliday(0);
+                setOtEid(0);
             }
         }
-    }, [worker, month, year, getWorkerAttendance]); // Depend on getWorkerAttendance stable ref
+    }, [worker, month, year, getWorkerAttendance]);
 
     if (!worker || !month || !year) {
         return <div className="p-10 text-center">بيانات غير صحيحة</div>;
     }
 
-    const calculatedTotal = normalDays + (otNormal * 0.5) + (otHoliday * 1.0);
+    const calculatedTotal = normalDays + (otNormal * 0.5) + (otHoliday * 1.0) + (otEid * 1.0);
 
     const handleSave = () => {
         saveAttendance({
@@ -59,9 +59,10 @@ export default function EntryPage() {
             year,
             normalDays,
             overtimeNormalDays: otNormal,
-            overtimeHolidayDays: otHoliday
+            overtimeHolidayDays: otHoliday,
+            overtimeEidDays: otEid
         });
-        router.push("/dashboard"); // Return to list
+        router.push("/dashboard");
     };
 
     // Calculate days in current month for the limit
@@ -110,7 +111,7 @@ export default function EntryPage() {
                             <CardContent className="p-8 space-y-10">
                                 {/* Entry Grid */}
                                 <div className="space-y-8">
-                                    {/* Normal Days Stepper */}
+                                    {/* Normal Days Input */}
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 bg-gray-50 rounded-2xl border border-gray-100 group hover:border-blue-100 transition-colors">
                                         <div className="flex items-center gap-4">
                                             <div className="bg-blue-100 p-3 rounded-xl text-blue-600 group-hover:scale-110 transition-transform">
@@ -121,20 +122,28 @@ export default function EntryPage() {
                                                 <p className="text-sm text-gray-500">عدد أيام الحضور الفعلي في الموقع</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
+                                        <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
                                             <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl" onClick={() => handleDecrement(setNormalDays, normalDays)}>
                                                 <Minus className="h-5 w-5" />
                                             </Button>
-                                            <div className="w-16 text-center">
-                                                <span className="text-2xl font-black text-gray-900 font-mono leading-none">{normalDays}</span>
-                                            </div>
+                                            <Input
+                                                type="number"
+                                                min={0}
+                                                max={daysInMonth}
+                                                value={normalDays}
+                                                onChange={(e) => {
+                                                    const val = parseInt(e.target.value) || 0;
+                                                    setNormalDays(Math.min(val, daysInMonth));
+                                                }}
+                                                className="w-16 h-10 text-center text-xl font-black border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+                                            />
                                             <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => handleIncrement(setNormalDays, normalDays, daysInMonth)}>
                                                 <Plus className="h-5 w-5" />
                                             </Button>
                                         </div>
                                     </div>
 
-                                    {/* OT Normal Stepper */}
+                                    {/* OT Normal Input */}
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 bg-gray-50 rounded-2xl border border-gray-100 group hover:border-orange-100 transition-colors">
                                         <div className="flex items-center gap-4">
                                             <div className="bg-orange-100 p-3 rounded-xl text-orange-600 group-hover:scale-110 transition-transform">
@@ -145,20 +154,25 @@ export default function EntryPage() {
                                                 <p className="text-sm text-gray-500">ساعات إضافية محتسبة بنصف يوم (x0.5)</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
+                                        <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
                                             <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl" onClick={() => handleDecrement(setOtNormal, otNormal)}>
                                                 <Minus className="h-5 w-5" />
                                             </Button>
-                                            <div className="w-16 text-center">
-                                                <span className="text-2xl font-black text-gray-900 font-mono leading-none">{otNormal}</span>
-                                            </div>
+                                            <Input
+                                                type="number"
+                                                min={0}
+                                                max={31}
+                                                value={otNormal}
+                                                onChange={(e) => setOtNormal(parseInt(e.target.value) || 0)}
+                                                className="w-16 h-10 text-center text-xl font-black border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+                                            />
                                             <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => handleIncrement(setOtNormal, otNormal, 31)}>
                                                 <Plus className="h-5 w-5" />
                                             </Button>
                                         </div>
                                     </div>
 
-                                    {/* OT Holiday Stepper */}
+                                    {/* OT Holiday Input */}
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 bg-gray-50 rounded-2xl border border-gray-100 group hover:border-purple-100 transition-colors">
                                         <div className="flex items-center gap-4">
                                             <div className="bg-purple-100 p-3 rounded-xl text-purple-600 group-hover:scale-110 transition-transform">
@@ -169,14 +183,48 @@ export default function EntryPage() {
                                                 <p className="text-sm text-gray-500">ساعات إضافية محتسبة بيوم كامل (x1.0)</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
+                                        <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
                                             <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl" onClick={() => handleDecrement(setOtHoliday, otHoliday)}>
                                                 <Minus className="h-5 w-5" />
                                             </Button>
-                                            <div className="w-16 text-center">
-                                                <span className="text-2xl font-black text-gray-900 font-mono leading-none">{otHoliday}</span>
-                                            </div>
+                                            <Input
+                                                type="number"
+                                                min={0}
+                                                max={31}
+                                                value={otHoliday}
+                                                onChange={(e) => setOtHoliday(parseInt(e.target.value) || 0)}
+                                                className="w-16 h-10 text-center text-xl font-black border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+                                            />
                                             <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => handleIncrement(setOtHoliday, otHoliday, 31)}>
+                                                <Plus className="h-5 w-5" />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {/* OT Eid Input */}
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 bg-gray-50 rounded-2xl border border-gray-100 group hover:border-green-100 transition-colors">
+                                        <div className="flex items-center gap-4">
+                                            <div className="bg-green-100 p-3 rounded-xl text-green-600 group-hover:scale-110 transition-transform">
+                                                <Calendar className="h-6 w-6" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-gray-900 text-lg">أيام الأعياد</h3>
+                                                <p className="text-sm text-gray-500">أيام العطل الرسمية والأعياد (x1.0)</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
+                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl" onClick={() => handleDecrement(setOtEid, otEid)}>
+                                                <Minus className="h-5 w-5" />
+                                            </Button>
+                                            <Input
+                                                type="number"
+                                                min={0}
+                                                max={10}
+                                                value={otEid}
+                                                onChange={(e) => setOtEid(parseInt(e.target.value) || 0)}
+                                                className="w-16 h-10 text-center text-xl font-black border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+                                            />
+                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => handleIncrement(setOtEid, otEid, 10)}>
                                                 <Plus className="h-5 w-5" />
                                             </Button>
                                         </div>
@@ -221,9 +269,13 @@ export default function EntryPage() {
                                         <span className="text-gray-500">إضافي عادي (x0.5)</span>
                                         <span className="font-bold text-orange-600">+{otNormal * 0.5}</span>
                                     </div>
-                                    <div className="flex justify-between text-sm py-2">
+                                    <div className="flex justify-between text-sm py-2 border-b border-gray-50">
                                         <span className="text-gray-500">إضافي عطل (x1.0)</span>
                                         <span className="font-bold text-purple-600">+{otHoliday}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm py-2">
+                                        <span className="text-gray-500">أيام أعياد (x1.0)</span>
+                                        <span className="font-bold text-green-600">+{otEid}</span>
                                     </div>
                                 </div>
 

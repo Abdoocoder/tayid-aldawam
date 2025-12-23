@@ -35,6 +35,7 @@ export interface AttendanceRecord {
     normalDays: number;
     overtimeNormalDays: number; // 0.5 value
     overtimeHolidayDays: number; // 1.0 value
+    overtimeEidDays: number; // 1.0 value
     totalCalculatedDays: number;
     updatedAt: string;
 }

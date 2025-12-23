@@ -190,7 +190,7 @@ export function HRView() {
     };
 
     const handleExportCSV = () => {
-        const headers = ["الرقم", "الاسم", "القطاع", "أيام عادية", "إضافي عادي", "إضافي عطلة", "الإجمالي"];
+        const headers = ["الرقم", "الاسم", "القطاع", "أيام عادية", "إضافي عادي", "إضافي عطلة", "أيام الأعياد", "الإجمالي"];
         const rows = workers.map(worker => {
             const record = getWorkerAttendance(worker.id, month, year);
             const areaName = areas.find(a => a.id === worker.areaId)?.name || worker.areaId;
@@ -201,6 +201,7 @@ export function HRView() {
                 record ? record.normalDays : 0,
                 record ? record.overtimeNormalDays : 0,
                 record ? record.overtimeHolidayDays : 0,
+                record ? (record.overtimeEidDays || 0) : 0,
                 record ? record.totalCalculatedDays : 0
             ];
         });
@@ -557,6 +558,7 @@ export function HRView() {
                                         <th className="p-4 border-b text-center">أيام العمل</th>
                                         <th className="p-4 border-b text-center">إضافي (عادي)</th>
                                         <th className="p-4 border-b text-center">إضافي (عطل)</th>
+                                        <th className="p-4 border-b text-center">أيام الأعياد</th>
                                         <th className="p-4 border-b text-center bg-purple-50/30 text-purple-700">المجموع</th>
                                         <th className="p-4 border-b text-center">الحالة</th>
                                     </tr>
@@ -592,6 +594,7 @@ export function HRView() {
                                                     <td className="p-4 text-center font-mono font-medium">{record ? record.normalDays : "—"}</td>
                                                     <td className="p-4 text-center font-mono font-medium text-amber-600">{record ? record.overtimeNormalDays : "—"}</td>
                                                     <td className="p-4 text-center font-mono font-medium text-red-600">{record ? record.overtimeHolidayDays : "—"}</td>
+                                                    <td className="p-4 text-center font-mono font-medium text-green-600">{record ? (record.overtimeEidDays || 0) : "—"}</td>
                                                     <td className="p-4 text-center bg-purple-50/10">
                                                         <Badge variant={isFilled ? "success" : "secondary"} className="font-black font-mono">
                                                             {record ? record.totalCalculatedDays : "0"}
