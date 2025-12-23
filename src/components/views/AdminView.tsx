@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAttendance, User, Worker, UserRole } from '@/context/AttendanceContext';
+import { useToast } from '@/context/ToastContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,6 +31,7 @@ import { Badge } from '@/components/ui/badge';
 
 export const AdminView = () => {
     const { workers, attendanceRecords, users, auditLogs, areas, isLoading, addWorker, updateWorker, deleteWorker, updateUser } = useAttendance();
+    const { showToast } = useToast();
     const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'workers' | 'logs'>('overview');
 
     // Management states
@@ -39,23 +41,39 @@ export const AdminView = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [selectedAreaIds, setSelectedAreaIds] = useState<string[]>([]);
 
+    // Log filters
+    const [logSearchTerm, setLogSearchTerm] = useState("");
+    const [logTableFilter, setLogTableFilter] = useState("ALL");
+    const [logActionFilter, setLogActionFilter] = useState("ALL");
+
     const handleSaveWorker = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingItem || editingItem.type !== 'worker') return;
+
+        const data = editingItem.data;
+        if (!data.name || data.name.trim().length < 2) {
+            showToast('خطأ في البيانات', 'يجب أن يكون اسم العامل حرفين على الأقل', 'warning');
+            return;
+        }
+        if (data.dayValue === undefined || data.dayValue < 0) {
+            showToast('خطأ في البيانات', 'قيمة اليوم يجب أن تكون صفر أو أكثر', 'warning');
+            return;
+        }
+
         setIsSaving(true);
         try {
             if (editingItem.data.id !== 'NEW') {
                 await updateWorker(editingItem.data.id, editingItem.data as Partial<Worker>);
+                showToast('تم تحديث بيانات العامل بنجاح');
             } else {
-                // For NEW worker, editingItem.data is Partial<Worker> & { id: 'NEW' }
-                // addWorker takes Omit<Worker, "id">
                 const { id, ...workerWithoutId } = editingItem.data;
                 await addWorker(workerWithoutId as Omit<Worker, "id">);
+                showToast('تم إضافة العامل بنجاح');
             }
             setEditingItem(null);
         } catch (err) {
             console.error(err);
-            alert('فشل حفظ البيانات');
+            showToast('فشل حفظ البيانات', 'يرجى المحاولة مرة أخرى', 'error');
         } finally {
             setIsSaving(false);
         }
@@ -64,15 +82,23 @@ export const AdminView = () => {
     const handleSaveUser = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingItem || editingItem.type !== 'user') return;
+
+        const data = editingItem.data;
+        if (!data.name || data.name.trim().length < 2) {
+            showToast('خطأ في البيانات', 'يجب أن يكون الاسم حرفين على الأقل', 'warning');
+            return;
+        }
+
         setIsSaving(true);
         try {
             if (editingItem.data.id !== 'NEW') {
                 await updateUser(editingItem.data.id, editingItem.data as Partial<User>);
+                showToast('تم تحديث بيانات المستخدم بنجاح');
             }
             setEditingItem(null);
         } catch (err) {
             console.error(err);
-            alert('فشل حفظ البيانات');
+            showToast('فشل حفظ البيانات', 'يرجى المحاولة مرة أخرى', 'error');
         } finally {
             setIsSaving(false);
         }
@@ -82,9 +108,10 @@ export const AdminView = () => {
         if (!window.confirm('هل أنت متأكد من حذف هذا العامل؟')) return;
         try {
             await deleteWorker(id);
+            showToast('تم حذف العامل بنجاح');
         } catch (err) {
             console.error(err);
-            alert('فشل حذف العامل');
+            showToast('فشل حذف العامل', 'يرجى المحاولة مرة أخرى', 'error');
         }
     };
 
@@ -584,43 +611,97 @@ export const AdminView = () => {
 
             {activeTab === 'logs' && (
                 <Card className="animate-in slide-in-from-bottom-4 duration-500">
-                    <CardHeader>
-                        <CardTitle>سجل النشاطات الكامل</CardTitle>
-                        <CardDescription>تتبع جميع التغييرات التي تمت على البيانات في النظام</CardDescription>
+                    <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <CardTitle>سجل النشاطات الكامل</CardTitle>
+                            <CardDescription>تتبع جميع التغييرات التي تمت على البيانات في النظام</CardDescription>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                            <div className="relative flex-1 min-w-[150px]">
+                                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                    placeholder="بحث بالمستخدم..."
+                                    className="pr-8 h-8 text-xs"
+                                    value={logSearchTerm}
+                                    onChange={e => setLogSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <select
+                                className="h-8 text-xs border rounded-md px-2 bg-white min-w-[120px]"
+                                value={logTableFilter}
+                                onChange={e => setLogTableFilter(e.target.value)}
+                            >
+                                <option value="ALL">جميع الجداول</option>
+                                <option value="workers">workers</option>
+                                <option value="users">users</option>
+                                <option value="attendance">attendance</option>
+                                <option value="areas">areas</option>
+                            </select>
+                            <select
+                                className="h-8 text-xs border rounded-md px-2 bg-white min-w-[100px]"
+                                value={logActionFilter}
+                                onChange={e => setLogActionFilter(e.target.value)}
+                            >
+                                <option value="ALL">جميع العمليات</option>
+                                <option value="INSERT">INSERT</option>
+                                <option value="UPDATE">UPDATE</option>
+                                <option value="DELETE">DELETE</option>
+                            </select>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {auditLogs.map((log) => (
-                                <div key={log.id} className="p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/10 transition-all group">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`p-2 rounded-lg ${log.action === 'INSERT' ? 'bg-green-100 text-green-600' :
-                                                log.action === 'UPDATE' ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600'
-                                                }`}>
-                                                <Activity className="h-4 w-4" />
+                            {auditLogs
+                                .filter(log => {
+                                    const matchesSearch = !logSearchTerm || (log.changed_by || '').toLowerCase().includes(logSearchTerm.toLowerCase());
+                                    const matchesTable = logTableFilter === 'ALL' || log.table_name === logTableFilter;
+                                    const matchesAction = logActionFilter === 'ALL' || log.action === logActionFilter;
+                                    return matchesSearch && matchesTable && matchesAction;
+                                })
+                                .map((log) => (
+                                    <div key={log.id} className="p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/10 transition-all group">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`p-2 rounded-lg ${log.action === 'INSERT' ? 'bg-green-100 text-green-600' :
+                                                    log.action === 'UPDATE' ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600'
+                                                    }`}>
+                                                    <Activity className="h-4 w-4" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-semibold text-gray-900">
+                                                        {log.action === 'INSERT' ? 'إضافة سجل جديد' :
+                                                            log.action === 'UPDATE' ? 'تحديث سجل' : 'حذف سجل'}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">في جدول {log.table_name} • معرف السجل: {log.record_id}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="font-semibold text-gray-900">
-                                                    {log.action === 'INSERT' ? 'إضافة سجل جديد' :
-                                                        log.action === 'UPDATE' ? 'تحديث سجل' : 'حذف سجل'}
-                                                </p>
-                                                <p className="text-xs text-gray-500">في جدول {log.table_name} • معرف السجل: {log.record_id}</p>
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-xs font-medium text-gray-700">{log.changed_by || 'نظام آلي'}</span>
+                                                <span className="text-[10px] text-gray-400">{new Date(log.changed_at).toLocaleString('ar-EG')}</span>
                                             </div>
                                         </div>
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-xs font-medium text-gray-700">{log.changed_by || 'نظام آلي'}</span>
-                                            <span className="text-[10px] text-gray-400">{new Date(log.changed_at).toLocaleString('ar-EG')}</span>
-                                        </div>
-                                    </div>
 
-                                    {/* Data Diff (Optional preview) */}
-                                    {log.new_data && (
-                                        <div className="mt-3 p-2 bg-gray-50 rounded text-[10px] font-mono overflow-x-auto hidden group-hover:block">
-                                            {JSON.stringify(log.new_data, null, 2)}
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                                        {/* Data Diff (Optional preview) */}
+                                        {(log.new_data || log.old_data) && (
+                                            <div className="mt-3 p-3 bg-gray-50 rounded-lg text-[10px] font-mono overflow-x-auto hidden group-hover:block border border-gray-100">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {log.old_data && (
+                                                        <div>
+                                                            <p className="text-red-600 mb-1 font-bold">البيانات السابقة:</p>
+                                                            <pre className="whitespace-pre-wrap">{JSON.stringify(log.old_data, null, 2)}</pre>
+                                                        </div>
+                                                    )}
+                                                    {log.new_data && (
+                                                        <div>
+                                                            <p className="text-green-600 mb-1 font-bold">البيانات الجديدة:</p>
+                                                            <pre className="whitespace-pre-wrap">{JSON.stringify(log.new_data, null, 2)}</pre>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
                         </div>
                     </CardContent>
                 </Card>

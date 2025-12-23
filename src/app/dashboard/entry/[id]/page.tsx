@@ -60,7 +60,8 @@ export default function EntryPage() {
             normalDays,
             overtimeNormalDays: otNormal,
             overtimeHolidayDays: otHoliday,
-            overtimeEidDays: otEid
+            overtimeEidDays: otEid,
+            status: 'PENDING_GS'
         });
         router.push("/dashboard");
     };

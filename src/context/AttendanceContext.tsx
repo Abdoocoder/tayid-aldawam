@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase, workersAPI, attendanceAPI, usersAPI, areasAPI, type Area, type AuditLog } from "@/lib/supabase";
+export type { Area, AuditLog };
 import { workerFromDb, workerToDb, attendanceFromDb, attendanceToDb } from "@/lib/data-transformer";
 import { useAuth } from "@/context/AuthContext";
 
