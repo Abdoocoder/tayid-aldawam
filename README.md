@@ -115,7 +115,7 @@ Tayid-aldawam/
 
 | صفحة تسجيل الدخول | لوحة القسم المالي | إدخال الحضور |
 | :---: | :---: | :---: |
-| ![Login Mockup](https://github.com/Abdoocoder/tayid-aldawam/blob/main/public/LoginPage.png/300x200?text=Premium+Login) | ![Finance Mockup](https://via.placeholder.com/300x200?text=Finance+View) | ![Entry Mockup](https://via.placeholder.com/300x200?text=Attendance+Entry) |
+| ![صفحة تسجيل الدخول](./public/LoginPage.png) | ![لوحة القسم المالي](./public/FinanceDashbord.png) | ![إدخال الحضور](./public/SupervisorDashbord.png) |
 
 ---
 
