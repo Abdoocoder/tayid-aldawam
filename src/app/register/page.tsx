@@ -164,6 +164,7 @@ export default function RegisterPage() {
                                     disabled={loading || isLoading}
                                 >
                                     <option value="SUPERVISOR">مراقب</option>
+                                    <option value="GENERAL_SUPERVISOR">مراقب عام</option>
                                     <option value="HR">موارد بشرية</option>
                                     <option value="FINANCE">قسم مالي</option>
                                     <option value="ADMIN">مدير النظام</option>
