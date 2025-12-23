@@ -1,8 +1,5 @@
 import { createClient as createBrowserClient } from './supabase-browser';
 
-// Supabase configuration
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 // Create Supabase client
 // Use the shared browser client to prevent multiple GoTrueClient instances
@@ -252,7 +249,7 @@ export const usersAPI = {
             .eq('user_id', userId);
 
         if (error) throw error;
-        return data?.map(item => (item as any).areas) || [];
+        return (data as unknown as { areas: Area }[] | null)?.map(item => item.areas) || [];
     },
 
     async setUserAreas(userId: string, areaIds: string[]): Promise<void> {
@@ -315,7 +312,7 @@ export const areasAPI = {
 
 // Real-time subscriptions
 export const subscribeToAttendanceChanges = (
-    callback: (payload: { [key: string]: any }) => void
+    callback: (payload: Record<string, unknown>) => void
 ) => {
     return supabase
         .channel('attendance_changes')
@@ -332,7 +329,7 @@ export const subscribeToAttendanceChanges = (
 };
 
 export const subscribeToWorkersChanges = (
-    callback: (payload: { [key: string]: any }) => void
+    callback: (payload: Record<string, unknown>) => void
 ) => {
     return supabase
         .channel('workers_changes')

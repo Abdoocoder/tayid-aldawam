@@ -3,25 +3,21 @@
 import React, { useState } from "react";
 import { useAttendance } from "@/context/AttendanceContext";
 import { MonthYearPicker } from "../ui/month-year-picker";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
+import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import {
-    Users,
-    CheckCircle,
     Clock,
     Search,
-    MapPin,
     Printer,
     ShieldCheck,
-    AlertCircle,
     Loader2
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 
 export function GeneralSupervisorView() {
-    const { currentUser, workers, attendanceRecords, areas, approveAttendance, isLoading, error } = useAttendance();
+    const { currentUser, workers, attendanceRecords, areas, approveAttendance, isLoading } = useAttendance();
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [searchTerm, setSearchTerm] = useState("");
@@ -45,7 +41,9 @@ export function GeneralSupervisorView() {
             worker.id.includes(searchTerm);
 
         // Only show records in areas this GS is responsible for
-        const isResponsibleArea = currentUser?.role === 'ADMIN' ||
+        const isResponsibleArea =
+            currentUser?.role === 'ADMIN' ||
+            currentUser?.areaId === 'ALL' ||
             currentUser?.areas?.some(a => a.id === worker.areaId);
 
         return isCorrectPeriod && isPendingGS && matchesArea && matchesSearch && isResponsibleArea;

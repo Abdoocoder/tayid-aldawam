@@ -11,7 +11,8 @@ import {
     AlertCircle,
     X,
     FileText,
-    TrendingUp
+    TrendingUp,
+    Search
 } from "lucide-react";
 import { useAttendance, User, Worker, UserRole } from "@/context/AttendanceContext";
 import { useAuth } from "@/context/AuthContext";
@@ -60,6 +61,8 @@ export function HRView() {
 
     // UI State
     const [activeTab, setActiveTab] = useState<'reports' | 'supervisors' | 'workers' | 'areas'>('reports');
+    // searchTerm is used by sub-sections, so we keep the state but remove unused setter if not needed.
+    // Actually, searching is implemented in sub-sections like WorkerSection, which takes searchTerm.
     const [searchTerm, setSearchTerm] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [editingItem, setEditingItem] = useState<{ type: 'worker', data: Worker | (Partial<Worker> & { id: 'NEW' }) } | { type: 'supervisor', data: SupervisorEditingData } | null>(null);
@@ -74,7 +77,7 @@ export function HRView() {
     const [reportStatusFilter, setReportStatusFilter] = useState<'ALL' | 'PENDING_HR' | 'APPROVED'>('PENDING_HR');
 
     // Filter supervisors
-    const supervisors = useMemo(() => users.filter(u => u.role === 'SUPERVISOR'), [users]);
+    const supervisors = useMemo(() => users.filter((u: User) => u.role === 'SUPERVISOR'), [users]);
 
     // Stats calculations
     const totalWorkersCount = workers.length;
@@ -84,7 +87,7 @@ export function HRView() {
     // Completion rate for current month
     const completionRate = useMemo(() => {
         if (workers.length === 0) return 0;
-        const currentMonthEntries = workers.filter(w => !!getWorkerAttendance(w.id, month, year)).length;
+        const currentMonthEntries = workers.filter((w: Worker) => !!getWorkerAttendance(w.id, month, year)).length;
         return totalWorkersCount > 0 ? Math.round((currentMonthEntries / totalWorkersCount) * 100) : 0;
     }, [workers, month, year, getWorkerAttendance, totalWorkersCount]);
 
@@ -115,7 +118,7 @@ export function HRView() {
             if (editingItem.data.id !== 'NEW') {
                 await updateWorker(editingItem.data.id, editingItem.data as Partial<Worker>);
             } else {
-                const { id: _unusedId, ...workerWithoutId } = editingItem.data;
+                const { id: _, ...workerWithoutId } = editingItem.data;
                 await addWorker(workerWithoutId as Omit<Worker, "id">);
             }
             setEditingItem(null);
@@ -177,9 +180,10 @@ export function HRView() {
             }
             setEditingItem(null);
             setSelectedAreaIds([]);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            showToast('فشل حفظ البيانات', err.message || 'خطأ غير معروف', 'error');
+            const message = err instanceof Error ? err.message : 'خطأ غير معروف';
+            showToast('فشل حفظ البيانات', message, 'error');
         } finally {
             setIsSaving(false);
         }
@@ -209,8 +213,8 @@ export function HRView() {
 
     const handleBulkApprove = async () => {
         const pendingRecords = workers
-            .map(w => getWorkerAttendance(w.id, month, year))
-            .filter(r => r && r.status === 'PENDING_HR');
+            .map((w: Worker) => getWorkerAttendance(w.id, month, year))
+            .filter((r) => r && r.status === 'PENDING_HR');
 
         if (pendingRecords.length === 0) return;
 
@@ -307,7 +311,7 @@ export function HRView() {
                     ].map((tab) => (
                         <button
                             key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
+                            onClick={() => setActiveTab(tab.id as typeof activeTab)}
                             className={`flex-1 lg:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === tab.id
                                 ? 'bg-white text-purple-600 shadow-sm'
                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50/50'
@@ -319,6 +323,19 @@ export function HRView() {
                     ))}
                 </div>
             </div>
+
+            {/* Global Search Bar (Only for management tabs) */}
+            {activeTab !== 'reports' && (
+                <div className="relative max-w-md mx-auto w-full px-4">
+                    <Search className="absolute right-7 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                        placeholder="بحث في القائمة الحالية..."
+                        className="pr-10 bg-white rounded-xl shadow-sm border-gray-100"
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                    />
+                </div>
+            )}
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -632,6 +649,7 @@ export function HRView() {
                                 await deleteArea(id);
                                 showToast('تم حذف المنطقة بنجاح');
                             } catch (err) {
+                                console.error(err);
                                 showToast('فشل حذف المنطقة', '', 'error');
                             }
                         }

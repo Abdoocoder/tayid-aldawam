@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useAttendance } from "@/context/AttendanceContext";
+import { useAttendance, Worker } from "@/context/AttendanceContext";
 import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/select";
 import { ArrowRight, Save, Calculator, User, Calendar, Minus, Plus, HardHat } from "lucide-react";
 
 export default function EntryPage() {
@@ -20,7 +19,7 @@ export default function EntryPage() {
     const month = Number(searchParams.get("month"));
     const year = Number(searchParams.get("year"));
 
-    const worker = workers.find((w) => w.id === workerId);
+    const worker = workers.find((w: Worker) => w.id === workerId);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -30,27 +29,53 @@ export default function EntryPage() {
         otEid: 0
     });
 
+    // Memoized setters for formData fields (moved to top level)
+    const setNormalDays = useCallback((value: number) => {
+        setFormData(prev => ({ ...prev, normalDays: value }));
+    }, []);
+
+    const setOtNormal = useCallback((value: number) => {
+        setFormData(prev => ({ ...prev, otNormal: value }));
+    }, []);
+
+    const setOtHoliday = useCallback((value: number) => {
+        setFormData(prev => ({ ...prev, otHoliday: value }));
+    }, []);
+
+    const setOtEid = useCallback((value: number) => {
+        setFormData(prev => ({ ...prev, otEid: value }));
+    }, []);
+
     // Load existing data
     useEffect(() => {
         if (worker && month && year) {
             const record = getWorkerAttendance(worker.id, month, year);
             if (record) {
-                setFormData({
-                    normalDays: record.normalDays,
-                    otNormal: record.overtimeNormalDays,
-                    otHoliday: record.overtimeHolidayDays,
-                    otEid: record.overtimeEidDays || 0
+                setFormData(prev => {
+                    // Only update if values actually changed to avoid cascading renders
+                    if (prev.normalDays === record.normalDays &&
+                        prev.otNormal === record.overtimeNormalDays &&
+                        prev.otHoliday === record.overtimeHolidayDays &&
+                        prev.otEid === (record.overtimeEidDays || 0)) {
+                        return prev;
+                    }
+                    return {
+                        normalDays: record.normalDays,
+                        otNormal: record.overtimeNormalDays,
+                        otHoliday: record.overtimeHolidayDays,
+                        otEid: record.overtimeEidDays || 0
+                    };
                 });
             } else {
-                setFormData({
-                    normalDays: 0,
-                    otNormal: 0,
-                    otHoliday: 0,
-                    otEid: 0
+                setFormData(prev => {
+                    if (prev.normalDays === 0 && prev.otNormal === 0 && prev.otHoliday === 0 && prev.otEid === 0) {
+                        return prev;
+                    }
+                    return { normalDays: 0, otNormal: 0, otHoliday: 0, otEid: 0 };
                 });
             }
         }
-    }, [worker?.id, month, year, getWorkerAttendance]); // getWorkerAttendance is a dependency, assuming it's stable or memoized in context
+    }, [worker, month, year, getWorkerAttendance]);
 
     if (!worker || !month || !year) {
         return <div className="p-10 text-center">بيانات غير صحيحة</div>;
@@ -76,22 +101,7 @@ export default function EntryPage() {
     // Calculate days in current month for the limit
     const daysInMonth = new Date(year, month, 0).getDate();
 
-    // Memoized setters for formData fields
-    const setNormalDays = useCallback((value: number) => {
-        setFormData(prev => ({ ...prev, normalDays: value }));
-    }, []);
-
-    const setOtNormal = useCallback((value: number) => {
-        setFormData(prev => ({ ...prev, otNormal: value }));
-    }, []);
-
-    const setOtHoliday = useCallback((value: number) => {
-        setFormData(prev => ({ ...prev, otHoliday: value }));
-    }, []);
-
-    const setOtEid = useCallback((value: number) => {
-        setFormData(prev => ({ ...prev, otEid: value }));
-    }, []);
+    // Moved hooks up
 
     const handleIncrement = (setter: (value: number) => void, val: number, max: number) => {
         if (val < max) setter(val + 1);

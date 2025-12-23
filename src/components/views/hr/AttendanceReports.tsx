@@ -93,7 +93,7 @@ export function AttendanceReports({
                     <Select
                         className="bg-gray-50/50 border-gray-200 min-w-[150px]"
                         value={reportStatusFilter}
-                        onChange={e => onStatusFilterChange(e.target.value as any)}
+                        onChange={e => onStatusFilterChange(e.target.value as 'ALL' | 'PENDING_HR' | 'APPROVED')}
                     >
                         <option value="ALL">كل الحالات</option>
                         <option value="PENDING_HR">بانتظار الاعتماد</option>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase, workersAPI, attendanceAPI, usersAPI, areasAPI, type Area, type AuditLog } from "@/lib/supabase";
 export type { Area, AuditLog };
 import { workerFromDb, workerToDb, attendanceFromDb, attendanceToDb } from "@/lib/data-transformer";
@@ -79,103 +79,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Load data from Supabase on mount and when appUser changes
-    useEffect(() => {
-        const fetchInitialData = async () => {
-            console.log('AttendanceContext: Triggering loadData with role:', appUser?.role);
-            await loadData();
-        };
+    // --- Loading Functions ---
 
-        fetchInitialData();
-
-        // Subscribe to real-time changes
-        const attendanceSubscription = supabase
-            .channel('attendance_changes')
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'attendance_records',
-                },
-                () => {
-                    // Reload attendance records when changes occur
-                    loadAttendance();
-                }
-            )
-            .subscribe();
-
-        const workersSubscription = supabase
-            .channel('workers_changes')
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'workers',
-                },
-                () => {
-                    // Reload workers when changes occur
-                    loadWorkers();
-                }
-            )
-            .subscribe();
-
-        const usersSubscription = supabase
-            .channel('users_changes')
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'users',
-                },
-                () => {
-                    // Reload users when changes occur
-                    if (appUser?.role === 'ADMIN' || appUser?.role === 'HR') {
-                        loadUsers();
-                    }
-                }
-            )
-            .subscribe();
-
-        // Cleanup subscriptions
-        return () => {
-            attendanceSubscription.unsubscribe();
-            workersSubscription.unsubscribe();
-            usersSubscription.unsubscribe();
-        };
-    }, [appUser?.id, appUser?.role]); // Re-run when user ID or role changes
-
-    const loadData = async () => {
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            console.log('AttendanceContext: Loading basic data (workers, attendance)...');
-            const promises: Promise<any>[] = [
-                loadWorkers(),
-                loadAttendance(),
-                loadAreas(),
-            ];
-
-            if (appUser?.role === 'ADMIN' || appUser?.role === 'HR') {
-                console.log('AttendanceContext: User is ADMIN or HR, loading users and logs...');
-                promises.push(loadUsers());
-                promises.push(loadAuditLogs());
-            }
-
-            await Promise.all(promises);
-            console.log('AttendanceContext: All data loaded successfully');
-        } catch (err) {
-            console.error('AttendanceContext: Failed to load data:', err);
-            setError(err instanceof Error ? err.message : 'فشل تحميل البيانات');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const loadWorkers = async () => {
+    const loadWorkers = useCallback(async () => {
         try {
             const dbWorkers = await workersAPI.getAll();
             const frontendWorkers = dbWorkers.map(workerFromDb);
@@ -185,10 +91,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             console.error('Failed to load workers:', err);
             throw err;
         }
-    };
+    }, []);
 
-
-    const loadAttendance = async () => {
+    const loadAttendance = useCallback(async () => {
         try {
             const dbRecords = await attendanceAPI.getAll();
             const frontendRecords = dbRecords.map(attendanceFromDb);
@@ -197,16 +102,11 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             console.error('Failed to load attendance:', err);
             throw err;
         }
-    };
+    }, []);
 
-    const loadUsers = async () => {
+    const loadUsers = useCallback(async () => {
         try {
-            const { count: totalCount } = await supabase.from('users').select('*', { count: 'exact', head: true });
-            console.log('AttendanceContext: Total users count in DB (all):', totalCount);
-
             const dbUsers = await usersAPI.getAll();
-            console.log('AttendanceContext: Users API returned:', dbUsers.length, 'users');
-            console.log('AttendanceContext: Users list:', dbUsers.map(u => ({ username: u.username, role: u.role, is_active: u.is_active })));
             const formattedUsers: User[] = await Promise.all(dbUsers.map(async u => {
                 const userAreas = await usersAPI.getUserAreas(u.id);
                 return {
@@ -223,90 +123,141 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         } catch (err) {
             console.error('AttendanceContext: Failed to load users:', err);
         }
-    };
+    }, []);
 
-    const loadAreas = async () => {
+    const loadAreas = useCallback(async () => {
         try {
             const dbAreas = await areasAPI.getAll();
             setAreas(dbAreas);
-            console.log(`AttendanceContext: Loaded ${dbAreas.length} areas`);
         } catch (err) {
             console.error('Failed to load areas:', err);
         }
-    };
+    }, []);
 
-    const loadAuditLogs = async () => {
+    const loadAuditLogs = useCallback(async () => {
         try {
-            console.log('AttendanceContext: Fetching audit logs from Supabase...');
             const { data, error } = await supabase
                 .from('audit_logs')
                 .select('*')
                 .order('changed_at', { ascending: false })
                 .limit(50);
             if (error) throw error;
-            console.log('AttendanceContext: Loaded', data?.length || 0, 'audit logs');
             setAuditLogs(data || []);
         } catch (err) {
             console.error('AttendanceContext: Failed to load audit logs:', err);
         }
-    };
+    }, []);
 
-    const refreshData = async () => {
+    const loadData = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const promises: Promise<unknown>[] = [
+                loadWorkers(),
+                loadAttendance(),
+                loadAreas(),
+            ];
+
+            if (appUser?.role === 'ADMIN' || appUser?.role === 'HR') {
+                promises.push(loadUsers());
+                promises.push(loadAuditLogs());
+            }
+
+            await Promise.all(promises);
+        } catch (err) {
+            console.error('AttendanceContext: Failed to load data:', err);
+            setError(err instanceof Error ? err.message : 'فشل تحميل البيانات');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [appUser?.role, loadWorkers, loadAttendance, loadAreas, loadUsers, loadAuditLogs]);
+
+    const refreshData = useCallback(async () => {
         await loadData();
-    };
+    }, [loadData]);
 
-    const getWorkerAttendance = (workerId: string, month: number, year: number) => {
+    // --- Subscriptions ---
+
+    useEffect(() => {
+        if (!appUser) return;
+
+        loadData();
+
+        const attendanceSubscription = supabase
+            .channel('attendance_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, () => {
+                loadAttendance();
+            })
+            .subscribe();
+
+        const workersSubscription = supabase
+            .channel('workers_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'workers' }, () => {
+                loadWorkers();
+            })
+            .subscribe();
+
+        const usersSubscription = supabase
+            .channel('users_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => {
+                if (appUser.role === 'ADMIN' || appUser.role === 'HR') {
+                    loadUsers();
+                }
+            })
+            .subscribe();
+
+        return () => {
+            attendanceSubscription.unsubscribe();
+            workersSubscription.unsubscribe();
+            usersSubscription.unsubscribe();
+        };
+    }, [appUser, loadData, loadAttendance, loadWorkers, loadUsers]);
+
+    // --- Actions ---
+
+    const getWorkerAttendance = useCallback((workerId: string, month: number, year: number) => {
         return attendanceRecords.find(
             (r) => r.workerId === workerId && r.month === month && r.year === year
         );
-    };
+    }, [attendanceRecords]);
 
-    const saveAttendance = async (input: Omit<AttendanceRecord, "id" | "updatedAt" | "totalCalculatedDays">) => {
+    const saveAttendance = useCallback(async (input: Omit<AttendanceRecord, "id" | "updatedAt" | "totalCalculatedDays">) => {
         try {
             setError(null);
-
-            // Transform to database format
             const dbRecord = attendanceToDb({
                 ...input,
                 id: `${input.workerId}-${input.month}-${input.year}`,
-                totalCalculatedDays: 0, // Will be calculated by database trigger
+                totalCalculatedDays: 0,
                 updatedAt: new Date().toISOString(),
             });
 
-            // Save to Supabase
             const savedRecord = await attendanceAPI.upsert(dbRecord);
-
-            // Transform back to frontend format
             const frontendRecord = attendanceFromDb(savedRecord);
 
-            // Update local state optimistically
             setAttendanceRecords((prev) => {
                 const filtered = prev.filter((r) => r.id !== frontendRecord.id);
                 return [...filtered, frontendRecord];
             });
-
         } catch (err) {
             console.error('Failed to save attendance:', err);
             setError(err instanceof Error ? err.message : 'فشل حفظ البيانات');
             throw err;
         }
-    };
+    }, []);
 
-    const addWorker = async (worker: Omit<Worker, "id">) => {
+    const addWorker = useCallback(async (worker: Omit<Worker, "id">) => {
         try {
-            const id = Math.floor(1000 + Math.random() * 9000).toString(); // Generate simple numeric ID
+            const id = Math.floor(1000 + Math.random() * 9000).toString();
             const dbWorker = workerToDb({ ...worker, id });
             await workersAPI.create(dbWorker);
-            // State will be updated by real-time subscription
         } catch (err) {
             console.error('Failed to add worker:', err);
             throw err;
         }
-    };
+    }, []);
 
-    const updateWorker = async (workerId: string, updates: Partial<Worker>) => {
+    const updateWorker = useCallback(async (workerId: string, updates: Partial<Worker>) => {
         try {
-            // Transform updates to snake_case if needed
             const dbUpdates: Record<string, unknown> = {};
             if (updates.name) dbUpdates.name = updates.name;
             if (updates.areaId) dbUpdates.area_id = updates.areaId;
@@ -314,24 +265,22 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             if (updates.dayValue !== undefined) dbUpdates.day_value = updates.dayValue;
 
             await workersAPI.update(workerId, dbUpdates);
-            // State will be updated by real-time subscription
         } catch (err) {
             console.error('Failed to update worker:', err);
             throw err;
         }
-    };
+    }, []);
 
-    const deleteWorker = async (workerId: string) => {
+    const deleteWorker = useCallback(async (workerId: string) => {
         try {
             await workersAPI.delete(workerId);
-            // State will be updated by real-time subscription
         } catch (err) {
             console.error('Failed to delete worker:', err);
             throw err;
         }
-    };
+    }, []);
 
-    const updateUser = async (userId: string, updates: Partial<User>, areaIds?: string[]) => {
+    const updateUser = useCallback(async (userId: string, updates: Partial<User>, areaIds?: string[]) => {
         try {
             const dbUpdates: Record<string, unknown> = {};
             if (updates.name) dbUpdates.name = updates.name;
@@ -341,41 +290,31 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
 
             if (Object.keys(dbUpdates).length > 0) {
-                const { error } = await supabase
-                    .from('users')
-                    .update(dbUpdates)
-                    .eq('id', userId);
-
+                const { error } = await supabase.from('users').update(dbUpdates).eq('id', userId);
                 if (error) throw error;
             }
 
             if (areaIds) {
                 await usersAPI.setUserAreas(userId, areaIds);
             }
-
-            // State will be updated by real-time subscription
-            await loadUsers(); // Need to reload to get new areas
+            await loadUsers();
         } catch (err) {
             console.error('Failed to update user:', err);
             throw err;
         }
-    };
+    }, [loadUsers]);
 
-    const deleteUser = async (userId: string) => {
+    const deleteUser = useCallback(async (userId: string) => {
         try {
-            const { error } = await supabase
-                .from('users')
-                .delete()
-                .eq('id', userId);
-
+            const { error } = await supabase.from('users').delete().eq('id', userId);
             if (error) throw error;
         } catch (err) {
             console.error('Failed to delete user:', err);
             throw err;
         }
-    };
+    }, []);
 
-    const addArea = async (name: string) => {
+    const addArea = useCallback(async (name: string) => {
         try {
             await areasAPI.create(name);
             await loadAreas();
@@ -383,20 +322,19 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             console.error('Failed to add area:', err);
             throw err;
         }
-    };
+    }, [loadAreas]);
 
-    const updateArea = async (id: string, name: string) => {
+    const updateArea = useCallback(async (id: string, name: string) => {
         try {
             await areasAPI.update(id, name);
             await loadAreas();
-            // Optional: update local workers/users too
         } catch (err) {
             console.error('Failed to update area:', err);
             throw err;
         }
-    };
+    }, [loadAreas]);
 
-    const deleteArea = async (id: string) => {
+    const deleteArea = useCallback(async (id: string) => {
         try {
             await areasAPI.delete(id);
             await loadAreas();
@@ -404,7 +342,21 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             console.error('Failed to delete area:', err);
             throw err;
         }
-    };
+    }, [loadAreas]);
+
+    const approveAttendance = useCallback(async (recordId: string, nextStatus: 'PENDING_HR' | 'APPROVED') => {
+        try {
+            const { error } = await supabase
+                .from('attendance_records')
+                .update({ status: nextStatus })
+                .eq('id', recordId);
+            if (error) throw error;
+            await loadAttendance();
+        } catch (err) {
+            console.error('Failed to approve attendance:', err);
+            throw err;
+        }
+    }, [loadAttendance]);
 
     return (
         <AttendanceContext.Provider value={{
@@ -427,19 +379,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             updateArea,
             deleteArea,
             refreshData,
-            approveAttendance: async (recordId: string, nextStatus: 'PENDING_HR' | 'APPROVED') => {
-                try {
-                    const { error } = await supabase
-                        .from('attendance_records')
-                        .update({ status: nextStatus })
-                        .eq('id', recordId);
-                    if (error) throw error;
-                    await loadAttendance();
-                } catch (err) {
-                    console.error('Failed to approve attendance:', err);
-                    throw err;
-                }
-            }
+            approveAttendance
         }}>
             {children}
         </AttendanceContext.Provider>

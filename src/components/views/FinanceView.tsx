@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export function FinanceView() {
-    const { workers, getWorkerAttendance, isLoading, error, areas, attendanceRecords } = useAttendance();
+    const { workers, getWorkerAttendance, isLoading, error, areas } = useAttendance();
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [searchTerm, setSearchTerm] = useState("");

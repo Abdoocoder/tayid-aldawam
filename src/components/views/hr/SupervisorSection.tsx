@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Users, Plus, MapPin, Edit2, Trash2, ShieldCheck } from "lucide-react";
+import { Users, Plus, MapPin, Edit2, Trash2 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

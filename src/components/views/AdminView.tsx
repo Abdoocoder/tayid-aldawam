@@ -62,7 +62,7 @@ export const AdminView = () => {
                 await updateWorker(editingItem.data.id, editingItem.data as Partial<Worker>);
                 showToast('تم تحديث بيانات العامل بنجاح');
             } else {
-                const { id: _unusedId, ...workerWithoutId } = editingItem.data;
+                const { id: _, ...workerWithoutId } = editingItem.data;
                 await addWorker(workerWithoutId as Omit<Worker, "id">);
                 showToast('تم إضافة العامل بنجاح');
             }
@@ -111,12 +111,6 @@ export const AdminView = () => {
         }
     };
 
-    const stats = [
-        { title: 'إجمالي العمال', value: workers.length, icon: HardHat, color: 'text-blue-600', bg: 'bg-blue-100' },
-        { title: 'المستخدمين النشطين', value: users.length, icon: Users, color: 'text-purple-600', bg: 'bg-purple-100' },
-        { title: 'سجلات الحضور', value: attendanceRecords.length, icon: Activity, color: 'text-green-600', bg: 'bg-green-100' },
-        { title: 'العمليات الأخيرة', value: auditLogs.length, icon: History, color: 'text-orange-600', bg: 'bg-orange-100' },
-    ];
 
     if (isLoading) {
         return <div className="flex justify-center p-20">جاري تحميل لوحة التحكم...</div>;
@@ -145,7 +139,7 @@ export const AdminView = () => {
                     ].map((tab) => (
                         <button
                             key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
+                            onClick={() => setActiveTab(tab.id as typeof activeTab)}
                             className={`flex-1 lg:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === tab.id
                                 ? 'bg-white text-red-600 shadow-sm'
                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50/50'
@@ -212,7 +206,7 @@ export const AdminView = () => {
                                     <label className="text-xs font-bold text-gray-500">الدور</label>
                                     <select
                                         className="w-full p-2 border rounded-md text-sm bg-gray-50/50 border-gray-200"
-                                        value={(editingItem.data as any).role || 'SUPERVISOR'}
+                                        value={(editingItem.data as User).role || 'SUPERVISOR'}
                                         onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value as UserRole } })}
                                     >
                                         <option value="SUPERVISOR">SUPERVISOR</option>

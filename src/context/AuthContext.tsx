@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase-browser';
 import { User, UserRole } from './AttendanceContext';
@@ -27,6 +27,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [isPendingApproval, setIsPendingApproval] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [supabase] = useState(() => createClient()); // Initialize once and persist
+
+    const loadAppUser = useCallback(async (authUserId: string) => {
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('auth_user_id', authUserId)
+                .maybeSingle();
+
+            if (error) {
+                console.error('Database error loading app user:', error);
+                throw error;
+            }
+
+            if (data) {
+                // Fetch associated areas
+                const { data: areasData } = await supabase
+                    .from('user_areas')
+                    .select('areas (*)')
+                    .eq('user_id', data.id);
+
+                const userAreas = areasData?.map((item: { areas: any }) => item.areas) || [];
+
+                setAppUser({
+                    id: data.id,
+                    username: data.username,
+                    name: data.name,
+                    role: data.role as UserRole,
+                    areaId: data.area_id,
+                    areas: userAreas,
+                    isActive: data.is_active
+                });
+                setIsPendingApproval(!data.is_active);
+            } else {
+                console.warn('No app user profile found for auth user:', authUserId);
+                setAppUser(null);
+            }
+        } catch (err) {
+            console.error('Failed to load app user:', err);
+            setError('فشل تحميل بيانات المستخدم');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [supabase]);
 
     // Load user on mount and subscribe to auth changes
     useEffect(() => {
@@ -55,58 +99,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         return () => subscription.unsubscribe();
-    }, []);
-
-    const loadAppUser = async (authUserId: string) => {
-        try {
-            const { data, error } = await supabase
-                .from('users')
-                .select('*')
-                .eq('auth_user_id', authUserId)
-                .maybeSingle();
-
-            if (error) {
-                console.error('Database error loading app user:', error);
-                throw error;
-            }
-
-            if (data) {
-                // Fetch associated areas
-                const { data: areasData, error: areasError } = await supabase
-                    .from('user_areas')
-                    .select('areas (*)')
-                    .eq('user_id', data.id);
-
-                const userAreas = areasData?.map((item: any) => item.areas) || [];
-
-                setAppUser({
-                    id: data.id,
-                    username: data.username,
-                    name: data.name,
-                    role: data.role as UserRole,
-                    areaId: data.area_id,
-                    areas: userAreas,
-                    isActive: data.is_active
-                });
-                setIsPendingApproval(!data.is_active);
-            } else {
-                console.warn('No app user profile found for auth user:', authUserId);
-                setAppUser(null);
-            }
-        } catch (err) {
-            console.error('Failed to load app user:', err);
-            setError('فشل تحميل بيانات المستخدم');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    }, [supabase, loadAppUser]);
 
     const signIn = async (email: string, password: string) => {
         try {
             setError(null);
             setIsLoading(true);
 
-            const { data, error } = await supabase.auth.signInWithPassword({
+            const { error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
@@ -119,9 +119,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
 
             // User will be loaded via onAuthStateChange
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Sign in error:', err);
-            setError(err.message || 'فشل تسجيل الدخول');
+            const message = err instanceof Error ? err.message : 'فشل تسجيل الدخول';
+            setError(message);
             throw err;
         } finally {
             setIsLoading(false);
@@ -137,7 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             let finalEmail = email.trim().toLowerCase();
             if (!finalEmail.includes('@')) {
                 // It's a username/prefix, generate a standardized email
-                let prefix = finalEmail.replace(/[^a-z0-9]/g, '');
+                const prefix = finalEmail.replace(/[^a-z0-9]/g, '');
                 finalEmail = `${prefix}.sv@tayid-attendance.com`;
             }
 
@@ -186,9 +187,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
 
             // Note: User might need to verify email depending on Supabase settings
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Sign up error:', err);
-            setError(err.message || 'فشل إنشاء الحساب');
+            const message = err instanceof Error ? err.message : 'فشل إنشاء الحساب';
+            setError(message);
             throw err;
         } finally {
             setIsLoading(false);
@@ -206,9 +208,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             });
 
             if (error) throw error;
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Google sign in error:', err);
-            setError(err.message || 'فشل تسجيل الدخول عبر Google');
+            const message = err instanceof Error ? err.message : 'فشل تسجيل الدخول عبر Google';
+            setError(message);
             throw err;
         }
     };
@@ -224,9 +227,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             });
 
             if (error) throw error;
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('GitHub sign in error:', err);
-            setError(err.message || 'فشل تسجيل الدخول عبر GitHub');
+            const message = err instanceof Error ? err.message : 'فشل تسجيل الدخول عبر GitHub';
+            setError(message);
             throw err;
         }
     };
@@ -239,9 +243,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             setUser(null);
             setAppUser(null);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Sign out error:', err);
-            setError(err.message || 'فشل تسجيل الخروج');
+            const message = err instanceof Error ? err.message : 'فشل تسجيل الخروج';
+            setError(message);
             throw err;
         }
     };

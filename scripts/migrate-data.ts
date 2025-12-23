@@ -11,7 +11,7 @@ async function migrateData() {
     try {
         // Test connection first
         console.log('📡 Testing Supabase connection...');
-        const { data: testData, error: testError } = await supabase
+        const { error: testError } = await supabase
             .from('workers')
             .select('count', { count: 'exact', head: true });
 
@@ -36,11 +36,19 @@ async function migrateData() {
 
         // Migrate Attendance Records
         console.log('📋 Migrating attendance records...');
-        const attendanceToInsert = initialData.attendance.map((record: any) => {
+        const attendanceToInsert = initialData.attendance.map((record: Record<string, unknown>) => {
             const dbRecord = attendanceToDb({
-                ...record,
-                overtimeEidDays: record.overtimeEidDays || 0,
-                updatedAt: record.updatedAt || new Date().toISOString()
+                workerId: record.workerId as string,
+                month: record.month as number,
+                year: record.year as number,
+                normalDays: record.normalDays as number,
+                overtimeNormalDays: record.overtimeNormalDays as number,
+                overtimeHolidayDays: record.overtimeHolidayDays as number,
+                overtimeEidDays: (record.overtimeEidDays as number) || 0,
+                status: (record.status as any) || 'PENDING_GS',
+                updatedAt: (record.updatedAt as string) || new Date().toISOString(),
+                id: `${record.workerId}-${record.month}-${record.year}`,
+                totalCalculatedDays: (record.totalCalculatedDays as number) || 0
             });
             // Calculate total_calculated_days (will be auto-calculated by trigger, but we include it)
             return {
