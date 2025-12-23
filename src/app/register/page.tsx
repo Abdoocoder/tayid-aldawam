@@ -46,8 +46,9 @@ export default function RegisterPage() {
             setTimeout(() => {
                 router.push("/login");
             }, 2000);
-        } catch (err: any) {
-            setError(err.message || "فشل إنشاء الحساب. حاول مرة أخرى.");
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "فشل إنشاء الحساب. حاول مرة أخرى.";
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -57,8 +58,9 @@ export default function RegisterPage() {
         try {
             setError(null);
             await signInWithGoogle();
-        } catch (err: any) {
-            setError(err.message || "فشل التسجيل عبر Google");
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "فشل التسجيل عبر Google";
+            setError(errorMessage);
         }
     };
 
@@ -66,8 +68,9 @@ export default function RegisterPage() {
         try {
             setError(null);
             await signInWithGithub();
-        } catch (err: any) {
-            setError(err.message || "فشل التسجيل عبر GitHub");
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "فشل التسجيل عبر GitHub";
+            setError(errorMessage);
         }
     };
 

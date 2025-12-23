@@ -3,20 +3,12 @@ import {
     LayoutDashboard,
     Users,
     MapPin,
-    Search,
-    Plus,
-    Edit2,
-    Trash2,
     Save,
     Loader2,
-    ChevronLeft,
-    ChevronRight,
-    Filter,
     HardHat,
     Briefcase,
     ShieldCheck,
     AlertCircle,
-    DollarSign,
     X,
     FileText,
     TrendingUp
@@ -30,9 +22,7 @@ import { WorkerSection } from "./hr/WorkerSection";
 import { SupervisorSection } from "./hr/SupervisorSection";
 import { AreaSection } from "./hr/AreaSection";
 import { AttendanceReports } from "./hr/AttendanceReports";
-import { MonthYearPicker } from "../ui/month-year-picker";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../ui/card";
-import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
@@ -125,7 +115,7 @@ export function HRView() {
             if (editingItem.data.id !== 'NEW') {
                 await updateWorker(editingItem.data.id, editingItem.data as Partial<Worker>);
             } else {
-                const { id, ...workerWithoutId } = editingItem.data;
+                const { id: _unusedId, ...workerWithoutId } = editingItem.data;
                 await addWorker(workerWithoutId as Omit<Worker, "id">);
             }
             setEditingItem(null);

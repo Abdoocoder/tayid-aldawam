@@ -9,10 +9,7 @@ import {
     Users,
     HardHat,
     History,
-    Settings,
     ShieldCheck,
-    TrendingUp,
-    AlertTriangle,
     Plus,
     Edit2,
     Trash2,
@@ -36,7 +33,6 @@ export const AdminView = () => {
 
     // Management states
     const [searchTerm, setSearchTerm] = useState("");
-    const [areaFilter, setAreaFilter] = useState("ALL");
     const [editingItem, setEditingItem] = useState<{ type: 'worker', data: Worker | (Partial<Worker> & { id: 'NEW' }) } | { type: 'user', data: User | (Partial<User> & { id: 'NEW' }) } | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [selectedAreaIds, setSelectedAreaIds] = useState<string[]>([]);
@@ -66,7 +62,7 @@ export const AdminView = () => {
                 await updateWorker(editingItem.data.id, editingItem.data as Partial<Worker>);
                 showToast('تم تحديث بيانات العامل بنجاح');
             } else {
-                const { id, ...workerWithoutId } = editingItem.data;
+                const { id: _unusedId, ...workerWithoutId } = editingItem.data;
                 await addWorker(workerWithoutId as Omit<Worker, "id">);
                 showToast('تم إضافة العامل بنجاح');
             }

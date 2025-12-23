@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAttendance } from "@/context/AttendanceContext";
 import { Header } from "@/components/layout/Header";
@@ -23,33 +23,40 @@ export default function EntryPage() {
     const worker = workers.find((w) => w.id === workerId);
 
     // Form State
-    const [normalDays, setNormalDays] = useState(0);
-    const [otNormal, setOtNormal] = useState(0);
-    const [otHoliday, setOtHoliday] = useState(0);
-    const [otEid, setOtEid] = useState(0);
+    const [formData, setFormData] = useState({
+        normalDays: 0,
+        otNormal: 0,
+        otHoliday: 0,
+        otEid: 0
+    });
 
     // Load existing data
     useEffect(() => {
         if (worker && month && year) {
             const record = getWorkerAttendance(worker.id, month, year);
             if (record) {
-                setNormalDays(record.normalDays);
-                setOtNormal(record.overtimeNormalDays);
-                setOtHoliday(record.overtimeHolidayDays);
-                setOtEid(record.overtimeEidDays || 0);
+                setFormData({
+                    normalDays: record.normalDays,
+                    otNormal: record.overtimeNormalDays,
+                    otHoliday: record.overtimeHolidayDays,
+                    otEid: record.overtimeEidDays || 0
+                });
             } else {
-                setNormalDays(0);
-                setOtNormal(0);
-                setOtHoliday(0);
-                setOtEid(0);
+                setFormData({
+                    normalDays: 0,
+                    otNormal: 0,
+                    otHoliday: 0,
+                    otEid: 0
+                });
             }
         }
-    }, [worker, month, year, getWorkerAttendance]);
+    }, [worker?.id, month, year, getWorkerAttendance]); // getWorkerAttendance is a dependency, assuming it's stable or memoized in context
 
     if (!worker || !month || !year) {
         return <div className="p-10 text-center">بيانات غير صحيحة</div>;
     }
 
+    const { normalDays, otNormal, otHoliday, otEid } = formData;
     const calculatedTotal = normalDays + (otNormal * 0.5) + (otHoliday * 1.0) + (otEid * 1.0);
 
     const handleSave = () => {
@@ -69,11 +76,28 @@ export default function EntryPage() {
     // Calculate days in current month for the limit
     const daysInMonth = new Date(year, month, 0).getDate();
 
-    const handleIncrement = (setter: React.Dispatch<React.SetStateAction<number>>, val: number, max: number) => {
+    // Memoized setters for formData fields
+    const setNormalDays = useCallback((value: number) => {
+        setFormData(prev => ({ ...prev, normalDays: value }));
+    }, []);
+
+    const setOtNormal = useCallback((value: number) => {
+        setFormData(prev => ({ ...prev, otNormal: value }));
+    }, []);
+
+    const setOtHoliday = useCallback((value: number) => {
+        setFormData(prev => ({ ...prev, otHoliday: value }));
+    }, []);
+
+    const setOtEid = useCallback((value: number) => {
+        setFormData(prev => ({ ...prev, otEid: value }));
+    }, []);
+
+    const handleIncrement = (setter: (value: number) => void, val: number, max: number) => {
         if (val < max) setter(val + 1);
     };
 
-    const handleDecrement = (setter: React.Dispatch<React.SetStateAction<number>>, val: number) => {
+    const handleDecrement = (setter: (value: number) => void, val: number) => {
         if (val > 0) setter(val - 1);
     };
 

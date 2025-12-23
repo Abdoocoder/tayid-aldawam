@@ -25,8 +25,9 @@ export default function LoginPage() {
         try {
             await signIn(email, password);
             router.push("/dashboard");
-        } catch (err: any) {
-            setError(err.message || "فشل تسجيل الدخول. تحقق من البريد الإلكتروني وكلمة المرور.");
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "فشل تسجيل الدخول. تحقق من البريد الإلكتروني وكلمة المرور.";
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -36,8 +37,9 @@ export default function LoginPage() {
         try {
             setError(null);
             await signInWithGoogle();
-        } catch (err: any) {
-            setError(err.message || "فشل تسجيل الدخول عبر Google");
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "فشل تسجيل الدخول عبر Google";
+            setError(errorMessage);
         }
     };
 
@@ -45,8 +47,9 @@ export default function LoginPage() {
         try {
             setError(null);
             await signInWithGithub();
-        } catch (err: any) {
-            setError(err.message || "فشل تسجيل الدخول عبر GitHub");
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "فشل تسجيل الدخول عبر GitHub";
+            setError(errorMessage);
         }
     };
 

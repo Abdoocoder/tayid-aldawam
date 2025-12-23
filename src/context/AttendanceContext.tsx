@@ -307,7 +307,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     const updateWorker = async (workerId: string, updates: Partial<Worker>) => {
         try {
             // Transform updates to snake_case if needed
-            const dbUpdates: any = {};
+            const dbUpdates: Record<string, unknown> = {};
             if (updates.name) dbUpdates.name = updates.name;
             if (updates.areaId) dbUpdates.area_id = updates.areaId;
             if (updates.baseSalary !== undefined) dbUpdates.base_salary = updates.baseSalary;
@@ -333,7 +333,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
     const updateUser = async (userId: string, updates: Partial<User>, areaIds?: string[]) => {
         try {
-            const dbUpdates: any = {};
+            const dbUpdates: Record<string, unknown> = {};
             if (updates.name) dbUpdates.name = updates.name;
             if (updates.role) dbUpdates.role = updates.role;
             if (updates.areaId !== undefined) dbUpdates.area_id = updates.areaId;

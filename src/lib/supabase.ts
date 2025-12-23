@@ -59,8 +59,8 @@ export interface AuditLog {
     table_name: string;
     record_id: string;
     action: 'INSERT' | 'UPDATE' | 'DELETE';
-    old_data?: any;
-    new_data?: any;
+    old_data?: Record<string, unknown> | null;
+    new_data?: Record<string, unknown> | null;
     changed_by?: string;
     changed_at: string;
 }
@@ -315,7 +315,7 @@ export const areasAPI = {
 
 // Real-time subscriptions
 export const subscribeToAttendanceChanges = (
-    callback: (payload: any) => void
+    callback: (payload: { [key: string]: any }) => void
 ) => {
     return supabase
         .channel('attendance_changes')
@@ -332,7 +332,7 @@ export const subscribeToAttendanceChanges = (
 };
 
 export const subscribeToWorkersChanges = (
-    callback: (payload: any) => void
+    callback: (payload: { [key: string]: any }) => void
 ) => {
     return supabase
         .channel('workers_changes')
