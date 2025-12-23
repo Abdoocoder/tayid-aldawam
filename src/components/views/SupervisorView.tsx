@@ -6,7 +6,7 @@ import { MonthYearPicker } from "../ui/month-year-picker";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { User, ClipboardList, CheckCircle, Loader2, AlertCircle, Users, Clock, Target, Search, MapPin } from "lucide-react";
+import { User, ClipboardList, CheckCircle, Loader2, AlertCircle, Users, Clock, Target, Search, MapPin, Printer } from "lucide-react";
 import Link from "next/link"; // For navigation
 import { Input } from "../ui/input"; // Added for search input
 import { Select } from "../ui/select";
@@ -87,7 +87,17 @@ export function SupervisorView() {
                     </div>
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-                    <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
+                    <Button
+                        variant="outline"
+                        onClick={() => window.print()}
+                        className="gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 w-full sm:w-auto order-2 sm:order-1"
+                    >
+                        <Printer className="h-4 w-4" />
+                        نسخة ورقية
+                    </Button>
+                    <div className="order-1 sm:order-2 w-full sm:w-auto">
+                        <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
+                    </div>
                 </div>
             </div>
 
@@ -248,6 +258,59 @@ export function SupervisorView() {
                     })
                 )}
             </div>
+            {/* Printable Area - Hidden by default, visible only during print */}
+            <div className="hidden print:block print:m-0 print:p-0">
+                <div className="text-center mb-6 border-b-2 pb-4">
+                    <h1 className="text-2xl font-bold mb-1">كشف حضور وانصراف شهري</h1>
+                    <p className="text-gray-600">
+                        الشهر: {month} / {year} | القطاع: {selectedAreaId === "ALL" ? "جميع المناطق التابعة" : areas.find(a => a.id === selectedAreaId)?.name}
+                    </p>
+                    <p className="text-sm mt-1">المراقب: {currentUser?.name}</p>
+                </div>
+
+                <table className="w-full border-collapse border border-gray-300 text-sm">
+                    <thead>
+                        <tr className="bg-gray-100">
+                            <th className="border border-gray-300 p-2 text-right">رقم العامل</th>
+                            <th className="border border-gray-300 p-2 text-right">اسم العامل</th>
+                            <th className="border border-gray-300 p-2 text-right">المنطقة</th>
+                            <th className="border border-gray-300 p-2 text-center">أيام العمل</th>
+                            <th className="border border-gray-300 p-2 text-center">إضافي عادي</th>
+                            <th className="border border-gray-300 p-2 text-center">إضافي عطلة</th>
+                            <th className="border border-gray-300 p-2 text-center">أيام أعياد</th>
+                            <th className="border border-gray-300 p-2 text-center font-bold">الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredWorkers.map(worker => {
+                            const record = getWorkerAttendance(worker.id, month, year);
+                            const areaName = areas.find(a => a.id === worker.areaId)?.name || worker.areaId;
+                            return (
+                                <tr key={worker.id}>
+                                    <td className="border border-gray-300 p-2">{worker.id}</td>
+                                    <td className="border border-gray-300 p-2 font-bold">{worker.name}</td>
+                                    <td className="border border-gray-300 p-2">{areaName}</td>
+                                    <td className="border border-gray-300 p-2 text-center">{record ? record.normalDays : "0"}</td>
+                                    <td className="border border-gray-300 p-2 text-center">{record ? record.overtimeNormalDays : "0"}</td>
+                                    <td className="border border-gray-300 p-2 text-center">{record ? record.overtimeHolidayDays : "0"}</td>
+                                    <td className="border border-gray-300 p-2 text-center">{record ? (record.overtimeEidDays || 0) : "0"}</td>
+                                    <td className="border border-gray-300 p-2 text-center font-bold">{record ? record.totalCalculatedDays : "0"}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+
+                <div className="mt-8 grid grid-cols-2 gap-8 text-center no-print">
+                    <div className="border-t border-black pt-2">توقيع المراقب</div>
+                    <div className="border-t border-black pt-2">اعتماد الإدارة</div>
+                </div>
+
+                <div className="mt-12 text-[10px] text-gray-400 text-center">
+                    تم استخراج هذا التقرير بتاريخ {new Date().toLocaleDateString('ar-LY')}
+                </div>
+            </div>
+
         </div>
     );
 }
