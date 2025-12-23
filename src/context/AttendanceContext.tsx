@@ -98,6 +98,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             const dbRecords = await attendanceAPI.getAll();
             const frontendRecords = dbRecords.map(attendanceFromDb);
             setAttendanceRecords(frontendRecords);
+            console.log(`AttendanceContext: Loaded ${frontendRecords.length} attendance records`);
         } catch (err) {
             console.error('Failed to load attendance:', err);
             throw err;
@@ -129,6 +130,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         try {
             const dbAreas = await areasAPI.getAll();
             setAreas(dbAreas);
+            console.log(`AttendanceContext: Loaded ${dbAreas.length} areas`);
         } catch (err) {
             console.error('Failed to load areas:', err);
         }
@@ -151,6 +153,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     const loadData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
+        console.log(`AttendanceContext: Triggering loadData with role: ${appUser?.role}`);
         try {
             const promises: Promise<unknown>[] = [
                 loadWorkers(),
@@ -164,6 +167,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             }
 
             await Promise.all(promises);
+            console.log('AttendanceContext: All data loaded successfully');
         } catch (err) {
             console.error('AttendanceContext: Failed to load data:', err);
             setError(err instanceof Error ? err.message : 'فشل تحميل البيانات');
