@@ -36,8 +36,12 @@ async function migrateData() {
 
         // Migrate Attendance Records
         console.log('📋 Migrating attendance records...');
-        const attendanceToInsert = initialData.attendance.map((record) => {
-            const dbRecord = attendanceToDb(record);
+        const attendanceToInsert = initialData.attendance.map((record: any) => {
+            const dbRecord = attendanceToDb({
+                ...record,
+                overtimeEidDays: record.overtimeEidDays || 0,
+                updatedAt: record.updatedAt || new Date().toISOString()
+            });
             // Calculate total_calculated_days (will be auto-calculated by trigger, but we include it)
             return {
                 ...dbRecord,
