@@ -288,7 +288,7 @@ export default function RegisterPage() {
 
                 {/* Footer */}
                 <p className="text-center text-sm text-gray-400">
-                    © 2025 نظامتي الذكي - جميع الحقوق محفوظة
+                    © 2025 نظام تأييد الدوام الذكي - جميع الحقوق محفوظة
                 </p>
             </div>
         </div>

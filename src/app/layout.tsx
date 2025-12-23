@@ -11,7 +11,7 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: "تأييد الدوام - نظامتي الذكي",
+  title: "تأييد الدوام - نظام تأييد الدوام الذكي",
   description: "نظام إدارة الحضور الشهري",
   applicationName: "TayydAldawam",
   manifest: "/manifest.json",
