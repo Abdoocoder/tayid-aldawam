@@ -229,15 +229,21 @@ export function SupervisorView() {
                                 </CardHeader>
 
                                 <CardContent className="space-y-4">
-                                    <div className="flex justify-between items-center bg-gray-50/50 p-2 rounded-lg">
-                                        <Badge variant={isFilled ? "success" : "secondary"} className="h-6">
-                                            {isFilled ? "تم الإنجاز" : "بانتظار الإدخال"}
-                                        </Badge>
-                                        <Link href={`/dashboard/entry/${worker.id}?month=${month}&year=${year}`}>
-                                            <Button size="sm" variant={isFilled ? "ghost" : "default"} className={`h-8 px-4 rounded-lg font-bold shadow-sm ${!isFilled ? 'bg-blue-600 hover:bg-blue-700' : 'text-blue-600 hover:bg-blue-50 border-blue-100 border'}`}>
-                                                {isFilled ? "تعديل" : "إدخال الحضور"}
-                                            </Button>
-                                        </Link>
+                                    <div className="flex flex-col gap-1 w-full bg-gray-50/50 p-2 rounded-lg">
+                                        <div className="flex justify-between items-center">
+                                            <Badge variant={isFilled ? "success" : "secondary"} className="h-6">
+                                                {isFilled ? (
+                                                    record.status === 'PENDING_GS' ? "بانتظار المراقب العام" :
+                                                        record.status === 'PENDING_HR' ? "بانتظار الموارد البشرية" :
+                                                            "معتمد نهائياً"
+                                                ) : "بانتظار الإدخال"}
+                                            </Badge>
+                                            <Link href={`/dashboard/entry/${worker.id}?month=${month}&year=${year}`}>
+                                                <Button size="sm" variant={isFilled ? "ghost" : "default"} className={`h-8 px-4 rounded-lg font-bold shadow-sm ${!isFilled ? 'bg-blue-600 hover:bg-blue-700' : 'text-blue-600 hover:bg-blue-50 border-blue-100 border'}`}>
+                                                    {isFilled ? "تعديل" : "إدخال الحضور"}
+                                                </Button>
+                                            </Link>
+                                        </div>
                                     </div>
 
                                     {isFilled && (

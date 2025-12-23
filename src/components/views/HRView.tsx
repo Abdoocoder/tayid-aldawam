@@ -47,6 +47,8 @@ export function HRView() {
         workers,
         users,
         getWorkerAttendance,
+        attendanceRecords,
+        approveAttendance,
         isLoading,
         error,
         addWorker,
@@ -77,6 +79,7 @@ export function HRView() {
     // Reports filtering
     const [reportSearchTerm, setReportSearchTerm] = useState("");
     const [reportAreaFilter, setReportAreaFilter] = useState<string>("ALL");
+    const [reportStatusFilter, setReportStatusFilter] = useState<'ALL' | 'PENDING_HR' | 'APPROVED'>('PENDING_HR');
 
     // Filter supervisors (users with SUPERVISOR role)
     const supervisors = users.filter(u => u.role === 'SUPERVISOR');
@@ -573,18 +576,25 @@ export function HRView() {
                                         <th className="p-4 border-b text-center">أيام الأعياد</th>
                                         <th className="p-4 border-b text-center bg-purple-50/30 text-purple-700">المجموع</th>
                                         <th className="p-4 border-b text-center">الحالة</th>
+                                        <th className="p-4 border-b text-center">الإجراء</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 bg-white">
                                     {workers
                                         .filter(w => {
+                                            const record = getWorkerAttendance(w.id, month, year);
                                             const areaName = areas.find(a => a.id === w.areaId)?.name || "";
                                             const matchesSearch =
                                                 w.name.toLowerCase().includes(reportSearchTerm.toLowerCase()) ||
                                                 w.id.includes(reportSearchTerm) ||
                                                 areaName.toLowerCase().includes(reportSearchTerm.toLowerCase());
                                             const matchesArea = reportAreaFilter === 'ALL' || w.areaId === reportAreaFilter;
-                                            return matchesSearch && matchesArea;
+
+                                            const isFilled = !!record;
+                                            const recordStatus = record?.status || 'PENDING_GS'; // Default for missing records
+                                            const matchesStatus = reportStatusFilter === 'ALL' || recordStatus === reportStatusFilter;
+
+                                            return matchesSearch && matchesArea && (isFilled ? matchesStatus : reportStatusFilter === 'ALL');
                                         })
                                         .map((worker) => {
                                             const record = getWorkerAttendance(worker.id, month, year);
@@ -615,17 +625,32 @@ export function HRView() {
                                                     <td className="p-4 text-center">
                                                         <div className="flex justify-center">
                                                             {isFilled ? (
-                                                                <div className="flex items-center gap-1 text-green-600 text-[10px] font-bold bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
-                                                                    <CheckCircle className="h-3 w-3" />
-                                                                    مكتمل
+                                                                <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${record.status === 'APPROVED' ? 'text-green-600 bg-green-50 border-green-100' :
+                                                                    record.status === 'PENDING_HR' ? 'text-purple-600 bg-purple-50 border-purple-100' :
+                                                                        'text-amber-600 bg-amber-50 border-amber-100'
+                                                                    }`}>
+                                                                    {record.status === 'APPROVED' ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                                                                    {record.status === 'APPROVED' ? 'معتمد' :
+                                                                        record.status === 'PENDING_HR' ? 'جاهز للاعتماد' : 'قيد المراجعة'}
                                                                 </div>
                                                             ) : (
                                                                 <div className="flex items-center gap-1 text-gray-400 text-[10px] font-bold bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
                                                                     <Clock className="h-3 w-3" />
-                                                                    معلق
+                                                                    لم يُدخل
                                                                 </div>
                                                             )}
                                                         </div>
+                                                    </td>
+                                                    <td className="p-4 text-center">
+                                                        {isFilled && record.status === 'PENDING_HR' && (
+                                                            <Button
+                                                                size="sm"
+                                                                className="h-7 bg-purple-600 hover:bg-purple-700 text-[10px] font-bold"
+                                                                onClick={() => approveAttendance(record.id, 'APPROVED')}
+                                                            >
+                                                                إعتماد نهائي
+                                                            </Button>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             );

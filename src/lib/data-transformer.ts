@@ -45,6 +45,7 @@ export function attendanceToDb(
         overtime_normal_days: record.overtimeNormalDays,
         overtime_holiday_days: record.overtimeHolidayDays,
         overtime_eid_days: record.overtimeEidDays,
+        status: record.status || 'PENDING_GS',
     };
 }
 
@@ -63,6 +64,7 @@ export function attendanceFromDb(dbRecord: DbAttendanceRecord): FrontendAttendan
         overtimeHolidayDays: dbRecord.overtime_holiday_days,
         overtimeEidDays: dbRecord.overtime_eid_days || 0,
         totalCalculatedDays: dbRecord.total_calculated_days,
+        status: dbRecord.status || 'PENDING_GS',
         updatedAt: dbRecord.updated_at || new Date().toISOString(),
     };
 }

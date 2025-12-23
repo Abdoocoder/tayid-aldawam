@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 
 // --- Types ---
 
-export type UserRole = "SUPERVISOR" | "HR" | "FINANCE" | "ADMIN";
+export type UserRole = "SUPERVISOR" | "GENERAL_SUPERVISOR" | "HR" | "FINANCE" | "ADMIN";
 
 export interface User {
     id: string;
@@ -37,6 +37,7 @@ export interface AttendanceRecord {
     overtimeHolidayDays: number; // 1.0 value
     overtimeEidDays: number; // 1.0 value
     totalCalculatedDays: number;
+    status: 'PENDING_GS' | 'PENDING_HR' | 'APPROVED';
     updatedAt: string;
 }
 
@@ -62,6 +63,7 @@ interface AttendanceContextType {
     updateArea: (id: string, name: string) => Promise<void>;
     deleteArea: (id: string) => Promise<void>;
     refreshData: () => Promise<void>;
+    approveAttendance: (recordId: string, nextStatus: 'PENDING_HR' | 'APPROVED') => Promise<void>;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(undefined);
@@ -424,6 +426,19 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             updateArea,
             deleteArea,
             refreshData,
+            approveAttendance: async (recordId: string, nextStatus: 'PENDING_HR' | 'APPROVED') => {
+                try {
+                    const { error } = await supabase
+                        .from('attendance_records')
+                        .update({ status: nextStatus })
+                        .eq('id', recordId);
+                    if (error) throw error;
+                    await loadAttendance();
+                } catch (err) {
+                    console.error('Failed to approve attendance:', err);
+                    throw err;
+                }
+            }
         }}>
             {children}
         </AttendanceContext.Provider>

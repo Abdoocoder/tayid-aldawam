@@ -37,6 +37,7 @@ export interface AttendanceRecord {
     overtime_holiday_days: number;
     overtime_eid_days: number;
     total_calculated_days: number;
+    status: 'PENDING_GS' | 'PENDING_HR' | 'APPROVED';
     created_at?: string;
     updated_at?: string;
 }
@@ -45,7 +46,7 @@ export interface User {
     id: string;
     username: string;
     name: string;
-    role: 'SUPERVISOR' | 'HR' | 'FINANCE' | 'ADMIN';
+    role: 'SUPERVISOR' | 'GENERAL_SUPERVISOR' | 'HR' | 'FINANCE' | 'ADMIN';
     area_id?: string | null; // Keep for compatibility/single selection
     areas?: Area[]; // For multi-area support
     is_active: boolean;
@@ -233,7 +234,7 @@ export const usersAPI = {
         return data;
     },
 
-    async getByRole(role: 'SUPERVISOR' | 'HR' | 'FINANCE' | 'ADMIN'): Promise<User[]> {
+    async getByRole(role: 'SUPERVISOR' | 'GENERAL_SUPERVISOR' | 'HR' | 'FINANCE' | 'ADMIN'): Promise<User[]> {
         const { data, error } = await supabase
             .from('users')
             .select('*')

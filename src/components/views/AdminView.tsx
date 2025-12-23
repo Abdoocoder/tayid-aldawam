@@ -193,6 +193,7 @@ export const AdminView = () => {
                                         onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value as UserRole } })}
                                     >
                                         <option value="SUPERVISOR">SUPERVISOR</option>
+                                        <option value="GENERAL_SUPERVISOR">GENERAL_SUPERVISOR</option>
                                         <option value="HR">HR</option>
                                         <option value="FINANCE">FINANCE</option>
                                         <option value="ADMIN">ADMIN</option>

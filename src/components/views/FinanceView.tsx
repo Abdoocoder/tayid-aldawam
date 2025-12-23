@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export function FinanceView() {
-    const { workers, getWorkerAttendance, isLoading, error, areas } = useAttendance();
+    const { workers, getWorkerAttendance, isLoading, error, areas, attendanceRecords } = useAttendance();
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [searchTerm, setSearchTerm] = useState("");
@@ -19,12 +19,16 @@ export function FinanceView() {
 
     // Filter workers based on search and area
     const filteredWorkers = workers.filter(w => {
+        const record = getWorkerAttendance(w.id, month, year);
+        const isApproved = record?.status === 'APPROVED';
+
         const areaName = areas.find(a => a.id === w.areaId)?.name || "";
         const matchesSearch = w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             w.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
             areaName.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesArea = areaFilter === "ALL" || w.areaId === areaFilter;
-        return matchesSearch && matchesArea;
+
+        return isApproved && matchesSearch && matchesArea;
     });
 
     // Calculate totals based on filtered results or all? 
@@ -153,8 +157,8 @@ export function FinanceView() {
             <Card className="border-none shadow-sm overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
                 <CardHeader className="flex flex-row items-center justify-between border-b border-gray-100 bg-white p-6">
                     <div>
-                        <CardTitle className="text-lg font-bold">مسير الرواتب</CardTitle>
-                        <p className="text-sm text-gray-500 mt-1">كشف المرتبات لشهر {month} سنة {year}</p>
+                        <CardTitle className="text-lg font-bold text-green-800">قائمة الرواتب المعتمدة فقط</CardTitle>
+                        <p className="text-sm text-gray-500 mt-1">يتم عرض العمال الذين تم اعتماد حضورهم نهائياً من قبل الموارد البشرية لشهر {month} سنة {year}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button
