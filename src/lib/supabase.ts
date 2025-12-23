@@ -214,7 +214,6 @@ export const usersAPI = {
         const { data, error } = await supabase
             .from('users')
             .select('*')
-            .eq('is_active', true)
             .order('role', { ascending: true });
 
         if (error) throw error;

@@ -16,6 +16,7 @@ export interface User {
     role: UserRole;
     areaId?: string; // Legacy/Single Area
     areas?: Area[]; // Multi-Area Support
+    isActive: boolean;
 }
 
 export interface Worker {
@@ -210,7 +211,8 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
                     name: u.name,
                     role: u.role as UserRole,
                     areaId: u.area_id || undefined,
-                    areas: userAreas
+                    areas: userAreas,
+                    isActive: u.is_active
                 };
             }));
             setUsers(formattedUsers);
@@ -332,6 +334,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             if (updates.role) dbUpdates.role = updates.role;
             if (updates.areaId !== undefined) dbUpdates.area_id = updates.areaId;
             if (updates.username) dbUpdates.username = updates.username;
+            if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
 
             if (Object.keys(dbUpdates).length > 0) {
                 const { error } = await supabase

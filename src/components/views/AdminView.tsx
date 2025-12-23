@@ -436,6 +436,7 @@ export const AdminView = () => {
                                     <th className="p-4 border-b">اسم المستخدم</th>
                                     <th className="p-4 border-b">الدور</th>
                                     <th className="p-4 border-b">المنطقة</th>
+                                    <th className="p-4 border-b">الحالة</th>
                                     <th className="p-4 border-b text-center">الإجراءات</th>
                                 </tr>
                             </thead>
@@ -463,7 +464,31 @@ export const AdminView = () => {
                                                 </div>
                                             </td>
                                             <td className="p-4">
+                                                <Badge variant={u.isActive ? 'success' : 'destructive'} className={u.isActive ? "bg-green-100 text-green-700 hover:bg-green-200 border-none px-3" : "bg-amber-100 text-amber-700 hover:bg-amber-200 border-none px-3"}>
+                                                    {u.isActive ? 'نشط' : 'قيد الانتظار'}
+                                                </Badge>
+                                            </td>
+                                            <td className="p-4">
                                                 <div className="flex justify-center gap-2">
+                                                    {!u.isActive ? (
+                                                        <Button
+                                                            variant="default"
+                                                            size="sm"
+                                                            className="h-8 bg-green-600 hover:bg-green-700 text-white font-bold text-xs"
+                                                            onClick={() => updateUser(u.id, { isActive: true })}
+                                                        >
+                                                            تفعيل
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="h-8 text-amber-600 hover:bg-amber-50 border-amber-200 text-xs"
+                                                            onClick={() => updateUser(u.id, { isActive: false })}
+                                                        >
+                                                            تعطيل
+                                                        </Button>
+                                                    )}
                                                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50" onClick={() => {
                                                         setEditingItem({ type: 'user', data: u });
                                                         setSelectedAreaIds(u.areaId ? u.areaId.split(',') : []);

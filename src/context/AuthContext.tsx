@@ -9,6 +9,7 @@ interface AuthContextType {
     user: SupabaseUser | null;
     appUser: User | null;
     isLoading: boolean;
+    isPendingApproval: boolean;
     error: string | null;
     signIn: (email: string, password: string) => Promise<void>;
     signUp: (email: string, password: string, name: string, role: UserRole, areaId?: string) => Promise<void>;
@@ -23,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<SupabaseUser | null>(null);
     const [appUser, setAppUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isPendingApproval, setIsPendingApproval] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [supabase] = useState(() => createClient()); // Initialize once and persist
 
@@ -47,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 loadAppUser(session.user.id);
             } else {
                 setAppUser(null);
+                setIsPendingApproval(false);
                 setIsLoading(false);
             }
         });
@@ -82,8 +85,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     name: data.name,
                     role: data.role as UserRole,
                     areaId: data.area_id,
-                    areas: userAreas
+                    areas: userAreas,
+                    isActive: data.is_active
                 });
+                setIsPendingApproval(!data.is_active);
             } else {
                 console.warn('No app user profile found for auth user:', authUserId);
                 setAppUser(null);
@@ -170,7 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     name: name.trim(),
                     role: role,
                     area_id: areaId?.trim(),
-                    is_active: true
+                    is_active: false // New accounts are inactive by default
                 }, { onConflict: 'auth_user_id' });
 
                 if (profileError) {
@@ -247,6 +252,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 user,
                 appUser,
                 isLoading,
+                isPendingApproval,
                 error,
                 signIn,
                 signUp,
