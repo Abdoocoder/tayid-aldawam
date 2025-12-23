@@ -398,7 +398,7 @@ export function HRView() {
                             {editingItem.type === 'worker' && (
                                 <>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold text-gray-500">الأجر اليومي (د.ل)</label>
+                                        <label className="text-xs font-bold text-gray-500">الأجر اليومي (د.أ)</label>
                                         <Input
                                             type="number"
                                             step="0.01"
@@ -756,7 +756,7 @@ export function HRView() {
                                         <td className="p-4 text-center">
                                             <div className="flex flex-col items-center">
                                                 <span className="font-black text-green-700 font-mono">{w.dayValue}</span>
-                                                <span className="text-[9px] text-gray-400 font-bold uppercase">د.ل / يوم</span>
+                                                <span className="text-[9px] text-gray-400 font-bold uppercase">د.أ / يوم</span>
                                             </div>
                                         </td>
                                         <td className="p-4">

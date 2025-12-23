@@ -201,7 +201,7 @@ export const AdminView = () => {
                             {editingItem.type === 'worker' && (
                                 <>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold text-gray-500">الأجر اليومي (د.ل)</label>
+                                        <label className="text-xs font-bold text-gray-500">الأجر اليومي (د.أ)</label>
                                         <Input
                                             type="number"
                                             step="0.01"
@@ -549,7 +549,7 @@ export const AdminView = () => {
                                                     {areaName}
                                                 </Badge>
                                             </td>
-                                            <td className="p-4 text-sm font-black text-gray-700 text-center">{w.dayValue} د.ل</td>
+                                            <td className="p-4 text-sm font-black text-gray-700 text-center">{w.dayValue} د.أ</td>
                                             <td className="p-4">
                                                 <div className="flex justify-center gap-2">
                                                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50" onClick={() => setEditingItem({ type: 'worker', data: w })}>

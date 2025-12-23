@@ -120,7 +120,7 @@ export function FinanceView() {
                         </div>
                         <div>
                             <p className="text-xs font-bold text-green-700 uppercase tracking-wider">إجمالي المرتبات</p>
-                            <p className="text-2xl font-black text-green-900">{totalAmount.toFixed(2)} <span className="text-sm font-medium">د.ل</span></p>
+                            <p className="text-2xl font-black text-green-900">{totalAmount.toFixed(2)} <span className="text-sm font-medium">د.أ</span></p>
                         </div>
                     </CardContent>
                 </Card>
@@ -193,12 +193,12 @@ export function FinanceView() {
                                             </Badge>
                                         </td>
                                         <td className="p-4 text-center font-mono font-bold text-gray-600">{record ? record.totalCalculatedDays : "-"}</td>
-                                        <td className="p-4 text-center text-sm text-gray-500">{worker.dayValue} د.ل</td>
+                                        <td className="p-4 text-center text-sm text-gray-500">{worker.dayValue} د.أ</td>
                                         <td className="p-4 text-center bg-green-50/30">
                                             <span className="text-lg font-black text-green-700">
                                                 {record ? total.toFixed(2) : "-"}
                                             </span>
-                                            {record && <span className="text-[10px] text-green-600 mr-1 italic">د.ل</span>}
+                                            {record && <span className="text-[10px] text-green-600 mr-1 italic">د.أ</span>}
                                         </td>
                                         <td className="p-4 text-center">
                                             {record ? (
