@@ -5,7 +5,7 @@ import { useAttendance } from "@/context/AttendanceContext";
 import { MonthYearPicker } from "../ui/month-year-picker";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
-import { Banknote, Loader2, AlertCircle, Download, Search, MapPin, DollarSign } from "lucide-react";
+import { Banknote, Loader2, AlertCircle, Download, Search, MapPin, DollarSign, Printer } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -156,10 +156,21 @@ export function FinanceView() {
                         <CardTitle className="text-lg font-bold">مسير الرواتب</CardTitle>
                         <p className="text-sm text-gray-500 mt-1">كشف المرتبات لشهر {month} سنة {year}</p>
                     </div>
-                    <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-2 border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 rounded-lg">
-                        <Download className="h-4 w-4" />
-                        تصدير CSV
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.print()}
+                            className="gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+                        >
+                            <Printer className="h-4 w-4" />
+                            نسخة ورقية
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-2 border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 rounded-lg">
+                            <Download className="h-4 w-4" />
+                            تصدير CSV
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent className="p-0 overflow-x-auto">
                     <table className="w-full text-right border-collapse">
@@ -218,6 +229,59 @@ export function FinanceView() {
                     </table>
                 </CardContent>
             </Card>
+            {/* Printable Area - Hidden by default */}
+            <div className="hidden print:block print:m-0 print:p-0">
+                <div className="text-center mb-6 border-b-2 pb-4">
+                    <h1 className="text-2xl font-bold mb-1">مسير رواتب العمال</h1>
+                    <p className="text-gray-600">
+                        الشهر: {month} / {year} | القطاع: {areaFilter === "ALL" ? "جميع القطاعات" : areas.find(a => a.id === areaFilter)?.name}
+                    </p>
+                    <p className="text-sm mt-1 text-green-700 font-bold italic">القسم المالي</p>
+                </div>
+
+                <div className="mb-4 text-left font-bold text-lg bg-gray-50 p-2 inline-block border rounded">
+                    إجمالي المبلغ المستحق: {totalAmount.toFixed(2)} د.أ
+                </div>
+
+                <table className="w-full border-collapse border border-gray-300 text-sm">
+                    <thead>
+                        <tr className="bg-gray-100">
+                            <th className="border border-gray-300 p-2 text-right">الرقم</th>
+                            <th className="border border-gray-300 p-2 text-right">الاسم</th>
+                            <th className="border border-gray-300 p-2 text-right">المنطقة</th>
+                            <th className="border border-gray-300 p-2 text-center">الأيام المحتسبة</th>
+                            <th className="border border-gray-300 p-2 text-center">سعر اليوم</th>
+                            <th className="border border-gray-300 p-2 text-center font-bold">الصافي (د.أ)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredWorkers.map(worker => {
+                            const record = getWorkerAttendance(worker.id, month, year);
+                            const areaName = areas.find(a => a.id === worker.areaId)?.name || worker.areaId;
+                            const total = record ? record.totalCalculatedDays * worker.dayValue : 0;
+                            return (
+                                <tr key={worker.id}>
+                                    <td className="border border-gray-300 p-2">{worker.id}</td>
+                                    <td className="border border-gray-300 p-2 font-bold">{worker.name}</td>
+                                    <td className="border border-gray-300 p-2">{areaName}</td>
+                                    <td className="border border-gray-300 p-2 text-center font-mono">{record ? record.totalCalculatedDays : "0"}</td>
+                                    <td className="border border-gray-300 p-2 text-center font-mono">{worker.dayValue}</td>
+                                    <td className="border border-gray-300 p-2 text-center font-black">{total.toFixed(2)}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+
+                <div className="mt-8 grid grid-cols-2 gap-8 text-center no-print">
+                    <div className="border-t border-black pt-2 font-bold">المحاسب المسؤول</div>
+                    <div className="border-t border-black pt-2 font-bold">مدير القسم المالي</div>
+                </div>
+
+                <div className="mt-12 text-[10px] text-gray-400 text-center">
+                    تم استخراج هذا الكشف بتاريخ {new Date().toLocaleDateString('ar-LY')} من المنظومة المالية
+                </div>
+            </div>
         </div>
     );
 }

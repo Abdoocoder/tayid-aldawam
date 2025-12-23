@@ -21,3 +21,30 @@ body {
   background: var(--background);
   font-family: var(--font-cairo), sans-serif;
 }
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 1cm;
+  }
+  
+  body * {
+    visibility: hidden;
+  }
+  
+  .print\:block, .print\:block * {
+    visibility: visible;
+  }
+  
+  .print\:block {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    display: block !important;
+  }
+
+  .no-print, [role="button"], button {
+    display: none !important;
+  }
+}

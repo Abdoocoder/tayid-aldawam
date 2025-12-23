@@ -22,7 +22,8 @@ import {
     LayoutDashboard,
     Save,
     Search,
-    MapPin
+    MapPin,
+    Printer
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -513,10 +514,21 @@ export const AdminView = () => {
                             <CardTitle className="text-lg font-bold">إدارة العمال</CardTitle>
                             <CardDescription>قائمة بجميع العمال المسجلين في النظام عبر كافة القطاعات</CardDescription>
                         </div>
-                        <Button className="bg-green-600 hover:bg-green-700 shadow-lg shadow-green-100" onClick={() => setEditingItem({ type: 'worker', data: { id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0 } })}>
-                            <Plus className="h-4 w-4 ml-2" />
-                            إضافة عامل
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => window.print()}
+                                className="gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+                            >
+                                <Printer className="h-4 w-4" />
+                                نسخة ورقية
+                            </Button>
+                            <Button className="bg-green-600 hover:bg-green-700 shadow-lg shadow-green-100" onClick={() => setEditingItem({ type: 'worker', data: { id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0 } })}>
+                                <Plus className="h-4 w-4 ml-2" />
+                                إضافة عامل
+                            </Button>
+                        </div>
                     </CardHeader>
                     <CardContent className="p-0 overflow-x-auto">
                         <table className="w-full text-right border-collapse">
@@ -612,6 +624,50 @@ export const AdminView = () => {
                     </CardContent>
                 </Card>
             )}
+            {/* Printable Area - Hidden by default */}
+            <div className="hidden print:block print:m-0 print:p-0">
+                <div className="text-center mb-6 border-b-2 pb-4">
+                    <h1 className="text-2xl font-bold mb-1">قائمة بيانات العمال والأسعار</h1>
+                    <p className="text-gray-600">
+                        التاريخ: {new Date().toLocaleDateString('ar-LY')} | القطاع: جميع العمال
+                    </p>
+                    <p className="text-sm mt-1 text-red-600 font-bold uppercase">لوحة إدارة النظام</p>
+                </div>
+
+                <table className="w-full border-collapse border border-gray-300 text-sm">
+                    <thead>
+                        <tr className="bg-gray-100">
+                            <th className="border border-gray-300 p-2 text-right">الرقم</th>
+                            <th className="border border-gray-300 p-2 text-right">الاسم</th>
+                            <th className="border border-gray-300 p-2 text-right">المنطقة</th>
+                            <th className="border border-gray-300 p-2 text-center">أجر اليوم (د.أ)</th>
+                            <th className="border border-gray-300 p-2 text-center">الراتب الأساسي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {workers.map(w => {
+                            const areaName = areas.find(a => a.id === w.areaId)?.name || w.areaId;
+                            return (
+                                <tr key={w.id}>
+                                    <td className="border border-gray-300 p-2 font-mono">{w.id}</td>
+                                    <td className="border border-gray-300 p-2 font-bold">{w.name}</td>
+                                    <td className="border border-gray-300 p-2">{areaName}</td>
+                                    <td className="border border-gray-300 p-2 text-center">{w.dayValue}</td>
+                                    <td className="border border-gray-300 p-2 text-center">{w.baseSalary}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+
+                <div className="mt-8 text-center no-print">
+                    <div className="border-t border-black pt-2 font-bold inline-block px-12">اعتماد الإدارة العليا</div>
+                </div>
+
+                <div className="mt-12 text-[10px] text-gray-400 text-center">
+                    تم استخراج هذه القائمة بتاريخ {new Date().toLocaleDateString('ar-LY')}
+                </div>
+            </div>
         </div>
     );
 };

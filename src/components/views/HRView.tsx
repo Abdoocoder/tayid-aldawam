@@ -38,7 +38,8 @@ import {
     ShieldCheck,
     Briefcase,
     CheckCircle,
-    Clock
+    Clock,
+    Printer
 } from "lucide-react";
 
 export function HRView() {
@@ -544,10 +545,21 @@ export function HRView() {
                                 <CardTitle className="text-lg font-bold">سجل الحضور الشهري</CardTitle>
                                 <CardDescription>كشف حضور عمال {reportAreaFilter === 'ALL' ? 'كافة القطاعات' : areas.find(a => a.id === reportAreaFilter)?.name} لشهر {month}/{year}</CardDescription>
                             </div>
-                            <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-2 border-purple-100 text-purple-600 hover:bg-purple-50">
-                                <Download className="h-4 w-4" />
-                                تصدير CSV
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => window.print()}
+                                    className="gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+                                >
+                                    <Printer className="h-4 w-4" />
+                                    نسخة ورقية
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-2 border-purple-100 text-purple-600 hover:bg-purple-50">
+                                    <Download className="h-4 w-4" />
+                                    تصدير CSV
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent className="overflow-x-auto p-0">
                             <table className="w-full text-sm text-right border-collapse">
@@ -902,6 +914,68 @@ export function HRView() {
                     </Card>
                 </div>
             )}
+            {/* Printable Area - Hidden by default */}
+            <div className="hidden print:block print:m-0 print:p-0">
+                <div className="text-center mb-6 border-b-2 pb-4">
+                    <h1 className="text-2xl font-bold mb-1">تقرير الحضور الشهري العام</h1>
+                    <p className="text-gray-600">
+                        الشهر: {month} / {year} | القطاع: {reportAreaFilter === "ALL" ? "جميع المناطق" : areas.find(a => a.id === reportAreaFilter)?.name}
+                    </p>
+                    <p className="text-sm mt-1 text-purple-600 font-bold">إدارة الموارد البشرية</p>
+                </div>
+
+                <table className="w-full border-collapse border border-gray-300 text-sm">
+                    <thead>
+                        <tr className="bg-gray-100">
+                            <th className="border border-gray-300 p-2 text-right">رقم العامل</th>
+                            <th className="border border-gray-300 p-2 text-right">الاسم الكامل</th>
+                            <th className="border border-gray-300 p-2 text-right">المنطقة</th>
+                            <th className="border border-gray-300 p-2 text-center">عادي</th>
+                            <th className="border border-gray-300 p-2 text-center">إضافي 0.5</th>
+                            <th className="border border-gray-300 p-2 text-center">إضافي 1.0</th>
+                            <th className="border border-gray-300 p-2 text-center">أعياد 1.0</th>
+                            <th className="border border-gray-300 p-2 text-center font-bold">الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {workers
+                            .filter(w => {
+                                const areaName = areas.find(a => a.id === w.areaId)?.name || "";
+                                const matchesSearch =
+                                    w.name.toLowerCase().includes(reportSearchTerm.toLowerCase()) ||
+                                    w.id.includes(reportSearchTerm) ||
+                                    areaName.toLowerCase().includes(reportSearchTerm.toLowerCase());
+                                const matchesArea = reportAreaFilter === 'ALL' || w.areaId === reportAreaFilter;
+                                return matchesSearch && matchesArea;
+                            })
+                            .map((worker) => {
+                                const record = getWorkerAttendance(worker.id, month, year);
+                                const areaName = areas.find(a => a.id === worker.areaId)?.name || worker.areaId;
+                                return (
+                                    <tr key={worker.id}>
+                                        <td className="border border-gray-300 p-2">{worker.id}</td>
+                                        <td className="border border-gray-300 p-2 font-bold">{worker.name}</td>
+                                        <td className="border border-gray-300 p-2 text-right">{areaName}</td>
+                                        <td className="border border-gray-300 p-2 text-center">{record ? record.normalDays : "0"}</td>
+                                        <td className="border border-gray-300 p-2 text-center">{record ? record.overtimeNormalDays : "0"}</td>
+                                        <td className="border border-gray-300 p-2 text-center">{record ? record.overtimeHolidayDays : "0"}</td>
+                                        <td className="border border-gray-300 p-2 text-center">{record ? (record.overtimeEidDays || 0) : "0"}</td>
+                                        <td className="border border-gray-300 p-2 text-center font-bold italic">{record ? record.totalCalculatedDays : "0"}</td>
+                                    </tr>
+                                );
+                            })}
+                    </tbody>
+                </table>
+
+                <div className="mt-8 grid grid-cols-2 gap-8 text-center no-print">
+                    <div className="border-t border-black pt-2 font-bold">إعداد الموارد البشرية</div>
+                    <div className="border-t border-black pt-2 font-bold">توقيع المدير العام</div>
+                </div>
+
+                <div className="mt-12 text-[10px] text-gray-400 text-center">
+                    تم استخراج هذا التقرير بتاريخ {new Date().toLocaleDateString('ar-LY')} من لوحة الموارد البشرية
+                </div>
+            </div>
         </div>
     );
 }
