@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase-browser';
-import { User, UserRole } from './AttendanceContext';
+import { User, UserRole, Area } from './AttendanceContext';
 
 interface AuthContextType {
     user: SupabaseUser | null;
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     .select('areas (*)')
                     .eq('user_id', data.id);
 
-                const userAreas = areasData?.map((item: { areas: any }) => item.areas) || [];
+                const userAreas = (areasData as unknown as { areas: Area }[] | null)?.map((item) => item.areas) || [];
 
                 setAppUser({
                     id: data.id,

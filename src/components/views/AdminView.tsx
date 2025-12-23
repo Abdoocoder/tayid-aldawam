@@ -62,7 +62,8 @@ export const AdminView = () => {
                 await updateWorker(editingItem.data.id, editingItem.data as Partial<Worker>);
                 showToast('تم تحديث بيانات العامل بنجاح');
             } else {
-                const { id: _, ...workerWithoutId } = editingItem.data;
+                const workerWithoutId = { ...editingItem.data };
+                delete (workerWithoutId as { id?: string }).id;
                 await addWorker(workerWithoutId as Omit<Worker, "id">);
                 showToast('تم إضافة العامل بنجاح');
             }

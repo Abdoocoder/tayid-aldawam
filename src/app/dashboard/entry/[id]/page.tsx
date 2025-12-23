@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAttendance, Worker } from "@/context/AttendanceContext";
 import { Header } from "@/components/layout/Header";
@@ -32,50 +32,40 @@ export default function EntryPage() {
     // Memoized setters for formData fields (moved to top level)
     const setNormalDays = useCallback((value: number) => {
         setFormData(prev => ({ ...prev, normalDays: value }));
-    }, []);
+    }, [setFormData]);
 
     const setOtNormal = useCallback((value: number) => {
         setFormData(prev => ({ ...prev, otNormal: value }));
-    }, []);
+    }, [setFormData]);
 
     const setOtHoliday = useCallback((value: number) => {
         setFormData(prev => ({ ...prev, otHoliday: value }));
-    }, []);
+    }, [setFormData]);
 
     const setOtEid = useCallback((value: number) => {
         setFormData(prev => ({ ...prev, otEid: value }));
-    }, []);
+    }, [setFormData]);
 
-    // Load existing data
-    useEffect(() => {
-        if (worker && month && year) {
-            const record = getWorkerAttendance(worker.id, month, year);
-            if (record) {
-                setFormData(prev => {
-                    // Only update if values actually changed to avoid cascading renders
-                    if (prev.normalDays === record.normalDays &&
-                        prev.otNormal === record.overtimeNormalDays &&
-                        prev.otHoliday === record.overtimeHolidayDays &&
-                        prev.otEid === (record.overtimeEidDays || 0)) {
-                        return prev;
-                    }
-                    return {
-                        normalDays: record.normalDays,
-                        otNormal: record.overtimeNormalDays,
-                        otHoliday: record.overtimeHolidayDays,
-                        otEid: record.overtimeEidDays || 0
-                    };
-                });
-            } else {
-                setFormData(prev => {
-                    if (prev.normalDays === 0 && prev.otNormal === 0 && prev.otHoliday === 0 && prev.otEid === 0) {
-                        return prev;
-                    }
-                    return { normalDays: 0, otNormal: 0, otHoliday: 0, otEid: 0 };
-                });
-            }
+    // Sync state with existing data (Render-time synchronization)
+    const [lastSyncedKey, setLastSyncedKey] = useState<string | null>(null);
+    const currentRecord = worker ? getWorkerAttendance(worker.id, month, year) : undefined;
+    const syncKey = currentRecord
+        ? `${currentRecord.id}-${currentRecord.updatedAt}`
+        : `empty-${workerId}-${month}-${year}`;
+
+    if (syncKey !== lastSyncedKey) {
+        setLastSyncedKey(syncKey);
+        if (currentRecord) {
+            setFormData({
+                normalDays: currentRecord.normalDays,
+                otNormal: currentRecord.overtimeNormalDays,
+                otHoliday: currentRecord.overtimeHolidayDays,
+                otEid: currentRecord.overtimeEidDays || 0
+            });
+        } else {
+            setFormData({ normalDays: 0, otNormal: 0, otHoliday: 0, otEid: 0 });
         }
-    }, [worker, month, year, getWorkerAttendance]);
+    }
 
     if (!worker || !month || !year) {
         return <div className="p-10 text-center">بيانات غير صحيحة</div>;

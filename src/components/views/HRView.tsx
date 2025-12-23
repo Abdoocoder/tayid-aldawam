@@ -118,7 +118,8 @@ export function HRView() {
             if (editingItem.data.id !== 'NEW') {
                 await updateWorker(editingItem.data.id, editingItem.data as Partial<Worker>);
             } else {
-                const { id: _, ...workerWithoutId } = editingItem.data;
+                const workerWithoutId = { ...editingItem.data };
+                delete (workerWithoutId as { id?: string }).id;
                 await addWorker(workerWithoutId as Omit<Worker, "id">);
             }
             setEditingItem(null);

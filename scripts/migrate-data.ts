@@ -45,7 +45,7 @@ async function migrateData() {
                 overtimeNormalDays: record.overtimeNormalDays as number,
                 overtimeHolidayDays: record.overtimeHolidayDays as number,
                 overtimeEidDays: (record.overtimeEidDays as number) || 0,
-                status: (record.status as any) || 'PENDING_GS',
+                status: (record.status as 'PENDING_GS' | 'PENDING_HR' | 'APPROVED') || 'PENDING_GS',
                 updatedAt: (record.updatedAt as string) || new Date().toISOString(),
                 id: `${record.workerId}-${record.month}-${record.year}`,
                 totalCalculatedDays: (record.totalCalculatedDays as number) || 0
