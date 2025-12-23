@@ -76,8 +76,8 @@ export function HRView() {
     const [reportAreaFilter, setReportAreaFilter] = useState('ALL');
     const [reportStatusFilter, setReportStatusFilter] = useState<'ALL' | 'PENDING_HR' | 'APPROVED'>('PENDING_HR');
 
-    // Filter supervisors
-    const supervisors = useMemo(() => users.filter((u: User) => u.role === 'SUPERVISOR'), [users]);
+    // Filter supervisors and general supervisors
+    const supervisors = useMemo(() => users.filter((u: User) => u.role === 'SUPERVISOR' || u.role === 'GENERAL_SUPERVISOR'), [users]);
 
     // Stats calculations
     const totalWorkersCount = workers.length;
@@ -498,9 +498,19 @@ export function HRView() {
                                             }}
                                             readOnly={editingItem.data.id !== 'NEW'}
                                             className={editingItem.data.id !== 'NEW' ? "bg-gray-50" : ""}
-                                            placeholder="مثلاً: ahmed.ali"
                                             required
                                         />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-gray-500">الدور الوظيفي</label>
+                                        <Select
+                                            value={editingItem.data.role || 'SUPERVISOR'}
+                                            onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value as UserRole } })}
+                                            required
+                                        >
+                                            <option value="SUPERVISOR">مراقب ميداني</option>
+                                            <option value="GENERAL_SUPERVISOR">مراقب عام</option>
+                                        </Select>
                                     </div>
                                     {editingItem.data.id === 'NEW' && (
                                         <div className="space-y-1">
