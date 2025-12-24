@@ -170,6 +170,7 @@ export default function RegisterPage() {
                                     <option value="GENERAL_SUPERVISOR">مراقب عام</option>
                                     <option value="HR">موارد بشرية</option>
                                     <option value="FINANCE">قسم مالي</option>
+                                    <option value="MAYOR">رئيس البلدية</option>
                                     <option value="ADMIN">مدير النظام</option>
                                 </Select>
                             </div>

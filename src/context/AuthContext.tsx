@@ -181,6 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                 if (profileError) {
                     console.error('AuthContext: Manual profile creation/update failed:', profileError);
+                    throw new Error(`فشل إنشاء ملف المستخدم: ${profileError.message}`);
                 } else {
                     console.log('AuthContext: Public profile ensured successfully.');
                 }
