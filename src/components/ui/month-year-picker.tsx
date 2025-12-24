@@ -28,14 +28,14 @@ export function MonthYearPicker({ month, year, onChange }: MonthYearPickerProps)
     const years = [2024, 2025, 2026];
 
     return (
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-3 items-center">
             <Select
                 value={month}
                 onChange={(e) => onChange(Number(e.target.value), year)}
-                className="w-[140px]"
+                className="w-[140px] border-none shadow-lg"
             >
                 {months.map((m) => (
-                    <option key={m.value} value={m.value}>
+                    <option key={m.value} value={m.value} className="text-slate-900 bg-white">
                         {m.label}
                     </option>
                 ))}
@@ -43,10 +43,10 @@ export function MonthYearPicker({ month, year, onChange }: MonthYearPickerProps)
             <Select
                 value={year}
                 onChange={(e) => onChange(month, Number(e.target.value))}
-                className="w-[100px]"
+                className="w-[100px] border-none shadow-lg"
             >
                 {years.map((y) => (
-                    <option key={y} value={y}>
+                    <option key={y} value={y} className="text-slate-900 bg-white">
                         {y}
                     </option>
                 ))}

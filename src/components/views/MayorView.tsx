@@ -118,13 +118,13 @@ export function MayorView() {
                         </div>
                         <div>
                             <div className="flex items-center gap-3 mb-1">
-                                <h2 className="text-4xl font-black tracking-tight bg-gradient-to-r from-white via-emerald-100 to-emerald-300 bg-clip-text text-transparent">لوحة القرار السيادي</h2>
+                                <h2 className="text-4xl font-black tracking-tight bg-gradient-to-r from-white via-emerald-100 to-emerald-300 bg-clip-text text-transparent">لوحة الرئيس</h2>
                                 <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 font-bold backdrop-blur-md">حصري</Badge>
                             </div>
-                            <p className="text-emerald-100/70 font-medium text-lg">الرؤية الشاملة لمنظومة العمل - بلدية الحاضرة</p>
+                            <p className="text-emerald-100/70 font-medium text-lg">الرؤية الشاملة لمنظومة العمل - بلدية مادبا الكبرى</p>
                         </div>
                     </div>
-                    <div className="bg-black/20 backdrop-blur-xl p-3 rounded-[2rem] border border-white/10 flex gap-3 shadow-inner ring-1 ring-white/5">
+                    <div className="bg-black/40 backdrop-blur-3xl p-3 rounded-3xl border border-white/10 flex gap-3 shadow-2xl ring-1 ring-white/10">
                         <MonthYearPicker
                             month={month}
                             year={year}
@@ -247,14 +247,14 @@ export function MayorView() {
                                 </div>
                                 <div className="space-y-3">
                                     <h4 className="text-lg font-black text-slate-800">تحليل العوائق والفرص</h4>
-                                    <p className="text-slate-500 leading-relaxed font-medium">
+                                    <p className="text-slate-500 leading-relaxed font-medium text-base">
                                         {stats.pendingStages.SUPERVISOR > 5 ?
-                                            `تم رصد تكدس في مرحلة المراقبين الميدانيين (${stats.pendingStages.SUPERVISOR} سجل). يوصى بتفعيل أدوات التنبيه للمشرفين المباشرين لسرعة ترحيل البيانات.`
+                                            `تم رصد تكدس في مرحلة المراقبين الميدانيين (${stats.pendingStages.SUPERVISOR} سجل). يوصى بتفعيل آليات المتابعة الحثيثة لضمان ترحيل البيانات بالسرعة المطلوبة.`
                                             : stats.pendingStages.GS > 5 ?
-                                                `التدفق حالياً متوقف عند المراقب العام. هناك ${stats.pendingStages.GS} سجل تنتظر التوقيع الأول. مستوى الإشراف العام يحتاج للمتابعة.`
+                                                `التدفق حالياً متوقف عند المراقب العام. هناك ${stats.pendingStages.GS} سجل تنتظر المراجعة. مستوى الإشراف العام يحتاج للمتابعة المباشرة.`
                                                 : stats.pendingStages.FINANCE > 2 ?
-                                                    `وصلت السجلات للمرحلة النهائية في المالية. الدورة المستندية مستقرة والقيمة المالية الجاهزة للصرف هي ${stats.approvedAmount.toLocaleString()} د.أ.`
-                                                    : "سير العمل يسير بكفاءة عالية. جميع المسارات مفتوحة والاعتمادات تتم في الوقت الزمني المخطط له."}
+                                                    `وصلت السجلات للمرحلة النهائية في الدائرة المالية. القيمة المالية الجاهزة للصرف هي ${stats.approvedAmount.toLocaleString()} د.أ.`
+                                                    : "سير العمل يسير بكفاءة عالية. جميع المسارات مفتوحة والاعتمادات تتم وفق الجدول الزمني المخطط له بنجاح."}
                                     </p>
                                     <div className="flex gap-4 pt-2">
                                         <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-none px-4 py-1.5 font-bold cursor-default">
