@@ -84,12 +84,11 @@ export function HRView() {
     const [reportAreaFilter, setReportAreaFilter] = useState('ALL');
     const [reportStatusFilter, setReportStatusFilter] = useState<'ALL' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED'>('PENDING_HR');
 
-    // Filter supervisors, general supervisors and mayors
-    const supervisors = useMemo(() => users.filter((u: User) => u.role === 'SUPERVISOR' || u.role === 'GENERAL_SUPERVISOR' || u.role === 'MAYOR'), [users]);
+    const filteredUsers = useMemo(() => users.filter(u => u.role !== 'ADMIN'), [users]);
 
     // Stats calculations
     const totalWorkersCount = workers.length;
-    const activeSupervisorsCount = supervisors.length;
+    const activeUsersCount = filteredUsers.length;
     const totalSectorsCount = areas.length;
 
     // Completion rate for current month
@@ -191,7 +190,7 @@ export function HRView() {
                     username,
                     data.password!.trim(),
                     data.name!.trim(),
-                    'SUPERVISOR',
+                    data.role || 'SUPERVISOR',
                     data.areaId?.trim()
                 );
                 // Also link areas
@@ -333,7 +332,7 @@ export function HRView() {
                 <div className="flex bg-gray-100/50 p-1.5 rounded-2xl border border-gray-200/50 w-full lg:w-auto overflow-x-auto no-scrollbar backdrop-blur-sm">
                     {[
                         { id: 'reports', label: 'التقارير', icon: FileText },
-                        { id: 'supervisors', label: 'المراقبين', icon: Users },
+                        { id: 'supervisors', label: 'المستخدمين', icon: Users },
                         { id: 'workers', label: 'العمال', icon: HardHat },
                         { id: 'areas', label: 'المناطق', icon: MapPin }
                     ].map((tab) => (
@@ -391,8 +390,8 @@ export function HRView() {
                             <ShieldCheck className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-xs text-purple-600 font-bold mb-1 uppercase tracking-wider">المراقبين النشطين</p>
-                            <p className="text-3xl font-black text-purple-900">{activeSupervisorsCount}</p>
+                            <p className="text-xs text-purple-600 font-bold mb-1 uppercase tracking-wider">إجمالي المستخدمين</p>
+                            <p className="text-3xl font-black text-purple-900">{activeUsersCount}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -555,6 +554,8 @@ export function HRView() {
                                         >
                                             <option value="SUPERVISOR">مراقب ميداني</option>
                                             <option value="GENERAL_SUPERVISOR">مراقب عام</option>
+                                            <option value="HR">الموارد البشرية</option>
+                                            <option value="FINANCE">المالية</option>
                                             <option value="MAYOR">رئيس البلدية</option>
                                         </Select>
                                     </div>
@@ -648,7 +649,7 @@ export function HRView() {
             <div className="animate-in fade-in zoom-in-95 duration-500 delay-200">
                 {activeTab === 'supervisors' && (
                     <SupervisorSection
-                        supervisors={supervisors}
+                        supervisors={filteredUsers}
                         areas={areas}
                         searchTerm={searchTerm}
                         onEdit={(s) => {
