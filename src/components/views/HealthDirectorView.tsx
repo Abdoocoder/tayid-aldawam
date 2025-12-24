@@ -29,6 +29,7 @@ export function HealthDirectorView() {
     const [selectedAreaId, setSelectedAreaId] = useState<string>("ALL");
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
+    const [isBulkApproving, setIsBulkApproving] = useState(false);
 
     // Analytics: Stage tracking
     const stageStats = useMemo(() => {
@@ -51,18 +52,20 @@ export function HealthDirectorView() {
         return stats;
     }, [attendanceRecords, month, year]);
 
-    const filteredRecords = attendanceRecords.filter(r => {
-        const worker = workers.find(w => w.id === r.workerId);
-        if (!worker) return false;
+    const filteredRecords = useMemo(() => {
+        return attendanceRecords.filter(r => {
+            const worker = workers.find(w => w.id === r.workerId);
+            if (!worker) return false;
 
-        const isCorrectPeriod = r.month === month && r.year === year;
-        const isPendingHealth = r.status === 'PENDING_HEALTH';
-        const matchesArea = selectedAreaId === 'ALL' || worker.areaId === selectedAreaId;
-        const matchesSearch = worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            worker.id.includes(searchTerm);
+            const isCorrectPeriod = r.month === month && r.year === year;
+            const isPendingHealth = r.status === 'PENDING_HEALTH';
+            const matchesArea = selectedAreaId === 'ALL' || worker.areaId === selectedAreaId;
+            const matchesSearch = worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                worker.id.includes(searchTerm);
 
-        return isCorrectPeriod && isPendingHealth && matchesArea && matchesSearch;
-    });
+            return isCorrectPeriod && isPendingHealth && matchesArea && matchesSearch;
+        });
+    }, [attendanceRecords, workers, month, year, selectedAreaId, searchTerm]);
 
     const handleApprove = async (recordId: string) => {
         setApprovingIds(prev => new Set(prev).add(recordId));
@@ -76,6 +79,20 @@ export function HealthDirectorView() {
                 next.delete(recordId);
                 return next;
             });
+        }
+    };
+
+    const handleBulkApprove = async () => {
+        if (!confirm(`هل أنت متأكد من اعتماد جميع السجلات المفلترة (${filteredRecords.length} سجل)؟`)) return;
+        setIsBulkApproving(true);
+        try {
+            for (const record of filteredRecords) {
+                await approveAttendance(record.id, 'PENDING_HR');
+            }
+        } catch (err) {
+            console.error("Bulk approval failed:", err);
+        } finally {
+            setIsBulkApproving(false);
         }
     };
 
@@ -104,46 +121,63 @@ export function HealthDirectorView() {
     }
 
     return (
-        <div className="space-y-6">
-            {/* Header Section */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-6 rounded-3xl shadow-xl shadow-emerald-900/5 border border-emerald-50">
-                <div className="flex items-center gap-4">
-                    <div className="bg-emerald-600 p-4 rounded-2xl text-white shadow-lg shadow-emerald-200 animate-in zoom-in-50 duration-500">
-                        <Activity className="h-7 w-7" />
+        <div className="space-y-8 pb-12 animate-in fade-in duration-700">
+            {/* Header Section with Glassmorphism */}
+            <div className="relative overflow-hidden bg-white/60 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl shadow-emerald-900/10 border border-white/40">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-100/30 rounded-full blur-3xl -mr-20 -mt-20 shrink-0" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-100/20 rounded-full blur-2xl -ml-10 -mb-10 shrink-0" />
+                
+                <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                    <div className="flex items-center gap-6">
+                        <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 p-5 rounded-3xl text-white shadow-xl shadow-emerald-200 ring-4 ring-emerald-50 animate-in zoom-in-50 duration-500">
+                            <Activity className="h-8 w-8" />
+                        </div>
+                        <div>
+                            <h2 className="text-4xl font-black text-slate-900 tracking-tight">لوحة مدير الدائرة الصحية</h2>
+                            <p className="text-emerald-600 font-bold flex items-center gap-2 mt-1">
+                                <TrendingUp className="h-5 w-5" />
+                                <span className="text-lg">اعتماد ومتابعة مسار الدوام الصحي</span>
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h2 className="text-3xl font-black text-slate-900">لوحة مدير الدائرة الصحية</h2>
-                        <p className="text-emerald-600 font-bold flex items-center gap-2">
-                            <TrendingUp className="h-4 w-4" />
-                            اعتماد ومتابعة مسار الدوام الصحي
-                        </p>
+                    <div className="flex flex-wrap gap-4 w-full lg:w-auto">
+                        <Button 
+                            variant="outline" 
+                            onClick={() => window.print()} 
+                            className="gap-2 border-emerald-100 text-emerald-700 hover:bg-emerald-50/50 rounded-2xl h-14 px-6 font-bold shadow-sm transition-all hover:scale-[1.02]"
+                        >
+                            <Printer className="h-5 w-5" />
+                            تقرير الحضور
+                        </Button>
+                        <MonthYearPicker 
+                            month={month} 
+                            year={year} 
+                            onChange={(m, y) => { setMonth(m); setYear(y); }} 
+                        />
                     </div>
-                </div>
-                <div className="flex gap-3 w-full lg:w-auto">
-                    <Button variant="outline" onClick={() => window.print()} className="gap-2 border-emerald-100 text-emerald-700 hover:bg-emerald-50 rounded-xl h-12">
-                        <Printer className="h-5 w-5" />
-                        تقرير الحضور
-                    </Button>
-                    <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                 </div>
             </div>
 
             {/* Workflow Progress Monitoring */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                    { label: 'مرحلة المراقب', value: stageStats.supervisor, color: 'blue', icon: UserIcon },
-                    { label: 'مرحلة المراقب العام', value: stageStats.general, color: 'indigo', icon: ShieldCheck },
-                    { label: 'بانتظار اعتمادك', value: stageStats.health, color: 'emerald', icon: Activity },
-                    { label: 'تم التحويل للموارد', value: stageStats.completed, color: 'slate', icon: CheckCircle2 }
+                    { label: 'مرحلة المراقب', value: stageStats.supervisor, color: 'blue', icon: UserIcon, desc: 'سجلات أولية' },
+                    { label: 'مرحلة المراقب العام', value: stageStats.general, color: 'indigo', icon: ShieldCheck, desc: 'تحت التدقيق' },
+                    { label: 'بانتظار اعتمادك', value: stageStats.health, color: 'emerald', icon: Activity, desc: 'تحت المراجعة' },
+                    { label: 'تم التحويل للموارد', value: stageStats.completed, color: 'slate', icon: CheckCircle2, desc: 'سجلات معتمدة' }
                 ].map((stat, i) => (
-                    <Card key={i} className={`border-none shadow-sm bg-${stat.color}-50/50 hover:bg-${stat.color}-50 transition-colors cursor-default`}>
-                        <CardContent className="p-5 flex items-center justify-between">
+                    <Card key={i} className={`group relative border-none shadow-xl shadow-slate-200/40 bg-white hover:bg-${stat.color}-50/30 transition-all duration-300 rounded-[2rem] overflow-hidden`}>
+                        <div className={`absolute top-0 right-0 w-1 h-full bg-${stat.color}-500/50`} />
+                        <CardContent className="p-6 flex items-center justify-between">
                             <div>
-                                <p className={`text-xs font-black text-${stat.color}-600 uppercase tracking-wider mb-1`}>{stat.label}</p>
-                                <p className={`text-3xl font-black text-${stat.color}-900`}>{stat.value}</p>
+                                <p className={`text-[10px] font-black text-${stat.color}-600 uppercase tracking-[0.2em] mb-1 opacity-80`}>{stat.label}</p>
+                                <div className="flex items-baseline gap-2">
+                                    <p className={`text-4xl font-black text-slate-900 tracking-tight`}>{stat.value}</p>
+                                    <span className="text-xs text-slate-400 font-bold">{stat.desc}</span>
+                                </div>
                             </div>
-                            <div className={`bg-${stat.color}-100 p-3 rounded-xl text-${stat.color}-600`}>
-                                <stat.icon className="h-6 w-6" />
+                            <div className={`bg-${stat.color}-50 p-4 rounded-2xl text-${stat.color}-600 group-hover:scale-110 transition-transform`}>
+                                <stat.icon className="h-7 w-7" />
                             </div>
                         </CardContent>
                     </Card>
@@ -151,58 +185,82 @@ export function HealthDirectorView() {
             </div>
 
             {/* Main Action Area */}
-            <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                <div className="p-6 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div className="flex items-center gap-3 bg-slate-50 p-1 rounded-2xl w-full md:w-auto">
-                        <div className="relative flex-1 md:w-[300px]">
-                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden transition-all duration-500">
+                <div className="p-8 border-b border-slate-50 flex flex-col xl:flex-row justify-between items-center gap-6 bg-slate-50/30">
+                    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full xl:w-auto">
+                        <div className="relative group flex-1 md:w-[320px]">
+                            <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                             <Input
                                 placeholder="ابحث عن عامل أو رقم الموظف..."
-                                className="pr-10 bg-transparent border-none focus-visible:ring-0 shadow-none text-sm font-bold"
+                                className="pr-12 h-14 bg-white border-2 border-slate-100 focus:border-emerald-500 rounded-2xl text-base font-bold transition-all shadow-sm"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <Select
-                            className="w-[200px] border-none bg-white shadow-sm ring-0 rounded-xl"
-                            value={selectedAreaId}
-                            onChange={e => setSelectedAreaId(e.target.value)}
-                        >
-                            <option value="ALL">جميع القطاعات</option>
-                            {areas.map(area => (
-                                <option key={area.id} value={area.id}>{area.name}</option>
-                            ))}
-                        </Select>
+                        <div className="flex items-center gap-3">
+                            <Select
+                                className="h-14 min-w-[200px] border-2 border-slate-100 bg-white rounded-2xl font-bold shadow-sm"
+                                value={selectedAreaId}
+                                onChange={e => setSelectedAreaId(e.target.value)}
+                            >
+                                <option value="ALL">جميع القطاعات</option>
+                                {areas.map(area => (
+                                    <option key={area.id} value={area.id}>{area.name}</option>
+                                ))}
+                            </Select>
+                        </div>
                     </div>
 
-                    {filteredRecords.length > 0 && (
-                        <div className="flex items-center gap-2">
-                            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 font-bold px-4 py-2">
-                                {filteredRecords.length} سجلات تحتاج قرارك
-                            </Badge>
-                        </div>
-                    )}
+                    <div className="flex items-center gap-4 w-full xl:w-auto justify-end">
+                        {filteredRecords.length > 0 && (
+                            <div className="flex items-center gap-3">
+                                <Badge className="bg-emerald-50 text-emerald-700 border-2 border-emerald-100 font-black px-6 py-3 rounded-2xl text-sm shadow-sm">
+                                    {filteredRecords.length} سجلات تحتاج قرارك
+                                </Badge>
+                                <Button
+                                    onClick={handleBulkApprove}
+                                    disabled={isBulkApproving}
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 px-8 rounded-2xl shadow-lg shadow-emerald-200 transition-all hover:scale-[1.02] active:scale-95 gap-2"
+                                >
+                                    {isBulkApproving ? (
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                    ) : (
+                                        <>
+                                            <CheckCircle2 className="h-5 w-5" />
+                                            اعتماد الكل
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-right">
                         <thead>
                             <tr className="bg-slate-50/50 text-slate-400 text-[11px] font-black uppercase tracking-widest border-b border-slate-100">
-                                <th className="p-5">معلومات الموظف</th>
-                                <th className="p-5">القطاع / المنطقة</th>
-                                <th className="p-5 text-center">أيام العمل</th>
-                                <th className="p-5 text-center">الدورات الإضافية</th>
-                                <th className="p-5 text-center">الاستحقاق النهائي</th>
-                                <th className="p-5 text-center">القرار الإداري</th>
+                                <th className="p-6">معلومات الموظف</th>
+                                <th className="p-6">القطاع / المنطقة</th>
+                                <th className="p-6 text-center">أيام العمل</th>
+                                <th className="p-6 text-center">الإضافي (عادي/عطلة)</th>
+                                <th className="p-6 text-center">إضافي العيد</th>
+                                <th className="p-6 text-center">الاستحقاق النهائي</th>
+                                <th className="p-6 text-center">القرار الإداري</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {filteredRecords.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="p-20 text-center">
-                                        <div className="flex flex-col items-center gap-4 opacity-20">
-                                            <ShieldCheck className="h-16 w-16" />
-                                            <p className="text-xl font-bold">لا توجد سجلات بانتظار الاعتماد الصحي في هذه الفترة</p>
+                                    <td colSpan={7} className="p-32 text-center">
+                                        <div className="flex flex-col items-center gap-6 group">
+                                            <div className="bg-slate-50 p-8 rounded-[2.5rem] group-hover:scale-110 transition-transform duration-500">
+                                                <ShieldCheck className="h-20 w-20 text-slate-200" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <p className="text-2xl font-black text-slate-300">لا توجد سجلات تحتاج للاعتماد</p>
+                                                <p className="text-slate-400 font-bold">كل شيء يبدو منظماً بشكل رائع</p>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -211,51 +269,62 @@ export function HealthDirectorView() {
                                     const worker = workers.find(w => w.id === record.workerId);
                                     const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
                                     return (
-                                        <tr key={record.id} className="hover:bg-emerald-50/20 transition-all group">
-                                            <td className="p-5">
-                                                <div className="font-black text-slate-900 group-hover:text-emerald-700 transition-colors uppercase tracking-tight">
+                                        <tr key={record.id} className="hover:bg-emerald-50/30 transition-all group/row">
+                                            <td className="p-6">
+                                                <div className="font-black text-slate-900 group-hover/row:text-emerald-700 transition-colors text-lg tracking-tight">
                                                     {worker?.name}
                                                 </div>
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    <Badge variant="outline" className="text-[9px] font-mono border-slate-200 text-slate-400">
+                                                    <span className="text-[10px] font-mono font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
                                                         ID: {worker?.id}
-                                                    </Badge>
+                                                    </span>
                                                 </div>
                                             </td>
-                                            <td className="p-5">
+                                            <td className="p-6">
                                                 <div className="flex items-center gap-2 text-slate-600 font-bold">
-                                                    <MapPin className="h-4 w-4 opacity-30" />
+                                                    <div className="bg-slate-100 p-2 rounded-xl">
+                                                        <MapPin className="h-4 w-4 text-slate-400" />
+                                                    </div>
                                                     {areaName}
                                                 </div>
                                             </td>
-                                            <td className="p-5 text-center font-black text-slate-600 text-lg">
-                                                {record.normalDays}
+                                            <td className="p-6 text-center">
+                                                <span className="text-xl font-black text-slate-700">{record.normalDays}</span>
                                             </td>
-                                            <td className="p-5 text-center">
-                                                <div className="flex justify-center gap-1">
-                                                    <span className="bg-blue-50 text-blue-700 text-[10px] font-black px-2 py-0.5 rounded-full">ع: {record.overtimeNormalDays}</span>
-                                                    <span className="bg-amber-50 text-amber-700 text-[10px] font-black px-2 py-0.5 rounded-full">عط: {record.overtimeHolidayDays}</span>
+                                            <td className="p-6 text-center">
+                                                <div className="flex justify-center gap-2">
+                                                    <Badge className="bg-blue-50 text-blue-700 border-blue-100 font-black px-3 py-1 rounded-xl">
+                                                        {record.overtimeNormalDays} ع
+                                                    </Badge>
+                                                    <Badge className="bg-amber-50 text-amber-700 border-amber-100 font-black px-3 py-1 rounded-xl">
+                                                        {record.overtimeHolidayDays} ط
+                                                    </Badge>
                                                 </div>
                                             </td>
-                                            <td className="p-5 text-center">
-                                                <div className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-1.5 rounded-xl font-black shadow-lg shadow-emerald-100">
-                                                    {record.totalCalculatedDays}
-                                                    <span className="text-[10px] opacity-70">يوم</span>
+                                            <td className="p-6 text-center">
+                                                <Badge className="bg-purple-50 text-purple-700 border-purple-100 font-black px-4 py-1.5 rounded-xl text-sm">
+                                                    {record.overtimeEidDays || 0} يوم
+                                                </Badge>
+                                            </td>
+                                            <td className="p-6 text-center">
+                                                <div className="inline-flex flex-col items-center bg-gradient-to-br from-emerald-600 to-emerald-800 text-white px-6 py-2 rounded-2xl font-black shadow-lg shadow-emerald-200 ring-4 ring-emerald-50">
+                                                    <span className="text-xl leading-none">{record.totalCalculatedDays}</span>
+                                                    <span className="text-[10px] font-bold opacity-80 mt-0.5 uppercase tracking-tighter">يوم استحقاق</span>
                                                 </div>
                                             </td>
-                                            <td className="p-5 text-center">
+                                            <td className="p-6 text-center">
                                                 <div className="flex justify-center gap-3">
                                                     <Button
                                                         size="sm"
                                                         onClick={() => handleApprove(record.id)}
                                                         disabled={approvingIds.has(record.id)}
-                                                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-black h-10 px-6 rounded-xl shadow-lg shadow-emerald-100 transition-all active:scale-95"
+                                                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-black h-12 px-6 rounded-2xl shadow-xl shadow-emerald-200 transition-all hover:scale-105 active:scale-95"
                                                     >
                                                         {approvingIds.has(record.id) ? (
-                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                            <Loader2 className="h-5 w-5 animate-spin" />
                                                         ) : (
                                                             <div className="flex items-center gap-2">
-                                                                <CheckCircle2 className="h-4 w-4" />
+                                                                <CheckCircle2 className="h-5 w-5" />
                                                                 اعتماد الإدارة
                                                             </div>
                                                         )}
@@ -265,12 +334,13 @@ export function HealthDirectorView() {
                                                         variant="ghost"
                                                         onClick={() => handleReject(record.id)}
                                                         disabled={rejectingIds.has(record.id) || approvingIds.has(record.id)}
-                                                        className="h-10 px-4 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-bold rounded-xl"
+                                                        className="h-12 w-12 p-0 text-rose-500 hover:bg-rose-50 hover:text-rose-700 font-bold rounded-2xl transition-colors"
+                                                        title="رفض وإعادة للمراقب العام"
                                                     >
                                                         {rejectingIds.has(record.id) ? (
-                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                            <Loader2 className="h-5 w-5 animate-spin text-rose-500" />
                                                         ) : (
-                                                            <XCircle className="h-5 w-5" />
+                                                            <XCircle className="h-6 w-6" />
                                                         )}
                                                     </Button>
                                                 </div>
@@ -284,59 +354,83 @@ export function HealthDirectorView() {
                 </div>
             </div>
 
-            {/* Printable Area - Hidden by default */}
-            <div className="hidden print:block">
-                <div className="text-center mb-8 border-b-4 border-emerald-600 pb-6">
-                    <h1 className="text-3xl font-black mb-2">تقرير اعتماد الدائرة الصحية</h1>
-                    <p className="text-slate-600 font-bold">
-                        الفترة المالية: {month}/{year} | صادق عليه: {currentUser?.name}
-                    </p>
-                    <div className="mt-4 inline-block bg-emerald-50 px-6 py-2 rounded-full text-emerald-700 font-black border border-emerald-200 uppercase tracking-widest text-xs">
-                        نظام تأييد الدوام الذكي
+            {/* Printable Area - Enhanced for Officials */}
+            <div className="hidden print:block font-sans">
+                <div className="text-center mb-10 border-b-[6px] border-emerald-700 pb-8">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="text-right">
+                            <h3 className="text-xl font-black text-slate-900 leading-none">بلدية الدائرة المختصة</h3>
+                            <p className="text-sm font-bold text-slate-500 mt-1">قسم إدارة الكوادر الصحية</p>
+                        </div>
+                        <div className="bg-emerald-700 text-white p-4 rounded-3xl font-black text-2xl">
+                            LOGO
+                        </div>
+                        <div className="text-left text-sm font-bold text-slate-500">
+                            <p>التاريخ: {new Date().toLocaleDateString('ar-JO')}</p>
+                            <p>الرقم: AD/H-{year}-{month}</p>
+                        </div>
+                    </div>
+                    <h1 className="text-4xl font-black text-slate-900 mb-2">تقرير اعتماد الدائرة الصحية</h1>
+                    <div className="flex justify-center gap-12 mt-4">
+                        <p className="text-slate-600 font-black">الشهر: <span className="text-emerald-700">{month}</span></p>
+                        <p className="text-slate-600 font-black">السنة: <span className="text-emerald-700">{year}</span></p>
+                        <p className="text-slate-600 font-black">المسؤول: <span className="text-emerald-700">{currentUser?.name}</span></p>
                     </div>
                 </div>
 
-                <table className="w-full border-collapse border border-slate-300 text-sm">
+                <table className="w-full border-collapse text-sm mb-12">
                     <thead>
-                        <tr className="bg-slate-100 font-black text-slate-900 border-b-2 border-slate-300">
-                            <th className="border border-slate-300 p-3 text-right">اسم الموظف</th>
-                            <th className="border border-slate-300 p-3 text-right">المنطقة</th>
-                            <th className="border border-slate-300 p-3 text-center">أيام العمل</th>
-                            <th className="border border-slate-300 p-3 text-center">الإضافي</th>
-                            <th className="border border-slate-300 p-3 text-center">الإجمالي</th>
+                        <tr className="bg-slate-100 font-black border-2 border-slate-900">
+                            <th className="border-2 border-slate-900 p-4 text-right">م</th>
+                            <th className="border-2 border-slate-900 p-4 text-right">اسم الموظف</th>
+                            <th className="border-2 border-slate-900 p-4 text-right">المنطقة</th>
+                            <th className="border-2 border-slate-900 p-4 text-center">أيام العمل</th>
+                            <th className="border-2 border-slate-900 p-4 text-center">إضافي (د/ع)</th>
+                            <th className="border-2 border-slate-900 p-4 text-center">عطلة العيد</th>
+                            <th className="border-2 border-slate-900 p-4 text-center">الإجمالي المعتمد</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredRecords.map(record => {
+                        {filteredRecords.map((record, index) => {
                             const worker = workers.find(w => w.id === record.workerId);
                             const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
                             return (
-                                <tr key={record.id} className="border-b border-slate-200">
-                                    <td className="border border-slate-300 p-3 font-bold">{worker?.name}</td>
-                                    <td className="border border-slate-300 p-3">{areaName}</td>
-                                    <td className="border border-slate-300 p-3 text-center">{record.normalDays}</td>
-                                    <td className="border border-slate-300 p-3 text-center">{record.overtimeNormalDays + record.overtimeHolidayDays}</td>
-                                    <td className="border border-slate-300 p-3 text-center font-black">{record.totalCalculatedDays}</td>
+                                <tr key={record.id} className="border-b-2 border-slate-400">
+                                    <td className="border-2 border-slate-900 p-4 text-center font-bold">{index + 1}</td>
+                                    <td className="border-2 border-slate-900 p-4 font-black">{worker?.name}</td>
+                                    <td className="border-2 border-slate-900 p-4">{areaName}</td>
+                                    <td className="border-2 border-slate-900 p-4 text-center font-bold">{record.normalDays}</td>
+                                    <td className="border-2 border-slate-900 p-4 text-center font-bold">{record.overtimeNormalDays} / {record.overtimeHolidayDays}</td>
+                                    <td className="border-2 border-slate-900 p-4 text-center font-bold">{record.overtimeEidDays || 0}</td>
+                                    <td className="border-2 border-slate-900 p-4 text-center font-black bg-slate-50">{record.totalCalculatedDays}</td>
                                 </tr>
                             );
                         })}
                     </tbody>
                 </table>
 
-                <div className="mt-16 grid grid-cols-3 gap-12 text-center">
-                    <div className="space-y-12">
-                        <div className="font-black border-t-2 border-slate-900 pt-3">مدير الدائرة الصحية</div>
+                <div className="grid grid-cols-3 gap-8 mt-20">
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2">مدير الدائرة الصحية</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400">الاسم والتوقيع</p>
                     </div>
-                    <div className="space-y-12">
-                        <div className="font-black border-t-2 border-slate-900 pt-3">المراقب العام</div>
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2">المراقب العام</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400">الاسم والتوقيع</p>
                     </div>
-                    <div className="space-y-12">
-                        <div className="font-black border-t-2 border-slate-900 pt-3">ختم البلدية الرسمي</div>
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2">اعتماد عطوفة العمدة</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400 text-[10px] border-2 border-dashed border-slate-200 rounded-full w-24 h-24 flex items-center justify-center mx-auto">ختم الدائرة</p>
                     </div>
                 </div>
 
-                <div className="mt-20 text-[10px] text-slate-400 text-center font-mono">
-                    تم إنشاء هذا التقرير آلياً بتاريخ {new Date().toLocaleString('ar-JO')}
+                <div className="mt-32 pt-8 border-t border-slate-200 text-center">
+                    <p className="text-[10px] text-slate-400 font-mono tracking-widest">
+                        نظام تأييد الدوام الذكي - الرقم المرجعي للتقرير: {Math.random().toString(36).substring(7).toUpperCase()}
+                    </p>
                 </div>
             </div>
         </div>
