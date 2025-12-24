@@ -60,7 +60,7 @@ export function GeneralSupervisorView() {
     const handleApprove = async (recordId: string) => {
         setApprovingIds(prev => new Set(prev).add(recordId));
         try {
-            await approveAttendance(recordId, 'PENDING_HR');
+            await approveAttendance(recordId, 'PENDING_HEALTH');
         } catch (err) {
             console.error(err);
         } finally {

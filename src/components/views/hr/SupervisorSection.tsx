@@ -24,6 +24,7 @@ export function SupervisorSection({ supervisors, areas, searchTerm, onEdit, onDe
         const roleLabel = {
             'SUPERVISOR': 'مراقب ميداني',
             'GENERAL_SUPERVISOR': 'مراقب عام',
+            'HEALTH_DIRECTOR': 'مدير الدائرة الصحية',
             'HR': 'موارد بشرية',
             'FINANCE': 'مالية',
             'MAYOR': 'رئيس بلدية',
@@ -76,6 +77,7 @@ export function SupervisorSection({ supervisors, areas, searchTerm, onEdit, onDe
                                 const roleConfig = {
                                     'SUPERVISOR': { label: 'مراقب ميداني', color: 'blue' },
                                     'GENERAL_SUPERVISOR': { label: 'مراقب عام', color: 'indigo' },
+                                    'HEALTH_DIRECTOR': { label: 'مدير الدائرة الصحية', color: 'emerald' },
                                     'HR': { label: 'موارد بشرية', color: 'purple' },
                                     'FINANCE': { label: 'مالية', color: 'emerald' },
                                     'MAYOR': { label: 'رئيس بلدية', color: 'amber' },

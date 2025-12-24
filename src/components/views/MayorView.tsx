@@ -35,6 +35,7 @@ export function MayorView() {
         const pendingStages = {
             SUPERVISOR: periodRecords.filter(r => r.status === 'PENDING_SUPERVISOR').length,
             GS: periodRecords.filter(r => r.status === 'PENDING_GS').length,
+            HEALTH: periodRecords.filter(r => r.status === 'PENDING_HEALTH').length,
             HR: periodRecords.filter(r => r.status === 'PENDING_HR').length,
             FINANCE: periodRecords.filter(r => r.status === 'PENDING_FINANCE').length,
         };
@@ -189,6 +190,7 @@ export function MayorView() {
                                 {[
                                     { label: "المراقب", count: stats.pendingStages.SUPERVISOR, color: "#3B82F6", icon: Users },
                                     { label: "المراقب العام", count: stats.pendingStages.GS, color: "#6366F1", icon: ShieldCheck },
+                                    { label: "الصحة", count: stats.pendingStages.HEALTH, color: "#059669", icon: Activity },
                                     { label: "الموارد", count: stats.pendingStages.HR, color: "#F59E0B", icon: Briefcase },
                                     { label: "المالية", count: stats.pendingStages.FINANCE, color: "#14B8A6", icon: Landmark },
                                     { label: "الاعتماد", count: stats.totalApproved, color: "#10B981", icon: CheckCircle2 }
@@ -196,10 +198,10 @@ export function MayorView() {
                                     <div key={i} className="flex flex-col items-center group">
                                         <div className="relative mb-6">
                                             {/* Step Connector Line */}
-                                            {i < 4 && (
+                                            {i < 5 && (
                                                 <div className="absolute top-1/2 left-full w-full h-[3px] bg-slate-100 -translate-y-1/2 z-0 hidden md:block">
                                                     <div
-                                                        className="h-full bg-gradient-to-r from-slate-200 to-indigo-500/20 transition-all duration-1000"
+                                                        className="h-full bg-gradient-to-r from-slate-200 to-emerald-500/20 transition-all duration-1000"
                                                         style={{ width: step.count > 0 ? '100%' : '0%' }}
                                                     ></div>
                                                 </div>
@@ -207,7 +209,7 @@ export function MayorView() {
                                             {/* Icon Hexagon/Box */}
                                             <div
                                                 className={`
-                                                    w-20 h-20 rounded-3xl flex items-center justify-center transition-all duration-500 shadow-xl relative z-10
+                                                    w-16 h-16 md:w-20 md:h-20 rounded-3xl flex items-center justify-center transition-all duration-500 shadow-xl relative z-10
                                                     ${step.count > 0 ? 'scale-110 -rotate-2 group-hover:rotate-3' : 'opacity-40 grayscale group-hover:grayscale-0'}
                                                 `}
                                                 style={{
@@ -252,9 +254,11 @@ export function MayorView() {
                                             `تم رصد تكدس في مرحلة المراقبين الميدانيين (${stats.pendingStages.SUPERVISOR} سجل). يوصى بتفعيل آليات المتابعة الحثيثة لضمان ترحيل البيانات بالسرعة المطلوبة.`
                                             : stats.pendingStages.GS > 5 ?
                                                 `التدفق حالياً متوقف عند المراقب العام. هناك ${stats.pendingStages.GS} سجل تنتظر المراجعة. مستوى الإشراف العام يحتاج للمتابعة المباشرة.`
-                                                : stats.pendingStages.FINANCE > 2 ?
-                                                    `وصلت السجلات للمرحلة النهائية في الدائرة المالية. القيمة المالية الجاهزة للصرف هي ${stats.approvedAmount.toLocaleString()} د.أ.`
-                                                    : "سير العمل يسير بكفاءة عالية. جميع المسارات مفتوحة والاعتمادات تتم وفق الجدول الزمني المخطط له بنجاح."}
+                                                : stats.pendingStages.HEALTH > 5 ?
+                                                    `هناك ${stats.pendingStages.HEALTH} سجل بانتظار اعتماد مدير الدائرة الصحية. يرجى التنسيق لضمان سرعة الإجراء.`
+                                                    : stats.pendingStages.FINANCE > 2 ?
+                                                        `وصلت السجلات للمرحلة النهائية في الدائرة المالية. القيمة المالية الجاهزة للصرف هي ${stats.approvedAmount.toLocaleString()} د.أ.`
+                                                        : "سير العمل يسير بكفاءة عالية. جميع المسارات مفتوحة والاعتمادات تتم وفق الجدول الزمني المخطط له بنجاح."}
                                     </p>
                                     <div className="flex gap-4 pt-2">
                                         <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-none px-4 py-1.5 font-bold cursor-default">
@@ -359,6 +363,7 @@ export function MayorView() {
                                     const statusConfig = {
                                         PENDING_SUPERVISOR: { label: 'عند المراقب', color: 'slate' },
                                         PENDING_GS: { label: 'عند المراقب العام', color: 'indigo' },
+                                        PENDING_HEALTH: { label: 'عند مدير الصحة', color: 'emerald' },
                                         PENDING_HR: { label: 'عند الموارد البشرية', color: 'amber' },
                                         PENDING_FINANCE: { label: 'عند المالية', color: 'teal' },
                                         APPROVED: { label: 'تم الاعتماد النهائي', color: 'emerald' }

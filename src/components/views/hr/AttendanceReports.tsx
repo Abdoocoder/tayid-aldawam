@@ -19,12 +19,12 @@ interface AttendanceReportsProps {
     reportAreaFilter: string;
     reportStatusFilter: string;
     getWorkerAttendance: (workerId: string, month: number, year: number) => AttendanceRecord | undefined;
-    approveAttendance: (recordId: string, nextStatus: 'PENDING_FINANCE') => Promise<void>;
+    approveAttendance: (recordId: string, nextStatus: 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED') => Promise<void>;
     onReject?: (recordId: string) => Promise<void>;
     onMonthChange: (m: number, y: number) => void;
     onSearchChange: (value: string) => void;
     onAreaFilterChange: (value: string) => void;
-    onStatusFilterChange: (value: 'ALL' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED') => void;
+    onStatusFilterChange: (value: 'ALL' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED') => void;
     onExportCSV: () => void;
     onBulkApprove?: () => void;
 }
@@ -96,9 +96,11 @@ export function AttendanceReports({
                         <Select
                             className="bg-gray-50/50 border-gray-200 min-w-[140px] flex-1 sm:flex-none"
                             value={reportStatusFilter}
-                            onChange={e => onStatusFilterChange(e.target.value as 'ALL' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED')}
+                            onChange={e => onStatusFilterChange(e.target.value as 'ALL' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED')}
                         >
                             <option value="ALL">كل الحالات</option>
+                            <option value="PENDING_GS">بانتظار المراقب العام</option>
+                            <option value="PENDING_HEALTH">بانتظار الصحة</option>
                             <option value="PENDING_HR">بانتظار الموارد</option>
                             <option value="PENDING_FINANCE">بانتظار الرواتب</option>
                             <option value="APPROVED">معتمد نهائياً</option>
@@ -197,12 +199,16 @@ export function AttendanceReports({
                                                     <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${record.status === 'APPROVED' ? 'text-green-600 bg-green-50 border-green-100' :
                                                         record.status === 'PENDING_FINANCE' ? 'text-blue-600 bg-blue-50 border-blue-100' :
                                                             record.status === 'PENDING_HR' ? 'text-purple-600 bg-purple-50 border-purple-100' :
-                                                                'text-amber-600 bg-amber-50 border-amber-100'
+                                                                record.status === 'PENDING_HEALTH' ? 'text-emerald-600 bg-emerald-50 border-emerald-100' :
+                                                                    record.status === 'PENDING_GS' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' :
+                                                                        'text-amber-600 bg-amber-50 border-amber-100'
                                                         }`}>
                                                         {record.status === 'APPROVED' ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
                                                         {record.status === 'APPROVED' ? 'معتمد' :
                                                             record.status === 'PENDING_FINANCE' ? 'بانتظار الرواتب' :
-                                                                record.status === 'PENDING_HR' ? 'جاهز للاعتماد' : 'قيد المراجعة'}
+                                                                record.status === 'PENDING_HR' ? 'بانتظار الموارد' :
+                                                                    record.status === 'PENDING_HEALTH' ? 'بانتظار الصحة' :
+                                                                        record.status === 'PENDING_GS' ? 'بانتظار المراقب العام' : 'قيد المراجعة'}
                                                     </div>
                                                 ) : (
                                                     <div className="flex items-center gap-1 text-gray-400 text-[10px] font-bold bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">

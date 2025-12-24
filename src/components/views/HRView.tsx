@@ -82,7 +82,7 @@ export function HRView() {
     const [year, setYear] = useState(new Date().getFullYear());
     const [reportSearchTerm, setReportSearchTerm] = useState('');
     const [reportAreaFilter, setReportAreaFilter] = useState('ALL');
-    const [reportStatusFilter, setReportStatusFilter] = useState<'ALL' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED'>('PENDING_HR');
+    const [reportStatusFilter, setReportStatusFilter] = useState<'ALL' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED'>('PENDING_HR');
 
     const filteredUsers = useMemo(() => users.filter(u => u.role !== 'ADMIN'), [users]);
 
@@ -554,6 +554,7 @@ export function HRView() {
                                         >
                                             <option value="SUPERVISOR">مراقب ميداني</option>
                                             <option value="GENERAL_SUPERVISOR">مراقب عام</option>
+                                            <option value="HEALTH_DIRECTOR">مدير الدائرة الصحية</option>
                                             <option value="HR">الموارد البشرية</option>
                                             <option value="FINANCE">المالية</option>
                                             <option value="MAYOR">رئيس البلدية</option>

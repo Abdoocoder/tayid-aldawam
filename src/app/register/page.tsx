@@ -168,6 +168,7 @@ export default function RegisterPage() {
                                 >
                                     <option value="SUPERVISOR">مراقب</option>
                                     <option value="GENERAL_SUPERVISOR">مراقب عام</option>
+                                    <option value="HEALTH_DIRECTOR">مدير الدائرة الصحية</option>
                                     <option value="HR">موارد بشرية</option>
                                     <option value="FINANCE">قسم مالي</option>
                                     <option value="MAYOR">رئيس البلدية</option>
