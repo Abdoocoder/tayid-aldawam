@@ -155,6 +155,12 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         setError(null);
         console.log(`AttendanceContext: Triggering loadData with role: ${appUser?.role}`);
         try {
+            if (!appUser?.isActive) {
+                console.log('AttendanceContext: User is not active, skipping data load');
+                setIsLoading(false);
+                return;
+            }
+
             const promises: Promise<unknown>[] = [
                 loadWorkers(),
                 loadAttendance(),
@@ -183,7 +189,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     // --- Subscriptions ---
 
     useEffect(() => {
-        if (!appUser) return;
+        if (!appUser || !appUser.isActive) return;
 
         loadData();
 
