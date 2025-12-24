@@ -26,7 +26,7 @@ EXCEPTION
     RAISE LOG 'Error in handle_new_user: %', SQLERRM;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- 2. Ensure trigger is active
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
