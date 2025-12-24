@@ -317,11 +317,12 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         try {
             const { error } = await supabase.from('users').delete().eq('id', userId);
             if (error) throw error;
+            await loadUsers();
         } catch (err) {
             console.error('Failed to delete user:', err);
             throw err;
         }
-    }, []);
+    }, [loadUsers]);
 
     const addArea = useCallback(async (name: string) => {
         try {
