@@ -73,78 +73,80 @@ export function SupervisorView() {
     return (
         <div className="space-y-6">
             {/* Header & Month Picker */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white/80 backdrop-blur-md p-4 md:p-6 rounded-3xl shadow-lg shadow-blue-900/5 border border-white/20 sticky top-4 z-20 transition-all duration-300">
                 <div className="flex items-center gap-4">
-                    <div className="bg-blue-600 p-3 rounded-lg text-white shadow-lg shadow-blue-100">
+                    <div className="bg-gradient-to-br from-blue-600 to-cyan-500 p-3.5 rounded-2xl text-white shadow-lg shadow-blue-500/30 transform hover:scale-105 transition-transform duration-300">
                         <ClipboardList className="h-6 w-6" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900 leading-tight">لوحة المراقب</h2>
-                        <p className="text-gray-500 text-sm flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            {currentUser?.name}
-                        </p>
+                        <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 leading-tight">لوحة المراقب</h2>
+                        <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 px-2 py-0.5 rounded-full text-xs font-bold flex items-center gap-1">
+                                <User className="h-3 w-3" />
+                                {currentUser?.name}
+                            </Badge>
+                        </div>
                     </div>
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                     <Button
                         variant="outline"
                         onClick={() => window.print()}
-                        className="gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 w-full sm:w-auto order-2 sm:order-1"
+                        className="gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 w-full sm:w-auto order-2 sm:order-1 hover:scale-105 transition-transform"
                     >
                         <Printer className="h-4 w-4" />
                         نسخة ورقية
                     </Button>
-                    <div className="order-1 sm:order-2 w-full sm:w-auto">
+                    <div className="order-1 sm:order-2 w-full sm:w-auto shadow-sm hover:shadow-md transition-shadow rounded-lg">
                         <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                     </div>
                 </div>
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="border-none shadow-sm bg-blue-50/50">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100 fill-mode-both">
+                <Card className="border-none shadow-sm bg-gradient-to-br from-blue-50 to-blue-100/50 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="bg-blue-100 p-2 rounded-full text-blue-600">
-                            <Users className="h-5 w-5" />
+                        <div className="bg-white p-3 rounded-2xl text-blue-600 shadow-sm ring-1 ring-blue-100">
+                            <Users className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-xs text-blue-600 font-bold">إجمالي العمال</p>
-                            <p className="text-2xl font-black text-blue-900">{totalWorkers}</p>
+                            <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">إجمالي العمال</p>
+                            <p className="text-3xl font-black text-blue-900">{totalWorkers}</p>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm bg-green-50/50">
+                <Card className="border-none shadow-sm bg-gradient-to-br from-green-50 to-green-100/50 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="bg-green-100 p-2 rounded-full text-green-600">
-                            <CheckCircle className="h-5 w-5" />
+                        <div className="bg-white p-3 rounded-2xl text-green-600 shadow-sm ring-1 ring-green-100">
+                            <CheckCircle className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-xs text-green-600 font-bold">تم الإدخال</p>
-                            <p className="text-2xl font-black text-green-900">{completedEntries}</p>
+                            <p className="text-xs text-green-600 font-bold uppercase tracking-wider mb-1">تم الإدخال</p>
+                            <p className="text-3xl font-black text-green-900">{completedEntries}</p>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm bg-orange-50/50">
+                <Card className="border-none shadow-sm bg-gradient-to-br from-orange-50 to-orange-100/50 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="bg-orange-100 p-2 rounded-full text-orange-600">
-                            <Clock className="h-5 w-5" />
+                        <div className="bg-white p-3 rounded-2xl text-orange-600 shadow-sm ring-1 ring-orange-100">
+                            <Clock className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-xs text-orange-600 font-bold">بانتظار الإدخال</p>
-                            <p className="text-2xl font-black text-orange-900">{pendingEntries}</p>
+                            <p className="text-xs text-orange-600 font-bold uppercase tracking-wider mb-1">بانتظار الإدخال</p>
+                            <p className="text-3xl font-black text-orange-900">{pendingEntries}</p>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm bg-purple-50/50">
+                <Card className="border-none shadow-sm bg-gradient-to-br from-purple-50 to-purple-100/50 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="bg-purple-100 p-2 rounded-full text-purple-600">
-                            <Target className="h-5 w-5" />
+                        <div className="bg-white p-3 rounded-2xl text-purple-600 shadow-sm ring-1 ring-purple-100">
+                            <Target className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-xs text-purple-600 font-bold">نسبة الإنجاز</p>
+                            <p className="text-xs text-purple-600 font-bold uppercase tracking-wider mb-1">نسبة الإنجاز</p>
                             <div className="flex items-end gap-2">
-                                <p className="text-2xl font-black text-purple-900">{completionPercentage}%</p>
+                                <p className="text-3xl font-black text-purple-900">{completionPercentage}%</p>
                             </div>
                         </div>
                     </CardContent>
@@ -177,16 +179,16 @@ export function SupervisorView() {
             </div>
 
             {/* Workers Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-in fade-in zoom-in-95 duration-500 delay-200">
                 {filteredWorkers.length === 0 ? (
-                    <div className="col-span-full bg-white rounded-xl border border-dashed border-gray-300 py-16 text-center">
-                        <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Search className="h-8 w-8 text-gray-300" />
+                    <div className="col-span-full bg-white rounded-3xl border border-dashed border-gray-300 py-16 text-center">
+                        <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                            <Search className="h-10 w-10 text-gray-400" />
                         </div>
-                        <h3 className="text-gray-900 font-bold mb-1">لا توجد نتائج</h3>
-                        <p className="text-gray-500 text-sm">لم نجد أي عامل يطابق معايير البحث الحالية</p>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">لا توجد نتائج</h3>
+                        <p className="text-gray-500 text-sm mb-4">لم نجد أي عامل يطابق معايير البحث الحالية</p>
                         {(searchTerm || selectedAreaId !== "ALL") && (
-                            <Button variant="link" className="text-blue-600 mt-2" onClick={() => { setSearchTerm(""); setSelectedAreaId("ALL"); }}>
+                            <Button variant="outline" className="text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => { setSearchTerm(""); setSelectedAreaId("ALL"); }}>
                                 مسح فلاتر البحث
                             </Button>
                         )}
@@ -198,29 +200,28 @@ export function SupervisorView() {
                         const areaName = areas.find(a => a.id === worker.areaId)?.name || "غير محدد";
 
                         return (
-                            <Card key={worker.id} className={`group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden border-2 ${isFilled ? 'border-green-500/20 bg-gradient-to-br from-white to-green-50/30' : 'border-transparent bg-white shadow-sm'}`}>
-                                <div className={`absolute top-0 right-0 w-16 h-16 -mr-8 -mt-8 rotate-45 transition-colors ${isFilled ? 'bg-green-500' : 'bg-gray-100'}`} />
+                            <Card key={worker.id} className={`group hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 relative overflow-hidden border ${isFilled ? 'border-green-500/20 bg-gradient-to-br from-white to-green-50/40' : 'border-gray-100 bg-white shadow-sm'}`}>
+                                <div className={`absolute top-0 right-0 w-20 h-20 -mr-10 -mt-10 rotate-45 transition-colors duration-300 ${isFilled ? 'bg-green-500 shadow-lg shadow-green-500/30' : 'bg-gray-100'}`} />
 
                                 {isFilled && (
-                                    <div className="absolute top-1.5 right-1.5 z-10">
-                                        <CheckCircle className="text-white h-3 w-3 md:h-4 md:w-4" />
+                                    <div className="absolute top-2 right-2.5 z-10">
+                                        <CheckCircle className="text-white h-4 w-4 drop-shadow-md" />
                                     </div>
                                 )}
 
-                                <CardHeader className="pb-3">
+                                <CardHeader className="pb-3 pt-5 px-5">
                                     <div className="flex items-start justify-between gap-3">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`p-2 rounded-xl transition-colors ${isFilled ? 'bg-green-100 text-green-700' : 'bg-blue-50 text-blue-600'}`}>
+                                        <div className="flex items-center gap-3 w-full">
+                                            <div className={`p-2.5 rounded-2xl transition-all duration-300 ${isFilled ? 'bg-green-100 text-green-700 shadow-inner' : 'bg-blue-50 text-blue-600 group-hover:bg-blue-100 group-hover:scale-110'}`}>
                                                 <User className="h-5 w-5" />
                                             </div>
-                                            <div>
-                                                <CardTitle className="text-base font-bold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">{worker.name}</CardTitle>
-                                                <div className="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
-                                                    <span className="bg-gray-100 px-1.5 rounded">ID: {worker.id}</span>
-                                                    <span>•</span>
-                                                    <span className="flex items-center gap-0.5">
-                                                        <MapPin className="h-2 w-2" />
-                                                        {areaName}
+                                            <div className="flex-1 min-w-0">
+                                                <CardTitle className="text-base font-bold text-gray-900 truncate group-hover:text-blue-700 transition-colors">{worker.name}</CardTitle>
+                                                <div className="flex items-center gap-2 text-[11px] text-gray-400 font-medium mt-1">
+                                                    <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 font-mono tracking-wider">{worker.id}</span>
+                                                    <span className="flex items-center gap-1 truncate max-w-[120px]" title={areaName}>
+                                                        <MapPin className="h-3 w-3 flex-shrink-0" />
+                                                        <span className="truncate">{areaName}</span>
                                                     </span>
                                                 </div>
                                             </div>
@@ -228,21 +229,22 @@ export function SupervisorView() {
                                     </div>
                                 </CardHeader>
 
-                                <CardContent className="space-y-4">
-                                    <div className="flex flex-col gap-1 w-full bg-gray-50/50 p-2 rounded-lg">
+                                <CardContent className="space-y-4 px-5 pb-5">
+                                    <div className="flex flex-col gap-1 w-full bg-white/60 backdrop-blur-sm p-2 rounded-xl border border-gray-100/50 shadow-sm">
                                         <div className="flex justify-between items-center">
-                                            <Badge variant={isFilled ? "success" : "secondary"} className="h-6">
+                                            <Badge variant={isFilled ? "success" : "secondary"} className={`h-7 px-3 rounded-lg font-bold shadow-sm flex items-center gap-1.5 ${isFilled ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${isFilled ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
                                                 {isFilled ? (
-                                                    record.status === 'PENDING_GS' ? "بانتظار المراقب العام" :
-                                                        record.status === 'PENDING_HR' ? "بانتظار الموارد البشرية" :
-                                                            record.status === 'PENDING_FINANCE' ? "بانتظار قسم الرواتب" :
+                                                    record.status === 'PENDING_GS' ? "بانتظار المشرف" :
+                                                        record.status === 'PENDING_HR' ? "بانتظار الموارد" :
+                                                            record.status === 'PENDING_FINANCE' ? "بانتظار الرواتب" :
                                                                 record.status === 'PENDING_SUPERVISOR' ? "معاد للتصحيح" :
                                                                     "معتمد نهائياً"
                                                 ) : "بانتظار الإدخال"}
                                             </Badge>
-                                            <Link href={`/dashboard/entry/${worker.id}?month=${month}&year=${year}`}>
-                                                <Button size="sm" variant={isFilled ? "ghost" : "default"} className={`h-8 px-4 rounded-lg font-bold shadow-sm ${!isFilled ? 'bg-blue-600 hover:bg-blue-700' : 'text-blue-600 hover:bg-blue-50 border-blue-100 border'}`}>
-                                                    {isFilled ? (record.status === 'PENDING_SUPERVISOR' ? "تصحيح" : "تعديل") : "إدخال الحضور"}
+                                            <Link href={`/dashboard/entry/${worker.id}?month=${month}&year=${year}`} className="w-auto">
+                                                <Button size="sm" variant={isFilled ? "ghost" : "default"} className={`h-8 px-4 rounded-lg font-bold shadow-sm transition-all active:scale-95 ${!isFilled ? 'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-200 hover:shadow-lg text-white' : 'text-blue-600 hover:bg-blue-50 border-blue-100 border'}`}>
+                                                    {isFilled ? (record.status === 'PENDING_SUPERVISOR' ? "تصحيح" : "تعديل") : "إدخال"}
                                                 </Button>
                                             </Link>
                                         </div>
@@ -250,12 +252,12 @@ export function SupervisorView() {
 
                                     {isFilled && (
                                         <div className="grid grid-cols-2 gap-2 text-[11px]">
-                                            <div className="bg-white border rounded-lg p-2 flex flex-col items-center">
-                                                <span className="text-gray-400 font-medium mb-0.5 text-[9px]">أيام العمل</span>
+                                            <div className="bg-white border border-gray-100 rounded-xl p-2.5 flex flex-col items-center shadow-sm">
+                                                <span className="text-gray-400 font-medium mb-0.5 text-[9px] uppercase tracking-wider">أيام العمل</span>
                                                 <span className="text-gray-900 font-black text-sm">{record.normalDays}</span>
                                             </div>
-                                            <div className="bg-white border rounded-lg p-2 flex flex-col items-center">
-                                                <span className="text-gray-400 font-medium mb-0.5 text-[9px]">الإجمالي المعتمد</span>
+                                            <div className="bg-white border border-gray-100 rounded-xl p-2.5 flex flex-col items-center shadow-sm">
+                                                <span className="text-gray-400 font-medium mb-0.5 text-[9px] uppercase tracking-wider">الإجمالي</span>
                                                 <span className="text-blue-600 font-black text-sm">{record.totalCalculatedDays}</span>
                                             </div>
                                         </div>

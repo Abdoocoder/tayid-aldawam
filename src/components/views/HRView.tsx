@@ -319,18 +319,18 @@ export function HRView() {
     return (
         <div className="space-y-6 pb-20">
             {/* Header section */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white/80 backdrop-blur-md p-4 md:p-6 rounded-3xl shadow-lg shadow-purple-900/5 border border-white/20 sticky top-4 z-20 transition-all duration-300">
                 <div className="flex items-center gap-4">
-                    <div className="bg-purple-600 p-3 rounded-xl text-white shadow-lg shadow-purple-100">
+                    <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-3.5 rounded-2xl text-white shadow-lg shadow-purple-500/30 transform hover:scale-105 transition-transform duration-300">
                         <LayoutDashboard className="h-6 w-6" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900 leading-tight">لوحة الموارد البشرية</h2>
-                        <p className="text-gray-500 text-sm">مراقبة الحضور وإدارة الكوادر البشرية</p>
+                        <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 leading-tight">لوحة الموارد البشرية</h2>
+                        <p className="text-gray-500 text-sm font-medium">نظام إدارة الكوادر الذكي</p>
                     </div>
                 </div>
 
-                <div className="flex bg-gray-100 p-1 rounded-xl border border-gray-200 w-full lg:w-auto overflow-x-auto no-scrollbar">
+                <div className="flex bg-gray-100/50 p-1.5 rounded-2xl border border-gray-200/50 w-full lg:w-auto overflow-x-auto no-scrollbar backdrop-blur-sm">
                     {[
                         { id: 'reports', label: 'التقارير', icon: FileText },
                         { id: 'supervisors', label: 'المراقبين', icon: Users },
@@ -340,12 +340,12 @@ export function HRView() {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                            className={`flex-1 lg:flex-none px-4 md:px-6 py-2 rounded-lg text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === tab.id
-                                ? 'bg-white text-purple-600 shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50/50'
+                            className={`flex-1 lg:flex-none px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2.5 whitespace-nowrap ${activeTab === tab.id
+                                ? 'bg-white text-purple-700 shadow-md shadow-purple-900/5 scale-100'
+                                : 'text-gray-500 hover:text-gray-900 hover:bg-white/50 scale-95 hover:scale-100'
                                 }`}
                         >
-                            <tab.icon className="h-3 w-3 md:h-4 md:w-4" />
+                            <tab.icon className={`h-4 w-4 transition-transform duration-300 ${activeTab === tab.id ? 'scale-110' : ''}`} />
                             {tab.label}
                         </button>
                     ))}
@@ -366,66 +366,66 @@ export function HRView() {
             )}
 
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="border-none shadow-sm bg-blue-50/50 overflow-hidden relative">
-                    <div className="absolute -right-4 -bottom-4 opacity-10 text-blue-900">
-                        <HardHat className="h-24 w-24" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100 fill-mode-both">
+                <Card className="border-none shadow-sm bg-gradient-to-br from-blue-50 to-blue-100/50 overflow-hidden relative hover:shadow-md transition-shadow duration-300">
+                    <div className="absolute -right-6 -bottom-6 opacity-10 text-blue-600 rotate-12 transform scale-150">
+                        <HardHat className="h-32 w-32" />
                     </div>
-                    <CardContent className="p-4 md:p-5 flex items-center gap-3 md:gap-4 relative z-10">
-                        <div className="bg-blue-100 p-2 md:p-2.5 rounded-xl text-blue-600">
-                            <Users className="h-4 w-4 md:h-5 md:w-5" />
+                    <CardContent className="p-4 md:p-6 flex items-center gap-4 relative z-10">
+                        <div className="bg-white p-3 rounded-2xl text-blue-600 shadow-sm ring-1 ring-blue-100">
+                            <Users className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-[10px] md:text-xs text-blue-600 font-bold mb-0.5">إجمالي العمال</p>
-                            <p className="text-xl md:text-2xl font-black text-blue-900">{totalWorkersCount}</p>
+                            <p className="text-xs text-blue-600 font-bold mb-1 uppercase tracking-wider">إجمالي العمال</p>
+                            <p className="text-3xl font-black text-blue-900">{totalWorkersCount}</p>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-sm bg-purple-50/50 overflow-hidden relative">
-                    <div className="absolute -right-4 -bottom-4 opacity-10 text-purple-900">
-                        <Users className="h-24 w-24" />
+                <Card className="border-none shadow-sm bg-gradient-to-br from-purple-50 to-purple-100/50 overflow-hidden relative hover:shadow-md transition-shadow duration-300">
+                    <div className="absolute -right-6 -bottom-6 opacity-10 text-purple-600 rotate-12 transform scale-150">
+                        <Users className="h-32 w-32" />
                     </div>
-                    <CardContent className="p-4 md:p-5 flex items-center gap-3 md:gap-4 relative z-10">
-                        <div className="bg-purple-100 p-2 md:p-2.5 rounded-xl text-purple-600">
-                            <ShieldCheck className="h-4 w-4 md:h-5 md:w-5" />
+                    <CardContent className="p-4 md:p-6 flex items-center gap-4 relative z-10">
+                        <div className="bg-white p-3 rounded-2xl text-purple-600 shadow-sm ring-1 ring-purple-100">
+                            <ShieldCheck className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-[10px] md:text-xs text-purple-600 font-bold mb-0.5">المراقبين النشطين</p>
-                            <p className="text-xl md:text-2xl font-black text-purple-900">{activeSupervisorsCount}</p>
+                            <p className="text-xs text-purple-600 font-bold mb-1 uppercase tracking-wider">المراقبين النشطين</p>
+                            <p className="text-3xl font-black text-purple-900">{activeSupervisorsCount}</p>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-sm bg-amber-50/50 overflow-hidden relative">
-                    <div className="absolute -right-4 -bottom-4 opacity-10 text-amber-900">
-                        <MapPin className="h-24 w-24" />
+                <Card className="border-none shadow-sm bg-gradient-to-br from-amber-50 to-amber-100/50 overflow-hidden relative hover:shadow-md transition-shadow duration-300">
+                    <div className="absolute -right-6 -bottom-6 opacity-10 text-amber-600 rotate-12 transform scale-150">
+                        <MapPin className="h-32 w-32" />
                     </div>
-                    <CardContent className="p-4 md:p-5 flex items-center gap-3 md:gap-4 relative z-10">
-                        <div className="bg-amber-100 p-2 md:p-2.5 rounded-xl text-amber-600">
-                            <Briefcase className="h-4 w-4 md:h-5 md:w-5" />
+                    <CardContent className="p-4 md:p-6 flex items-center gap-4 relative z-10">
+                        <div className="bg-white p-3 rounded-2xl text-amber-600 shadow-sm ring-1 ring-amber-100">
+                            <Briefcase className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-[10px] md:text-xs text-amber-600 font-bold mb-0.5">إجمالي القطاعات</p>
-                            <p className="text-xl md:text-2xl font-black text-amber-900">{totalSectorsCount}</p>
+                            <p className="text-xs text-amber-600 font-bold mb-1 uppercase tracking-wider">إجمالي القطاعات</p>
+                            <p className="text-3xl font-black text-amber-900">{totalSectorsCount}</p>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-sm bg-green-50/50 overflow-hidden relative">
-                    <div className="absolute -right-4 -bottom-4 opacity-10 text-green-900">
-                        <TrendingUp className="h-24 w-24" />
+                <Card className="border-none shadow-sm bg-gradient-to-br from-green-50 to-green-100/50 overflow-hidden relative hover:shadow-md transition-shadow duration-300">
+                    <div className="absolute -right-6 -bottom-6 opacity-10 text-green-600 rotate-12 transform scale-150">
+                        <TrendingUp className="h-32 w-32" />
                     </div>
-                    <CardContent className="p-4 md:p-5 flex items-center gap-3 md:gap-4 relative z-10">
-                        <div className="bg-green-100 p-2 md:p-2.5 rounded-xl text-green-600">
-                            <TrendingUp className="h-4 w-4 md:h-5 md:w-5" />
+                    <CardContent className="p-4 md:p-6 flex items-center gap-4 relative z-10">
+                        <div className="bg-white p-3 rounded-2xl text-green-600 shadow-sm ring-1 ring-green-100">
+                            <TrendingUp className="h-6 w-6" />
                         </div>
                         <div className="flex-1">
-                            <p className="text-[10px] md:text-xs text-green-600 font-bold mb-0.5">نسبة الإنجاز ({month}/{year})</p>
-                            <div className="flex items-center gap-2">
-                                <p className="text-xl md:text-2xl font-black text-green-900">{completionRate}%</p>
-                                <div className="flex-1 h-2 bg-green-200/50 rounded-full overflow-hidden">
-                                    <div className="h-full bg-green-500 rounded-full" style={{ width: `${completionRate}%` }} />
+                            <p className="text-xs text-green-600 font-bold mb-1 uppercase tracking-wider">نسبة الإنجاز ({month}/{year})</p>
+                            <div className="flex items-center gap-3">
+                                <p className="text-3xl font-black text-green-900">{completionRate}%</p>
+                                <div className="flex-1 h-2.5 bg-green-200/50 rounded-full overflow-hidden shadow-inner">
+                                    <div className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all duration-1000 ease-out" style={{ width: `${completionRate}%` }} />
                                 </div>
                             </div>
                         </div>
@@ -609,118 +609,127 @@ export function HRView() {
             )}
 
 
-            {activeTab === 'reports' && (
-                <AttendanceReports
-                    workers={workers}
-                    areas={areas}
-                    month={month}
-                    year={year}
-                    reportSearchTerm={reportSearchTerm}
-                    reportAreaFilter={reportAreaFilter}
-                    reportStatusFilter={reportStatusFilter}
-                    getWorkerAttendance={getWorkerAttendance}
-                    approveAttendance={async (id, status) => {
-                        await approveAttendance(id, status);
-                        showToast('تم اعتماد السجل بنجاح');
-                    }}
-                    onReject={async (id) => {
-                        if (!confirm('هل أنت متأكد من رفض السجل وإعادته للمراقب العام؟')) return;
-                        try {
-                            await rejectAttendance(id, 'PENDING_GS');
-                            showToast('تم رفض السجل وإعادته للمراقب العام');
-                        } catch (err) {
-                            console.error(err);
-                            showToast('فشل في رفض السجل', '', 'error');
-                        }
-                    }}
-                    onMonthChange={(m, y) => { setMonth(m); setYear(y); }}
-                    onSearchChange={setReportSearchTerm}
-                    onAreaFilterChange={setReportAreaFilter}
-                    onStatusFilterChange={setReportStatusFilter}
-                    onExportCSV={handleExportCSV}
-                    onBulkApprove={handleBulkApprove}
-                />
-            )}
-
-            {activeTab === 'supervisors' && (
-                <SupervisorSection
-                    supervisors={supervisors}
-                    areas={areas}
-                    searchTerm={searchTerm}
-                    onEdit={(s) => {
-                        setEditingItem({ type: 'supervisor', data: s });
-                        setSelectedAreaIds(s.areas?.map(a => a.id) || []);
-                    }}
-                    onDelete={handleDeleteSupervisor}
-                    onAdd={() => setEditingItem({ type: 'supervisor', data: { id: 'NEW', name: '', username: '', password: '', role: 'SUPERVISOR', areaId: '' } })}
-                />
-            )}
-
-            {activeTab === 'workers' && (
-                <WorkerSection
-                    workers={workers}
-                    areas={areas}
-                    searchTerm={searchTerm}
-                    onEdit={(w) => setEditingItem({ type: 'worker', data: w })}
-                    onDelete={handleDeleteWorker}
-                />
-            )}
-            {activeTab === 'areas' && (
-                <AreaSection
-                    areas={areas}
-                    workers={workers}
-                    searchTerm={searchTerm}
-                    isSaving={isSaving}
-                    areaForm={areaForm}
-                    onFormChange={setAreaForm}
-                    onSave={async (e) => {
-                        e.preventDefault();
-                        setIsSaving(true);
-                        try {
-                            const trimmedName = areaForm.name.trim();
-
-                            const isDuplicate = areas.some(a =>
-                                a.name.trim().toLowerCase() === trimmedName.toLowerCase() && a.id !== areaForm.id
-                            );
-
-                            if (isDuplicate) {
-                                showToast('تنبيه', 'هذا الاسم موجود بالفعل! يرجى اختيار اسم فريد.', 'warning');
-                                setIsSaving(false);
-                                return;
-                            }
-
-                            if (areaForm.id) {
-                                await updateArea(areaForm.id, trimmedName);
-                                showToast('تم تحديث المنطقة بنجاح');
-                            } else {
-                                await addArea(trimmedName);
-                                showToast('تم إضافة المنطقة بنجاح');
-                            }
-                            setAreaForm({ name: '' });
-                        } catch (err) {
-                            console.error(err);
-                            showToast('فشل حفظ المنطقة', '', 'error');
-                        } finally {
-                            setIsSaving(false);
-                        }
-                    }}
-                    onDelete={async (id, count) => {
-                        if (count > 0) {
-                            showToast('لا يمكن حذف المنطقة', 'تحتوي على عمال. يرجى نقلهم أولاً.', 'error');
-                            return;
-                        }
-                        if (window.confirm('هل أنت متأكد من حذف هذه المنطقة؟')) {
+            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200">
+                {activeTab === 'reports' && (
+                    <AttendanceReports
+                        workers={workers}
+                        areas={areas}
+                        month={month}
+                        year={year}
+                        reportSearchTerm={reportSearchTerm}
+                        reportAreaFilter={reportAreaFilter}
+                        reportStatusFilter={reportStatusFilter}
+                        getWorkerAttendance={getWorkerAttendance}
+                        approveAttendance={async (id, status) => {
+                            await approveAttendance(id, status);
+                            showToast('تم اعتماد السجل بنجاح');
+                        }}
+                        onReject={async (id) => {
+                            if (!confirm('هل أنت متأكد من رفض السجل وإعادته للمراقب العام؟')) return;
                             try {
-                                await deleteArea(id);
-                                showToast('تم حذف المنطقة بنجاح');
+                                await rejectAttendance(id, 'PENDING_GS');
+                                showToast('تم رفض السجل وإعادته للمراقب العام');
                             } catch (err) {
                                 console.error(err);
-                                showToast('فشل حذف المنطقة', '', 'error');
+                                showToast('فشل في رفض السجل', '', 'error');
                             }
-                        }
-                    }}
-                />
-            )}
+                        }}
+                        onMonthChange={(m, y) => { setMonth(m); setYear(y); }}
+                        onSearchChange={setReportSearchTerm}
+                        onAreaFilterChange={setReportAreaFilter}
+                        onStatusFilterChange={setReportStatusFilter}
+                        onExportCSV={handleExportCSV}
+                        onBulkApprove={handleBulkApprove}
+                    />
+                )}
+            </div>
+
+            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200">
+                {activeTab === 'supervisors' && (
+                    <SupervisorSection
+                        supervisors={supervisors}
+                        areas={areas}
+                        searchTerm={searchTerm}
+                        onEdit={(s) => {
+                            setEditingItem({ type: 'supervisor', data: s });
+                            setSelectedAreaIds(s.areas?.map(a => a.id) || []);
+                        }}
+                        onDelete={handleDeleteSupervisor}
+                        onAdd={() => setEditingItem({ type: 'supervisor', data: { id: 'NEW', name: '', username: '', password: '', role: 'SUPERVISOR', areaId: '' } })}
+                    />
+                )}
+            </div>
+
+            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200">
+                {activeTab === 'workers' && (
+                    <WorkerSection
+                        workers={workers}
+                        areas={areas}
+                        searchTerm={searchTerm}
+                        onEdit={(w) => setEditingItem({ type: 'worker', data: w })}
+                        onDelete={handleDeleteWorker}
+                    />
+                )}
+            </div>
+
+            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200">
+                {activeTab === 'areas' && (
+                    <AreaSection
+                        areas={areas}
+                        workers={workers}
+                        searchTerm={searchTerm}
+                        isSaving={isSaving}
+                        areaForm={areaForm}
+                        onFormChange={setAreaForm}
+                        onSave={async (e) => {
+                            e.preventDefault();
+                            setIsSaving(true);
+                            try {
+                                const trimmedName = areaForm.name.trim();
+
+                                const isDuplicate = areas.some(a =>
+                                    a.name.trim().toLowerCase() === trimmedName.toLowerCase() && a.id !== areaForm.id
+                                );
+
+                                if (isDuplicate) {
+                                    showToast('تنبيه', 'هذا الاسم موجود بالفعل! يرجى اختيار اسم فريد.', 'warning');
+                                    setIsSaving(false);
+                                    return;
+                                }
+
+                                if (areaForm.id) {
+                                    await updateArea(areaForm.id, trimmedName);
+                                    showToast('تم تحديث المنطقة بنجاح');
+                                } else {
+                                    await addArea(trimmedName);
+                                    showToast('تم إضافة المنطقة بنجاح');
+                                }
+                                setAreaForm({ name: '' });
+                            } catch (err) {
+                                console.error(err);
+                                showToast('فشل حفظ المنطقة', '', 'error');
+                            } finally {
+                                setIsSaving(false);
+                            }
+                        }}
+                        onDelete={async (id, count) => {
+                            if (count > 0) {
+                                showToast('لا يمكن حذف المنطقة', 'تحتوي على عمال. يرجى نقلهم أولاً.', 'error');
+                                return;
+                            }
+                            if (window.confirm('هل أنت متأكد من حذف هذه المنطقة؟')) {
+                                try {
+                                    await deleteArea(id);
+                                    showToast('تم حذف المنطقة بنجاح');
+                                } catch (err) {
+                                    console.error(err);
+                                    showToast('فشل حذف المنطقة', '', 'error');
+                                }
+                            }
+                        }}
+                    />
+                )}
+            </div>
         </div>
     );
 };
