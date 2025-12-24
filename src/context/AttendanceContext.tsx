@@ -65,7 +65,7 @@ interface AttendanceContextType {
     deleteArea: (id: string) => Promise<void>;
     refreshData: () => Promise<void>;
     approveAttendance: (recordId: string, nextStatus: 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED') => Promise<void>;
-    rejectAttendance: (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HR') => Promise<void>;
+    rejectAttendance: (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HR' | 'PENDING_FINANCE') => Promise<void>;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(undefined);
@@ -369,7 +369,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     }, [loadAttendance]);
 
-    const rejectAttendance = useCallback(async (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HR') => {
+    const rejectAttendance = useCallback(async (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HR' | 'PENDING_FINANCE') => {
         try {
             console.log(`Rejecting record ${recordId} to ${newStatus}`);
             const { error } = await supabase

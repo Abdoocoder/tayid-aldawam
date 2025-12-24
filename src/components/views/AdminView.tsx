@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { MonthYearPicker } from "../ui/month-year-picker";
+import { FileText } from "lucide-react";
 
 interface WorkerEditingData extends Partial<Worker> {
     id: string;
@@ -32,9 +34,15 @@ interface WorkerEditingData extends Partial<Worker> {
 }
 
 export const AdminView = () => {
-    const { workers, attendanceRecords, users, auditLogs, areas, isLoading, addWorker, updateWorker, deleteWorker, updateUser } = useAttendance();
+    const { workers, attendanceRecords, users, auditLogs, areas, isLoading, addWorker, updateWorker, deleteWorker, updateUser, rejectAttendance, getWorkerAttendance } = useAttendance();
     const { showToast } = useToast();
-    const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'workers' | 'logs'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'workers' | 'logs' | 'attendance'>('overview');
+
+    // Attendance Management State
+    const [attendanceMonth, setAttendanceMonth] = useState(new Date().getMonth() + 1);
+    const [attendanceYear, setAttendanceYear] = useState(new Date().getFullYear());
+
+    const [attendanceSearchTerm, setAttendanceSearchTerm] = useState("");
 
     // Management states
     const [searchTerm, setSearchTerm] = useState("");
@@ -160,6 +168,7 @@ export const AdminView = () => {
                         { id: 'overview', label: 'نظرة عامة', icon: LayoutDashboard },
                         { id: 'users', label: 'المستخدمين', icon: Users },
                         { id: 'workers', label: 'العمال', icon: HardHat },
+                        { id: 'attendance', label: 'إدارة الحضور', icon: FileText },
                         { id: 'logs', label: 'السجلات', icon: History },
                     ].map((tab) => (
                         <button
@@ -637,6 +646,122 @@ export const AdminView = () => {
                                 })}
                             </tbody>
                         </table>
+                    </CardContent>
+                </Card>
+            )}
+
+            {activeTab === 'attendance' && (
+                <Card className="animate-in slide-in-from-bottom-4 duration-500">
+                    <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <CardTitle>إدارة سجلات الحضور</CardTitle>
+                            <CardDescription>عرض واعتماد أو رفض سجلات الحضور لجميع العمال</CardDescription>
+                        </div>
+                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                            <div className="relative w-full sm:w-64">
+                                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                    placeholder="بحث باسم العامل أو الرقم..."
+                                    className="pr-10"
+                                    value={attendanceSearchTerm}
+                                    onChange={e => setAttendanceSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <div className="w-full sm:w-auto">
+                                <MonthYearPicker month={attendanceMonth} year={attendanceYear} onChange={(m, y) => { setAttendanceMonth(m); setAttendanceYear(y); }} />
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-right border-collapse">
+                                <thead className="bg-gray-50/80 text-gray-500 font-bold uppercase tracking-wider text-[10px]">
+                                    <tr>
+                                        <th className="p-4 border-b">العامل</th>
+                                        <th className="p-4 border-b">القطاع</th>
+                                        <th className="p-4 border-b text-center">أيام العمل</th>
+                                        <th className="p-4 border-b text-center">الإضافي</th>
+                                        <th className="p-4 border-b text-center">الحالة</th>
+                                        <th className="p-4 border-b text-center">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {workers.filter(w =>
+                                        w.name.toLowerCase().includes(attendanceSearchTerm.toLowerCase()) ||
+                                        w.id.includes(attendanceSearchTerm)
+                                    ).map(worker => {
+                                        const record = getWorkerAttendance(worker.id, attendanceMonth, attendanceYear);
+                                        const areaName = areas.find(a => a.id === worker.areaId)?.name || 'غير محدد';
+
+                                        return (
+                                            <tr key={worker.id} className="hover:bg-gray-50/50 transition-colors">
+                                                <td className="p-4">
+                                                    <div className="font-bold text-gray-900">{worker.name}</div>
+                                                    <div className="text-xs text-gray-400 font-mono">ID: {worker.id}</div>
+                                                </td>
+                                                <td className="p-4 text-sm text-gray-500">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <MapPin className="h-3 w-3 text-gray-300" />
+                                                        {areaName}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-center font-mono font-medium">{record ? record.normalDays : '-'}</td>
+                                                <td className="p-4 text-center font-mono text-xs">
+                                                    {record ? (
+                                                        <div className="flex flex-col gap-1 items-center">
+                                                            <span className="text-amber-600 bg-amber-50 px-1 rounded">ع: {record.overtimeNormalDays}</span>
+                                                            <span className="text-red-600 bg-red-50 px-1 rounded">عطل: {record.overtimeHolidayDays}</span>
+                                                        </div>
+                                                    ) : '-'}
+                                                </td>
+                                                <td className="p-4 text-center">
+                                                    {record ? (
+                                                        <Badge variant={record.status === 'APPROVED' ? 'default' : 'secondary'} className={record.status === 'APPROVED' ? "bg-green-600 hover:bg-green-700" : ""}>
+                                                            {record.status === 'APPROVED' ? 'معتمد نهائياً' :
+                                                                record.status === 'PENDING_FINANCE' ? 'بانتظار الرواتب' :
+                                                                    record.status === 'PENDING_HR' ? 'بانتظار الموارد' :
+                                                                        record.status === 'PENDING_GS' ? 'بانتظار المراقب العام' :
+                                                                            record.status === 'PENDING_SUPERVISOR' ? 'معاد للتصحيح' : 'غير معروف'}
+                                                        </Badge>
+                                                    ) : <span className="text-gray-400 text-xs italic">--</span>}
+                                                </td>
+                                                <td className="p-4 text-center">
+                                                    {record && record.status === 'APPROVED' && (
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            className="text-xs h-8 shadow-sm"
+                                                            onClick={async () => {
+                                                                if (confirm('هل أنت متأكد من إلغاء الاعتماد النهائي لهذا السجل وإعادته لقسم الرواتب؟')) {
+                                                                    try {
+                                                                        await rejectAttendance(record.id, 'PENDING_FINANCE');
+                                                                        showToast('تم إلغاء الاعتماد بنجاح');
+                                                                    } catch {
+                                                                        showToast('فشل العملية', 'حدث خطأ أثناء إلغاء الاعتماد', 'error');
+                                                                    }
+                                                                }
+                                                            }}
+                                                        >
+                                                            إلغاء الاعتماد
+                                                        </Button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
+                                    {workers.filter(w =>
+                                        w.name.toLowerCase().includes(attendanceSearchTerm.toLowerCase()) ||
+                                        w.id.includes(attendanceSearchTerm)
+                                    ).length === 0 && (
+                                            <tr>
+                                                <td colSpan={6} className="p-8 text-center text-gray-400 italic">
+                                                    لا توجد نتائج مطابقة للبحث
+                                                </td>
+                                            </tr>
+                                        )}
+                                </tbody>
+                            </table>
+                        </div>
                     </CardContent>
                 </Card>
             )}
