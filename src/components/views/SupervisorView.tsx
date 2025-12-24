@@ -253,7 +253,7 @@ export function SupervisorView() {
                                     {isFilled && (
                                         <div className="grid grid-cols-2 gap-2 text-[11px]">
                                             <div className="bg-white border border-gray-100 rounded-xl p-2.5 flex flex-col items-center shadow-sm">
-                                                <span className="text-gray-400 font-medium mb-0.5 text-[9px] uppercase tracking-wider">أيام العمل</span>
+                                                <span className="text-gray-400 font-medium mb-0.5 text-[9px] uppercase tracking-wider">أيام عادية</span>
                                                 <span className="text-gray-900 font-black text-sm">{record.normalDays}</span>
                                             </div>
                                             <div className="bg-white border border-gray-100 rounded-xl p-2.5 flex flex-col items-center shadow-sm">
@@ -284,10 +284,10 @@ export function SupervisorView() {
                             <th className="border border-gray-300 p-2 text-right">رقم العامل</th>
                             <th className="border border-gray-300 p-2 text-right">اسم العامل</th>
                             <th className="border border-gray-300 p-2 text-right">المنطقة</th>
-                            <th className="border border-gray-300 p-2 text-center">أيام العمل</th>
-                            <th className="border border-gray-300 p-2 text-center">إضافي عادي</th>
-                            <th className="border border-gray-300 p-2 text-center">إضافي عطلة</th>
-                            <th className="border border-gray-300 p-2 text-center">أيام أعياد</th>
+                            <th className="border border-gray-300 p-2 text-center">أيام عادية</th>
+                            <th className="border border-gray-300 p-2 text-center">إضافي عادي (x0.5)</th>
+                            <th className="border border-gray-300 p-2 text-center">إضافي عطل (x1.0)</th>
+                            <th className="border border-gray-300 p-2 text-center">أيام أعياد (x1.0)</th>
                             <th className="border border-gray-300 p-2 text-center font-bold">الإجمالي</th>
                         </tr>
                     </thead>

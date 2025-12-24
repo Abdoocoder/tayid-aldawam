@@ -157,10 +157,10 @@ export function AttendanceReports({
                             <tr>
                                 <th className="p-4 border-b text-right">الاسم / الرقم</th>
                                 <th className="p-4 border-b text-right">المنطقة</th>
-                                <th className="p-4 border-b text-center">أيام العمل</th>
-                                <th className="p-4 border-b text-center">إضافي (عادي)</th>
-                                <th className="p-4 border-b text-center">إضافي (عطل)</th>
-                                <th className="p-4 border-b text-center">أيام الأعياد</th>
+                                <th className="p-4 border-b text-center">أيام عادية</th>
+                                <th className="p-4 border-b text-center">إضافي عادي (x0.5)</th>
+                                <th className="p-4 border-b text-center">إضافي عطل (x1.0)</th>
+                                <th className="p-4 border-b text-center">أيام أعياد (x1.0)</th>
                                 <th className="p-4 border-b text-center bg-purple-50/30 text-purple-700">المجموع</th>
                                 <th className="p-4 border-b text-center">الحالة</th>
                                 <th className="p-4 border-b text-center">الإجراء</th>
@@ -267,10 +267,10 @@ export function AttendanceReports({
                             <th className="border border-gray-300 p-2 text-right">رقم العامل</th>
                             <th className="border border-gray-300 p-2 text-right">الاسم الكامل</th>
                             <th className="border border-gray-300 p-2 text-right">المنطقة</th>
-                            <th className="border border-gray-300 p-2 text-center">عادي</th>
-                            <th className="border border-gray-300 p-2 text-center">إضافي 0.5</th>
-                            <th className="border border-gray-300 p-2 text-center">إضافي 1.0</th>
-                            <th className="border border-gray-300 p-2 text-center">أعياد 1.0</th>
+                            <th className="border border-gray-300 p-2 text-center">أيام عادية</th>
+                            <th className="border border-gray-300 p-2 text-center">إضافي عادي (x0.5)</th>
+                            <th className="border border-gray-300 p-2 text-center">إضافي عطل (x1.0)</th>
+                            <th className="border border-gray-300 p-2 text-center">أيام أعياد (x1.0)</th>
                             <th className="border border-gray-300 p-2 text-center font-bold">الإجمالي</th>
                         </tr>
                     </thead>

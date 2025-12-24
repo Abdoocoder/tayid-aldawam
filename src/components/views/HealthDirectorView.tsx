@@ -126,7 +126,7 @@ export function HealthDirectorView() {
             <div className="relative overflow-hidden bg-white/60 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl shadow-emerald-900/10 border border-white/40">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-100/30 rounded-full blur-3xl -mr-20 -mt-20 shrink-0" />
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-100/20 rounded-full blur-2xl -ml-10 -mb-10 shrink-0" />
-                
+
                 <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                     <div className="flex items-center gap-6">
                         <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 p-5 rounded-3xl text-white shadow-xl shadow-emerald-200 ring-4 ring-emerald-50 animate-in zoom-in-50 duration-500">
@@ -141,18 +141,18 @@ export function HealthDirectorView() {
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-4 w-full lg:w-auto">
-                        <Button 
-                            variant="outline" 
-                            onClick={() => window.print()} 
+                        <Button
+                            variant="outline"
+                            onClick={() => window.print()}
                             className="gap-2 border-emerald-100 text-emerald-700 hover:bg-emerald-50/50 rounded-2xl h-14 px-6 font-bold shadow-sm transition-all hover:scale-[1.02]"
                         >
                             <Printer className="h-5 w-5" />
                             تقرير الحضور
                         </Button>
-                        <MonthYearPicker 
-                            month={month} 
-                            year={year} 
-                            onChange={(m, y) => { setMonth(m); setYear(y); }} 
+                        <MonthYearPicker
+                            month={month}
+                            year={year}
+                            onChange={(m, y) => { setMonth(m); setYear(y); }}
                         />
                     </div>
                 </div>
@@ -242,10 +242,11 @@ export function HealthDirectorView() {
                             <tr className="bg-slate-50/50 text-slate-400 text-[11px] font-black uppercase tracking-widest border-b border-slate-100">
                                 <th className="p-6">معلومات الموظف</th>
                                 <th className="p-6">القطاع / المنطقة</th>
-                                <th className="p-6 text-center">أيام العمل</th>
-                                <th className="p-6 text-center">الإضافي (عادي/عطلة)</th>
-                                <th className="p-6 text-center">إضافي العيد</th>
-                                <th className="p-6 text-center">الاستحقاق النهائي</th>
+                                <th className="p-3 md:p-4 border-b text-center">أيام عادية</th>
+                                <th className="p-3 md:p-4 border-b text-center">إضافي عادي (x0.5)</th>
+                                <th className="p-3 md:p-4 border-b text-center">إضافي عطل (x1.0)</th>
+                                <th className="p-3 md:p-4 border-b text-center">أيام أعياد (x1.0)</th>
+                                <th className="p-3 md:p-4 border-b text-center">الإجمالي</th>
                                 <th className="p-6 text-center">القرار الإداري</th>
                             </tr>
                         </thead>
@@ -292,14 +293,14 @@ export function HealthDirectorView() {
                                                 <span className="text-xl font-black text-slate-700">{record.normalDays}</span>
                                             </td>
                                             <td className="p-6 text-center">
-                                                <div className="flex justify-center gap-2">
-                                                    <Badge className="bg-blue-50 text-blue-700 border-blue-100 font-black px-3 py-1 rounded-xl">
-                                                        {record.overtimeNormalDays} ع
-                                                    </Badge>
-                                                    <Badge className="bg-amber-50 text-amber-700 border-amber-100 font-black px-3 py-1 rounded-xl">
-                                                        {record.overtimeHolidayDays} ط
-                                                    </Badge>
-                                                </div>
+                                                <Badge className="bg-blue-50 text-blue-700 border-blue-100 font-black px-3 py-1 rounded-xl">
+                                                    {record.overtimeNormalDays} ع
+                                                </Badge>
+                                            </td>
+                                            <td className="p-6 text-center">
+                                                <Badge className="bg-amber-50 text-amber-700 border-amber-100 font-black px-3 py-1 rounded-xl">
+                                                    {record.overtimeHolidayDays} ط
+                                                </Badge>
                                             </td>
                                             <td className="p-6 text-center">
                                                 <Badge className="bg-purple-50 text-purple-700 border-purple-100 font-black px-4 py-1.5 rounded-xl text-sm">
@@ -384,10 +385,11 @@ export function HealthDirectorView() {
                             <th className="border-2 border-slate-900 p-4 text-right">م</th>
                             <th className="border-2 border-slate-900 p-4 text-right">اسم الموظف</th>
                             <th className="border-2 border-slate-900 p-4 text-right">المنطقة</th>
-                            <th className="border-2 border-slate-900 p-4 text-center">أيام العمل</th>
-                            <th className="border-2 border-slate-900 p-4 text-center">إضافي (د/ع)</th>
-                            <th className="border-2 border-slate-900 p-4 text-center">عطلة العيد</th>
-                            <th className="border-2 border-slate-900 p-4 text-center">الإجمالي المعتمد</th>
+                            <th className="border border-gray-300 p-2 text-center">أيام عادية</th>
+                            <th className="border border-gray-300 p-2 text-center">إضافي عادي (x0.5)</th>
+                            <th className="border border-gray-300 p-2 text-center">إضافي عطل (x1.0)</th>
+                            <th className="border border-gray-300 p-2 text-center">أيام أعياد (x1.0)</th>
+                            <th className="border border-gray-300 p-2 text-center font-bold bg-gray-50">الإجمالي المعتمد</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -400,7 +402,8 @@ export function HealthDirectorView() {
                                     <td className="border-2 border-slate-900 p-4 font-black">{worker?.name}</td>
                                     <td className="border-2 border-slate-900 p-4">{areaName}</td>
                                     <td className="border-2 border-slate-900 p-4 text-center font-bold">{record.normalDays}</td>
-                                    <td className="border-2 border-slate-900 p-4 text-center font-bold">{record.overtimeNormalDays} / {record.overtimeHolidayDays}</td>
+                                    <td className="border-2 border-slate-900 p-4 text-center font-bold">{record.overtimeNormalDays}</td>
+                                    <td className="border-2 border-slate-900 p-4 text-center font-bold">{record.overtimeHolidayDays}</td>
                                     <td className="border-2 border-slate-900 p-4 text-center font-bold">{record.overtimeEidDays || 0}</td>
                                     <td className="border-2 border-slate-900 p-4 text-center font-black bg-slate-50">{record.totalCalculatedDays}</td>
                                 </tr>

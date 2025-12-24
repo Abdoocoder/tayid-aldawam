@@ -110,7 +110,7 @@ export function FinanceView() {
     }, [workers, getWorkerAttendance, month, year]);
 
     const handleExportCSV = () => {
-        const headers = ["الرقم", "الاسم", "القطاع", "الأيام المحتسبة", "قيمة اليوم", "الصافي"];
+        const headers = ["الرقم", "الاسم", "القطاع", "أيام عادية", "إضافي عادي (x0.5)", "إضافي عطل (x1.0)", "أيام الأعياد (x1.0)", "الأيام المحتسبة", "قيمة اليوم", "الصافي"];
         const rows = approvedPayrolls.map(p => [
             p.worker.id,
             p.worker.name,
@@ -430,7 +430,11 @@ export function FinanceView() {
                             <th className="border border-gray-300 p-3 text-right text-xs">#</th>
                             <th className="border border-gray-300 p-3 text-right">الاسم الكامل</th>
                             <th className="border border-gray-300 p-3 text-right">القطاع</th>
-                            <th className="border border-gray-300 p-3 text-center">الأيام</th>
+                            <th className="border border-gray-300 p-2 text-center">أيام عادية</th>
+                            <th className="border border-gray-300 p-2 text-center">إضافي عادي (x0.5)</th>
+                            <th className="border border-gray-300 p-2 text-center">إضافي عطل (x1.0)</th>
+                            <th className="border border-gray-300 p-2 text-center">أيام أعياد (x1.0)</th>
+                            <th className="border border-gray-300 p-2 text-center font-bold bg-gray-50">إجمالي الأيام</th>
                             <th className="border border-gray-300 p-3 text-center">سعر اليوم</th>
                             <th className="border border-gray-300 p-3 text-center font-black">الصافي (د.أ)</th>
                             <th className="border border-gray-300 p-3 text-center">التوقيع</th>

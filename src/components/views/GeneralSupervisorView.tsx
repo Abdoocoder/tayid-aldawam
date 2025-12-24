@@ -172,8 +172,8 @@ export function GeneralSupervisorView() {
                         <tr className="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider">
                             <th className="p-3 md:p-4 border-b">العامل</th>
                             <th className="p-3 md:p-4 border-b">القطاع</th>
-                            <th className="p-3 md:p-4 border-b text-center">أيام العمل</th>
-                            <th className="p-3 md:p-4 border-b text-center">إضافي (عادي/عطلة/عيد)</th>
+                            <th className="p-3 md:p-4 border-b text-center">أيام عادية</th>
+                            <th className="p-3 md:p-4 border-b text-center">إضافي (عادي x0.5 / عطل x1.0 / عيد x1.0)</th>
                             <th className="p-3 md:p-4 border-b text-center">الإجمالي</th>
                             <th className="p-3 md:p-4 border-b text-center">الإجراء</th>
                         </tr>
@@ -251,7 +251,7 @@ export function GeneralSupervisorView() {
                         <tr className="bg-gray-100 font-bold">
                             <th className="border border-gray-300 p-2 text-right">العامل</th>
                             <th className="border border-gray-300 p-2 text-right">القطاع</th>
-                            <th className="border border-gray-300 p-2 text-center">أيام العمل</th>
+                            <th className="border border-gray-300 p-2 text-center">أيام عادية</th>
                             <th className="border border-gray-300 p-2 text-center">إجمالي الأيام</th>
                         </tr>
                     </thead>

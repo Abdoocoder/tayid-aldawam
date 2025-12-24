@@ -732,8 +732,9 @@ export const AdminView = () => {
                                                 <td className="p-4 text-center font-mono text-xs">
                                                     {record ? (
                                                         <div className="flex flex-col gap-1 items-center">
-                                                            <span className="text-amber-600 bg-amber-50 px-1 rounded">ع: {record.overtimeNormalDays}</span>
-                                                            <span className="text-red-600 bg-red-50 px-1 rounded">عطل: {record.overtimeHolidayDays}</span>
+                                                            <span className="text-amber-600 bg-amber-50 px-1 rounded">ع (x0.5): {record.overtimeNormalDays}</span>
+                                                            <span className="text-red-600 bg-red-50 px-1 rounded">عطل (x1.0): {record.overtimeHolidayDays}</span>
+                                                            <span className="text-green-600 bg-green-50 px-1 rounded">أعياد (x1.0): {record.overtimeEidDays || 0}</span>
                                                         </div>
                                                     ) : '-'}
                                                 </td>
