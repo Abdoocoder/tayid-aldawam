@@ -84,8 +84,8 @@ export function HRView() {
     const [reportAreaFilter, setReportAreaFilter] = useState('ALL');
     const [reportStatusFilter, setReportStatusFilter] = useState<'ALL' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED'>('PENDING_HR');
 
-    // Filter supervisors and general supervisors
-    const supervisors = useMemo(() => users.filter((u: User) => u.role === 'SUPERVISOR' || u.role === 'GENERAL_SUPERVISOR'), [users]);
+    // Filter supervisors, general supervisors and mayors
+    const supervisors = useMemo(() => users.filter((u: User) => u.role === 'SUPERVISOR' || u.role === 'GENERAL_SUPERVISOR' || u.role === 'MAYOR'), [users]);
 
     // Stats calculations
     const totalWorkersCount = workers.length;
@@ -656,6 +656,15 @@ export function HRView() {
                             setSelectedAreaIds(s.areas?.map(a => a.id) || []);
                         }}
                         onDelete={handleDeleteSupervisor}
+                        onActivate={async (id: string) => {
+                            try {
+                                await updateUser(id, { isActive: true });
+                                showToast('تم تفعيل الحساب بنجاح');
+                            } catch (err) {
+                                console.error(err);
+                                showToast('فشل تفعيل الحساب', '', 'error');
+                            }
+                        }}
                         onAdd={() => setEditingItem({ type: 'supervisor', data: { id: 'NEW', name: '', username: '', password: '', role: 'SUPERVISOR', areaId: '' } })}
                     />
                 )}

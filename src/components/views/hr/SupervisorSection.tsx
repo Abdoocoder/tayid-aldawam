@@ -14,10 +14,11 @@ interface SupervisorSectionProps {
     searchTerm: string;
     onEdit: (supervisor: User) => void;
     onDelete: (id: string) => void;
+    onActivate?: (id: string) => void;
     onAdd: () => void;
 }
 
-export function SupervisorSection({ supervisors, areas, searchTerm, onEdit, onDelete, onAdd }: SupervisorSectionProps) {
+export function SupervisorSection({ supervisors, areas, searchTerm, onEdit, onDelete, onActivate, onAdd }: SupervisorSectionProps) {
     const filteredSupervisors = supervisors.filter(s => {
         const areaName = s.areaId === 'ALL' ? 'كل المناطق' : (areas.find(a => a.id === s.areaId)?.name || "");
         return s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -85,6 +86,11 @@ export function SupervisorSection({ supervisors, areas, searchTerm, onEdit, onDe
                                     </td>
                                     <td className="p-4">
                                         <div className="flex justify-center gap-2">
+                                            {!s.isActive && (
+                                                <Button variant="ghost" size="sm" className="h-8 px-2 text-green-600 hover:bg-green-50 text-xs font-bold" onClick={() => onActivate?.(s.id)}>
+                                                    تفعيل
+                                                </Button>
+                                            )}
                                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50" onClick={() => onEdit(s)}>
                                                 <Edit2 className="h-4 w-4" />
                                             </Button>
