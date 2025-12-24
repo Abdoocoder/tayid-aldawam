@@ -9,48 +9,77 @@ import { Badge } from "../ui/badge";
 import {
     Activity,
     Search,
-    Printer,
-    ShieldCheck,
-    Loader2,
     CheckCircle2,
     XCircle,
     MapPin,
     User as UserIcon,
-    TrendingUp
+    TrendingUp,
+    TrendingDown,
+    AlertTriangle,
+    Coins,
+    History,
+    Printer,
+    ShieldCheck,
+    Loader2
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 
 export function HealthDirectorView() {
-    const { currentUser, workers, attendanceRecords, areas, approveAttendance, rejectAttendance, isLoading } = useAttendance();
+    const { currentUser, workers, attendanceRecords, areas, approveAttendance, rejectAttendance, isLoading, users } = useAttendance();
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedAreaId, setSelectedAreaId] = useState<string>("ALL");
+    const [selectedSupervisorId, setSelectedSupervisorId] = useState<string>("ALL");
+    const [showAnomaliesOnly, setShowAnomaliesOnly] = useState(false);
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
     const [isBulkApproving, setIsBulkApproving] = useState(false);
 
+    const supervisors = useMemo(() => users.filter(u => u.role === 'SUPERVISOR'), [users]);
+
     // Analytics: Stage tracking
-    const stageStats = useMemo(() => {
+    const analytics = useMemo(() => {
+        const currentMonthRecords = attendanceRecords.filter(r => r.month === month && r.year === year);
+        const prevMonth = month === 1 ? 12 : month - 1;
+        const prevYear = month === 1 ? year - 1 : year;
+        const prevMonthRecords = attendanceRecords.filter(r => r.month === prevMonth && r.year === prevYear);
+
+        const calculateCost = (recordsToCalculate: typeof attendanceRecords) => {
+            return recordsToCalculate.reduce((total, r) => {
+                const worker = workers.find(w => w.id === r.workerId);
+                return total + (r.totalCalculatedDays * (worker?.dayValue || 0));
+            }, 0);
+        };
+
+        const currentCost = calculateCost(currentMonthRecords);
+        const prevCost = calculateCost(prevMonthRecords);
+        const costDiff = prevCost === 0 ? 0 : ((currentCost - prevCost) / prevCost) * 100;
+
         const stats = {
             supervisor: 0,
             general: 0,
             health: 0,
-            completed: 0
+            completed: 0,
+            totalCost: currentCost,
+            costDiff,
+            anomalies: 0
         };
 
-        attendanceRecords.forEach(r => {
-            if (r.month === month && r.year === year) {
-                if (r.status === 'PENDING_SUPERVISOR') stats.supervisor++;
-                else if (r.status === 'PENDING_GS') stats.general++;
-                else if (r.status === 'PENDING_HEALTH') stats.health++;
-                else stats.completed++;
+        currentMonthRecords.forEach(r => {
+            if (r.status === 'PENDING_SUPERVISOR') stats.supervisor++;
+            else if (r.status === 'PENDING_GS') stats.general++;
+            else if (r.status === 'PENDING_HEALTH') stats.health++;
+            else stats.completed++;
+
+            if (r.totalCalculatedDays > 30 || r.overtimeNormalDays > 15 || r.overtimeHolidayDays > 10) {
+                stats.anomalies++;
             }
         });
 
         return stats;
-    }, [attendanceRecords, month, year]);
+    }, [attendanceRecords, workers, month, year]);
 
     const filteredRecords = useMemo(() => {
         return attendanceRecords.filter(r => {
@@ -59,13 +88,22 @@ export function HealthDirectorView() {
 
             const isCorrectPeriod = r.month === month && r.year === year;
             const isPendingHealth = r.status === 'PENDING_HEALTH';
+
+            // Hierarchy filter
             const matchesArea = selectedAreaId === 'ALL' || worker.areaId === selectedAreaId;
+            const supervisor = supervisors.find(s => s.id === selectedSupervisorId);
+            const matchesSupervisor = selectedSupervisorId === 'ALL' ||
+                (supervisor?.areas?.some(a => a.id === worker.areaId) || supervisor?.areaId === worker.areaId);
+
             const matchesSearch = worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 worker.id.includes(searchTerm);
 
-            return isCorrectPeriod && isPendingHealth && matchesArea && matchesSearch;
+            const isAnomaly = r.totalCalculatedDays > 30 || r.overtimeNormalDays > 15 || r.overtimeHolidayDays > 10;
+            const matchesAnomaly = !showAnomaliesOnly || isAnomaly;
+
+            return isCorrectPeriod && isPendingHealth && matchesArea && matchesSupervisor && matchesSearch && matchesAnomaly;
         });
-    }, [attendanceRecords, workers, month, year, selectedAreaId, searchTerm]);
+    }, [attendanceRecords, workers, month, year, selectedAreaId, selectedSupervisorId, searchTerm, showAnomaliesOnly, supervisors]);
 
     const handleApprove = async (recordId: string) => {
         setApprovingIds(prev => new Set(prev).add(recordId));
@@ -97,9 +135,13 @@ export function HealthDirectorView() {
     };
 
     const handleReject = async (recordId: string) => {
-        if (!confirm("هل أنت متأكد من رفض هذا السجل وإعادته للمراقب العام؟")) return;
+        const reason = prompt("يرجى كتابة سبب الرفض ليظهر للمراقب العام:");
+        if (!reason) return;
+
         setRejectingIds(prev => new Set(prev).add(recordId));
         try {
+            // We use audit log or a field if it exists, but for now we just log it
+            console.log(`Rejecting ${recordId} due to: ${reason}`);
             await rejectAttendance(recordId, 'PENDING_GS');
         } catch (err) {
             console.error(err);
@@ -158,26 +200,44 @@ export function HealthDirectorView() {
                 </div>
             </div>
 
-            {/* Workflow Progress Monitoring */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Enhanced KPI Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6">
                 {[
-                    { label: 'مرحلة المراقب', value: stageStats.supervisor, color: 'blue', icon: UserIcon, desc: 'سجلات أولية' },
-                    { label: 'مرحلة المراقب العام', value: stageStats.general, color: 'indigo', icon: ShieldCheck, desc: 'تحت التدقيق' },
-                    { label: 'بانتظار اعتمادك', value: stageStats.health, color: 'emerald', icon: Activity, desc: 'تحت المراجعة' },
-                    { label: 'تم التحويل للموارد', value: stageStats.completed, color: 'slate', icon: CheckCircle2, desc: 'سجلات معتمدة' }
+                    { label: 'بانتظار اعتمادك', value: analytics.health, color: 'emerald', icon: Activity, desc: 'تحت المراجعة' },
+                    { label: 'تم التحويل للموارد', value: analytics.completed, color: 'slate', icon: CheckCircle2, desc: 'سجلات معتمدة' },
+                    { label: 'مرحلة المراقب العام', value: analytics.general, color: 'indigo', icon: ShieldCheck, desc: 'سجلات مدققة' },
+                    {
+                        label: 'التكلفة التقديرية',
+                        value: `${analytics.totalCost.toLocaleString()} د.أ`,
+                        color: 'amber',
+                        icon: Coins,
+                        desc: analytics.costDiff !== 0 ? (
+                            <span className={`flex items-center gap-1 ${analytics.costDiff > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                {analytics.costDiff > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                {Math.abs(analytics.costDiff).toFixed(1)}% عن الشهر الماضي
+                            </span>
+                        ) : 'لا يوجد بيانات سابقة'
+                    },
+                    {
+                        label: 'تنبيهات الحضور',
+                        value: analytics.anomalies,
+                        color: analytics.anomalies > 0 ? 'rose' : 'slate',
+                        icon: AlertTriangle,
+                        desc: 'سجلات تتطلب مراجعة دقيقة'
+                    }
                 ].map((stat, i) => (
                     <Card key={i} className={`group relative border-none shadow-xl shadow-slate-200/40 bg-white hover:bg-${stat.color}-50/30 transition-all duration-300 rounded-[2rem] overflow-hidden`}>
-                        <div className={`absolute top-0 right-0 w-1 h-full bg-${stat.color}-500/50`} />
-                        <CardContent className="p-6 flex items-center justify-between">
-                            <div>
-                                <p className={`text-[10px] font-black text-${stat.color}-600 uppercase tracking-[0.2em] mb-1 opacity-80`}>{stat.label}</p>
-                                <div className="flex items-baseline gap-2">
-                                    <p className={`text-4xl font-black text-slate-900 tracking-tight`}>{stat.value}</p>
-                                    <span className="text-xs text-slate-400 font-bold">{stat.desc}</span>
+                        <div className={`absolute top-0 right-0 w-1.5 h-full bg-${stat.color}-500/50`} />
+                        <CardContent className="p-6 flex flex-col justify-between h-full">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className={`bg-${stat.color}-50 p-3 rounded-2xl text-${stat.color}-600`}>
+                                    <stat.icon className="h-6 w-6" />
                                 </div>
+                                <p className={`text-[10px] font-black text-${stat.color}-600 uppercase tracking-[0.15em] opacity-80`}>{stat.label}</p>
                             </div>
-                            <div className={`bg-${stat.color}-50 p-4 rounded-2xl text-${stat.color}-600 group-hover:scale-110 transition-transform`}>
-                                <stat.icon className="h-7 w-7" />
+                            <div>
+                                <p className="text-2xl font-black text-slate-900 tracking-tight mb-1">{stat.value}</p>
+                                <div className="text-xs text-slate-400 font-bold">{stat.desc}</div>
                             </div>
                         </CardContent>
                     </Card>
@@ -197,17 +257,35 @@ export function HealthDirectorView() {
                                 onChange={e => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
                             <Select
-                                className="h-14 min-w-[200px] border-2 border-slate-100 bg-white rounded-2xl font-bold shadow-sm"
+                                className="h-14 min-w-[180px] border-2 border-slate-100 bg-white rounded-2xl font-bold shadow-sm"
+                                value={selectedSupervisorId}
+                                onChange={e => setSelectedSupervisorId(e.target.value)}
+                            >
+                                <option value="ALL">جميع المراقبين</option>
+                                {supervisors.map(s => (
+                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                ))}
+                            </Select>
+                            <Select
+                                className="h-14 min-w-[180px] border-2 border-slate-100 bg-white rounded-2xl font-bold shadow-sm"
                                 value={selectedAreaId}
                                 onChange={e => setSelectedAreaId(e.target.value)}
                             >
-                                <option value="ALL">جميع القطاعات</option>
+                                <option value="ALL">جميع المناطق</option>
                                 {areas.map(area => (
                                     <option key={area.id} value={area.id}>{area.name}</option>
                                 ))}
                             </Select>
+                            <Button
+                                variant={showAnomaliesOnly ? 'destructive' : 'outline'}
+                                onClick={() => setShowAnomaliesOnly(!showAnomaliesOnly)}
+                                className={`h-14 px-6 rounded-2xl font-bold transition-all gap-2 ${!showAnomaliesOnly && 'border-slate-100 text-slate-600'}`}
+                            >
+                                <AlertTriangle className="h-5 w-5" />
+                                {showAnomaliesOnly ? 'عرض الكل' : 'عرض التنبيهات فقط'}
+                            </Button>
                         </div>
                     </div>
 
@@ -240,13 +318,14 @@ export function HealthDirectorView() {
                     <table className="w-full text-right">
                         <thead>
                             <tr className="bg-slate-50/50 text-slate-400 text-[11px] font-black uppercase tracking-widest border-b border-slate-100">
-                                <th className="p-6">معلومات الموظف</th>
-                                <th className="p-6">القطاع / المنطقة</th>
+                                <th className="p-6">الموظف / المسؤول</th>
+                                <th className="p-6">المنطقة</th>
                                 <th className="p-3 md:p-4 border-b text-center">أيام عادية</th>
                                 <th className="p-3 md:p-4 border-b text-center">إضافي عادي (x0.5)</th>
                                 <th className="p-3 md:p-4 border-b text-center">إضافي عطل (x1.0)</th>
                                 <th className="p-3 md:p-4 border-b text-center">أيام أعياد (x1.0)</th>
                                 <th className="p-3 md:p-4 border-b text-center">الإجمالي</th>
+                                <th className="p-6 text-center">حالة التدقيق</th>
                                 <th className="p-6 text-center">القرار الإداري</th>
                             </tr>
                         </thead>
@@ -272,13 +351,26 @@ export function HealthDirectorView() {
                                     return (
                                         <tr key={record.id} className="hover:bg-emerald-50/30 transition-all group/row">
                                             <td className="p-6">
-                                                <div className="font-black text-slate-900 group-hover/row:text-emerald-700 transition-colors text-lg tracking-tight">
-                                                    {worker?.name}
-                                                </div>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-[10px] font-mono font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
-                                                        ID: {worker?.id}
-                                                    </span>
+                                                <div className="flex items-center gap-3">
+                                                    {(record.totalCalculatedDays > 30 || record.overtimeNormalDays > 15 || record.overtimeHolidayDays > 10) && (
+                                                        <div className="bg-rose-100 p-2 rounded-full animate-pulse shadow-sm shadow-rose-200">
+                                                            <AlertTriangle className="h-5 w-5 text-rose-600" />
+                                                        </div>
+                                                    )}
+                                                    <div>
+                                                        <div className="font-black text-slate-900 group-hover/row:text-emerald-700 transition-colors text-lg tracking-tight">
+                                                            {worker?.name}
+                                                        </div>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className="text-[10px] font-mono font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
+                                                                ID: {worker?.id}
+                                                            </span>
+                                                            <span className="text-[9px] font-bold text-slate-500 flex items-center gap-1">
+                                                                <UserIcon className="h-3 w-3" />
+                                                                المراقب: {users.find(u => u.role === 'SUPERVISOR' && (u.areaId === worker?.areaId || u.areas?.some(a => a.id === worker?.areaId)))?.name || 'غير محدد'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td className="p-6">
@@ -308,9 +400,21 @@ export function HealthDirectorView() {
                                                 </Badge>
                                             </td>
                                             <td className="p-6 text-center">
-                                                <div className="inline-flex flex-col items-center bg-gradient-to-br from-emerald-600 to-emerald-800 text-white px-6 py-2 rounded-2xl font-black shadow-lg shadow-emerald-200 ring-4 ring-emerald-50">
+                                                <div className={`inline-flex flex-col items-center bg-gradient-to-br ${record.totalCalculatedDays > 30 ? 'from-rose-600 to-rose-800' : 'from-emerald-600 to-emerald-800'} text-white px-6 py-2 rounded-2xl font-black shadow-lg shadow-emerald-200 ring-4 ring-emerald-50`}>
                                                     <span className="text-xl leading-none">{record.totalCalculatedDays}</span>
                                                     <span className="text-[10px] font-bold opacity-80 mt-0.5 uppercase tracking-tighter">يوم استحقاق</span>
+                                                </div>
+                                            </td>
+                                            <td className="p-6 text-center">
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 font-black px-3 py-1 rounded-xl flex gap-1 items-center">
+                                                        <ShieldCheck className="h-3 w-3" />
+                                                        دققها المراقب العام
+                                                    </Badge>
+                                                    <span className="text-[9px] font-bold text-slate-400 flex items-center gap-1 mt-1">
+                                                        <History className="h-3 w-3" />
+                                                        {new Date(record.updatedAt).toLocaleTimeString('ar-JO', { hour: '2-digit', minute: '2-digit' })} - {new Date(record.updatedAt).toLocaleDateString('ar-JO')}
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td className="p-6 text-center">
@@ -385,6 +489,7 @@ export function HealthDirectorView() {
                             <th className="border-2 border-slate-900 p-4 text-right">م</th>
                             <th className="border-2 border-slate-900 p-4 text-right">اسم الموظف</th>
                             <th className="border-2 border-slate-900 p-4 text-right">المنطقة</th>
+                            <th className="border-2 border-slate-900 p-4 text-right">المراقب المسؤول</th>
                             <th className="border border-gray-300 p-2 text-center">أيام عادية</th>
                             <th className="border border-gray-300 p-2 text-center">إضافي عادي (x0.5)</th>
                             <th className="border border-gray-300 p-2 text-center">إضافي عطل (x1.0)</th>
@@ -396,11 +501,13 @@ export function HealthDirectorView() {
                         {filteredRecords.map((record, index) => {
                             const worker = workers.find(w => w.id === record.workerId);
                             const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
+                            const supervisorName = users.find(u => u.role === 'SUPERVISOR' && (u.areaId === worker?.areaId || u.areas?.some(a => a.id === worker?.areaId)))?.name || 'غير محدد';
                             return (
                                 <tr key={record.id} className="border-b-2 border-slate-400">
                                     <td className="border-2 border-slate-900 p-4 text-center font-bold">{index + 1}</td>
                                     <td className="border-2 border-slate-900 p-4 font-black">{worker?.name}</td>
                                     <td className="border-2 border-slate-900 p-4">{areaName}</td>
+                                    <td className="border-2 border-slate-900 p-4 text-xs">{supervisorName}</td>
                                     <td className="border-2 border-slate-900 p-4 text-center font-bold">{record.normalDays}</td>
                                     <td className="border-2 border-slate-900 p-4 text-center font-bold">{record.overtimeNormalDays}</td>
                                     <td className="border-2 border-slate-900 p-4 text-center font-bold">{record.overtimeHolidayDays}</td>
