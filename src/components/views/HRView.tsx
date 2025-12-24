@@ -6,7 +6,6 @@ import {
     Save,
     Loader2,
     HardHat,
-    Briefcase,
     ShieldCheck,
     AlertCircle,
     X,
@@ -25,6 +24,7 @@ import { AreaSection } from "./hr/AreaSection";
 import { AttendanceReports } from "./hr/AttendanceReports";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../ui/card";
 import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 
@@ -320,117 +320,115 @@ export function HRView() {
     }
 
     return (
-        <div className="space-y-6 pb-20">
-            {/* Header section */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white/80 backdrop-blur-md p-4 md:p-6 rounded-3xl shadow-lg shadow-purple-900/5 border border-white/20 sticky top-4 z-20 transition-all duration-300">
-                <div className="flex items-center gap-4">
-                    <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-3.5 rounded-2xl text-white shadow-lg shadow-purple-500/30 transform hover:scale-105 transition-transform duration-300">
-                        <LayoutDashboard className="h-6 w-6" />
+        <div className="space-y-6 pb-24">
+            {/* Header section - Sticky & Premium Glass */}
+            <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="max-w-7xl mx-auto flex flex-col gap-3">
+                    <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-2.5 rounded-2xl text-white shadow-lg shadow-purple-500/20">
+                                <LayoutDashboard className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-black text-slate-900 tracking-tight">إدارة الموارد</h2>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">التحكم في العمال والمناطق</p>
+                            </div>
+                        </div>
+                        <div className="hidden sm:flex items-center gap-2">
+                            <Badge className="bg-purple-50 text-purple-700 border-purple-100 font-bold py-1 px-3 rounded-full">
+                                {appUser?.username}
+                            </Badge>
+                        </div>
                     </div>
-                    <div>
-                        <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 leading-tight">لوحة الموارد البشرية</h2>
-                        <p className="text-gray-500 text-sm font-medium">نظام إدارة الكوادر الذكي</p>
-                    </div>
-                </div>
 
-                <div className="flex bg-gray-100/50 p-1.5 rounded-2xl border border-gray-200/50 w-full lg:w-auto overflow-x-auto no-scrollbar backdrop-blur-sm">
-                    {[
-                        { id: 'reports', label: 'التقارير', icon: FileText },
-                        { id: 'supervisors', label: 'المستخدمين', icon: Users },
-                        { id: 'workers', label: 'العمال', icon: HardHat },
-                        { id: 'areas', label: 'المناطق', icon: MapPin }
-                    ].map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                            className={`flex-1 lg:flex-none px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2.5 whitespace-nowrap ${activeTab === tab.id
-                                ? 'bg-white text-purple-700 shadow-md shadow-purple-900/5 scale-100'
-                                : 'text-gray-500 hover:text-gray-900 hover:bg-white/50 scale-95 hover:scale-100'
-                                }`}
-                        >
-                            <tab.icon className={`h-4 w-4 transition-transform duration-300 ${activeTab === tab.id ? 'scale-110' : ''}`} />
-                            {tab.label}
-                        </button>
-                    ))}
+                    {/* Desktop & Tablet Navigation */}
+                    <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm">
+                        {[
+                            { id: 'reports', label: 'التقارير', icon: FileText },
+                            { id: 'supervisors', label: 'المستخدمين', icon: Users },
+                            { id: 'workers', label: 'العمال', icon: HardHat },
+                            { id: 'areas', label: 'المناطق', icon: MapPin }
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => {
+                                    setActiveTab(tab.id as typeof activeTab);
+                                    setSearchTerm(''); // Clear search when switching tabs
+                                }}
+                                className={`flex-1 px-3 py-2 rounded-xl text-[11px] md:text-xs font-black transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === tab.id
+                                    ? 'bg-white text-purple-700 shadow-md shadow-purple-900/5'
+                                    : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+                                    }`}
+                            >
+                                <tab.icon className={`h-3.5 w-3.5 ${activeTab === tab.id ? 'scale-110' : ''}`} />
+                                <span className="hidden xs:inline">{tab.label}</span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            {/* Global Search Bar (Only for management tabs) */}
+            {/* Tab-Specific Global Search Bar - Refined for mobile */}
             {activeTab !== 'reports' && (
-                <div className="relative max-w-md mx-auto w-full px-4">
-                    <Search className="absolute right-7 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                        placeholder="بحث في القائمة الحالية..."
-                        className="pr-10 bg-white rounded-xl shadow-sm border-gray-100"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                    />
+                <div className="relative w-full px-1 animate-in fade-in slide-in-from-bottom-2 duration-700">
+                    <div className="relative group">
+                        <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-purple-600 transition-colors" />
+                        <Input
+                            placeholder={`بحث في ${activeTab === 'workers' ? 'العمال' : activeTab === 'supervisors' ? 'المستخدمين' : 'المناطق'}...`}
+                            className="pr-12 h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-purple-500 rounded-2xl shadow-sm shadow-purple-900/5 text-base"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                        />
+                    </div>
                 </div>
             )}
 
-            {/* Quick Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100 fill-mode-both">
-                <Card className="border-none shadow-sm bg-gradient-to-br from-blue-50 to-blue-100/50 overflow-hidden relative hover:shadow-md transition-shadow duration-300">
-                    <div className="absolute -right-6 -bottom-6 opacity-10 text-blue-600 rotate-12 transform scale-150">
-                        <HardHat className="h-32 w-32" />
-                    </div>
-                    <CardContent className="p-4 md:p-6 flex items-center gap-4 relative z-10">
-                        <div className="bg-white p-3 rounded-2xl text-blue-600 shadow-sm ring-1 ring-blue-100">
-                            <Users className="h-6 w-6" />
+            {/* Quick Stats Grid - Responsive & Premium */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 px-1 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 fill-mode-both">
+                <Card className="border-none shadow-sm bg-gradient-to-br from-blue-50 to-blue-100/30 ring-1 ring-blue-100 rounded-2xl overflow-hidden group">
+                    <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                        <div className="bg-white p-2.5 rounded-xl text-blue-600 shadow-sm border border-blue-50 group-hover:scale-110 transition-transform">
+                            <Users className="h-5 w-5" />
                         </div>
                         <div>
-                            <p className="text-xs text-blue-600 font-bold mb-1 uppercase tracking-wider">إجمالي العمال</p>
-                            <p className="text-3xl font-black text-blue-900">{totalWorkersCount}</p>
+                            <p className="text-[10px] text-blue-600 font-black uppercase tracking-tight">العمال</p>
+                            <p className="text-2xl font-black text-blue-900 leading-tight">{totalWorkersCount}</p>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-sm bg-gradient-to-br from-purple-50 to-purple-100/50 overflow-hidden relative hover:shadow-md transition-shadow duration-300">
-                    <div className="absolute -right-6 -bottom-6 opacity-10 text-purple-600 rotate-12 transform scale-150">
-                        <Users className="h-32 w-32" />
-                    </div>
-                    <CardContent className="p-4 md:p-6 flex items-center gap-4 relative z-10">
-                        <div className="bg-white p-3 rounded-2xl text-purple-600 shadow-sm ring-1 ring-purple-100">
-                            <ShieldCheck className="h-6 w-6" />
+                <Card className="border-none shadow-sm bg-gradient-to-br from-purple-50 to-purple-100/30 ring-1 ring-purple-100 rounded-2xl overflow-hidden group">
+                    <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                        <div className="bg-white p-2.5 rounded-xl text-purple-600 shadow-sm border border-purple-50 group-hover:scale-110 transition-transform">
+                            <ShieldCheck className="h-5 w-5" />
                         </div>
                         <div>
-                            <p className="text-xs text-purple-600 font-bold mb-1 uppercase tracking-wider">إجمالي المستخدمين</p>
-                            <p className="text-3xl font-black text-purple-900">{activeUsersCount}</p>
+                            <p className="text-[10px] text-purple-600 font-black uppercase tracking-tight">المستخدمين</p>
+                            <p className="text-2xl font-black text-purple-900 leading-tight">{activeUsersCount}</p>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-sm bg-gradient-to-br from-amber-50 to-amber-100/50 overflow-hidden relative hover:shadow-md transition-shadow duration-300">
-                    <div className="absolute -right-6 -bottom-6 opacity-10 text-amber-600 rotate-12 transform scale-150">
-                        <MapPin className="h-32 w-32" />
-                    </div>
-                    <CardContent className="p-4 md:p-6 flex items-center gap-4 relative z-10">
-                        <div className="bg-white p-3 rounded-2xl text-amber-600 shadow-sm ring-1 ring-amber-100">
-                            <Briefcase className="h-6 w-6" />
+                <Card className="border-none shadow-sm bg-gradient-to-br from-amber-50 to-amber-100/30 ring-1 ring-amber-100 rounded-2xl overflow-hidden group">
+                    <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                        <div className="bg-white p-2.5 rounded-xl text-amber-600 shadow-sm border border-amber-50 group-hover:scale-110 transition-transform">
+                            <MapPin className="h-5 w-5" />
                         </div>
                         <div>
-                            <p className="text-xs text-amber-600 font-bold mb-1 uppercase tracking-wider">إجمالي القطاعات</p>
-                            <p className="text-3xl font-black text-amber-900">{totalSectorsCount}</p>
+                            <p className="text-[10px] text-amber-600 font-black uppercase tracking-tight">القطاعات</p>
+                            <p className="text-2xl font-black text-amber-900 leading-tight">{totalSectorsCount}</p>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-sm bg-gradient-to-br from-green-50 to-green-100/50 overflow-hidden relative hover:shadow-md transition-shadow duration-300">
-                    <div className="absolute -right-6 -bottom-6 opacity-10 text-green-600 rotate-12 transform scale-150">
-                        <TrendingUp className="h-32 w-32" />
-                    </div>
-                    <CardContent className="p-4 md:p-6 flex items-center gap-4 relative z-10">
-                        <div className="bg-white p-3 rounded-2xl text-green-600 shadow-sm ring-1 ring-green-100">
-                            <TrendingUp className="h-6 w-6" />
+                <Card className="border-none shadow-sm bg-gradient-to-br from-emerald-50 to-emerald-100/30 ring-1 ring-emerald-100 rounded-2xl overflow-hidden group">
+                    <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                        <div className="bg-white p-2.5 rounded-xl text-emerald-600 shadow-sm border border-emerald-50 group-hover:scale-110 transition-transform">
+                            <TrendingUp className="h-5 w-5" />
                         </div>
-                        <div className="flex-1">
-                            <p className="text-xs text-green-600 font-bold mb-1 uppercase tracking-wider">نسبة الإنجاز ({month}/{year})</p>
-                            <div className="flex items-center gap-3">
-                                <p className="text-3xl font-black text-green-900">{completionRate}%</p>
-                                <div className="flex-1 h-2.5 bg-green-200/50 rounded-full overflow-hidden shadow-inner">
-                                    <div className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all duration-1000 ease-out" style={{ width: `${completionRate}%` }} />
-                                </div>
-                            </div>
+                        <div>
+                            <p className="text-[10px] text-emerald-600 font-black uppercase tracking-tight">الإنجاز الشهرى</p>
+                            <p className="text-2xl font-black text-emerald-900 leading-tight">{completionRate}%</p>
                         </div>
                     </CardContent>
                 </Card>
