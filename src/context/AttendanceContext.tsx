@@ -38,7 +38,7 @@ export interface AttendanceRecord {
     overtimeHolidayDays: number; // 1.0 value
     overtimeEidDays: number; // 1.0 value
     totalCalculatedDays: number;
-    status: 'PENDING_GS' | 'PENDING_HR' | 'APPROVED';
+    status: 'PENDING_GS' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED';
     updatedAt: string;
 }
 
@@ -64,7 +64,7 @@ interface AttendanceContextType {
     updateArea: (id: string, name: string) => Promise<void>;
     deleteArea: (id: string) => Promise<void>;
     refreshData: () => Promise<void>;
-    approveAttendance: (recordId: string, nextStatus: 'PENDING_HR' | 'APPROVED') => Promise<void>;
+    approveAttendance: (recordId: string, nextStatus: 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED') => Promise<void>;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(undefined);
@@ -347,7 +347,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     }, [loadAreas]);
 
-    const approveAttendance = useCallback(async (recordId: string, nextStatus: 'PENDING_HR' | 'APPROVED') => {
+    const approveAttendance = useCallback(async (recordId: string, nextStatus: 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED') => {
         try {
             const { error } = await supabase
                 .from('attendance_records')

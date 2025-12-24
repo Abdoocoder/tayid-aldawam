@@ -19,11 +19,11 @@ interface AttendanceReportsProps {
     reportAreaFilter: string;
     reportStatusFilter: string;
     getWorkerAttendance: (workerId: string, month: number, year: number) => AttendanceRecord | undefined;
-    approveAttendance: (recordId: string, nextStatus: 'APPROVED') => Promise<void>;
+    approveAttendance: (recordId: string, nextStatus: 'PENDING_FINANCE') => Promise<void>;
     onMonthChange: (m: number, y: number) => void;
     onSearchChange: (value: string) => void;
     onAreaFilterChange: (value: string) => void;
-    onStatusFilterChange: (value: 'ALL' | 'PENDING_HR' | 'APPROVED') => void;
+    onStatusFilterChange: (value: 'ALL' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED') => void;
     onExportCSV: () => void;
     onBulkApprove?: () => void;
 }
@@ -93,10 +93,11 @@ export function AttendanceReports({
                     <Select
                         className="bg-gray-50/50 border-gray-200 min-w-[150px]"
                         value={reportStatusFilter}
-                        onChange={e => onStatusFilterChange(e.target.value as 'ALL' | 'PENDING_HR' | 'APPROVED')}
+                        onChange={e => onStatusFilterChange(e.target.value as 'ALL' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED')}
                     >
                         <option value="ALL">كل الحالات</option>
-                        <option value="PENDING_HR">بانتظار الاعتماد</option>
+                        <option value="PENDING_HR">بانتظار اعتماد الموارد البشرية</option>
+                        <option value="PENDING_FINANCE">بانتظار اعتماد قسم الرواتب</option>
                         <option value="APPROVED">معتمد نهائياً</option>
                     </Select>
                 </div>
@@ -190,12 +191,14 @@ export function AttendanceReports({
                                             <div className="flex justify-center">
                                                 {isFilled ? (
                                                     <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${record.status === 'APPROVED' ? 'text-green-600 bg-green-50 border-green-100' :
-                                                        record.status === 'PENDING_HR' ? 'text-purple-600 bg-purple-50 border-purple-100' :
-                                                            'text-amber-600 bg-amber-50 border-amber-100'
+                                                            record.status === 'PENDING_FINANCE' ? 'text-blue-600 bg-blue-50 border-blue-100' :
+                                                                record.status === 'PENDING_HR' ? 'text-purple-600 bg-purple-50 border-purple-100' :
+                                                                    'text-amber-600 bg-amber-50 border-amber-100'
                                                         }`}>
                                                         {record.status === 'APPROVED' ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
                                                         {record.status === 'APPROVED' ? 'معتمد' :
-                                                            record.status === 'PENDING_HR' ? 'جاهز للاعتماد' : 'قيد المراجعة'}
+                                                            record.status === 'PENDING_FINANCE' ? 'بانتظار الرواتب' :
+                                                                record.status === 'PENDING_HR' ? 'جاهز للاعتماد' : 'قيد المراجعة'}
                                                     </div>
                                                 ) : (
                                                     <div className="flex items-center gap-1 text-gray-400 text-[10px] font-bold bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
@@ -210,9 +213,9 @@ export function AttendanceReports({
                                                 <Button
                                                     size="sm"
                                                     className="h-7 bg-purple-600 hover:bg-purple-700 text-[10px] font-bold"
-                                                    onClick={() => approveAttendance(record.id, 'APPROVED')}
+                                                    onClick={() => approveAttendance(record.id, 'PENDING_FINANCE')}
                                                 >
-                                                    إعتماد نهائي
+                                                    إعتماد
                                                 </Button>
                                             )}
                                         </td>

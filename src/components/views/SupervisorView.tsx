@@ -235,7 +235,8 @@ export function SupervisorView() {
                                                 {isFilled ? (
                                                     record.status === 'PENDING_GS' ? "بانتظار المراقب العام" :
                                                         record.status === 'PENDING_HR' ? "بانتظار الموارد البشرية" :
-                                                            "معتمد نهائياً"
+                                                            record.status === 'PENDING_FINANCE' ? "بانتظار قسم الرواتب" :
+                                                                "معتمد نهائياً"
                                                 ) : "بانتظار الإدخال"}
                                             </Badge>
                                             <Link href={`/dashboard/entry/${worker.id}?month=${month}&year=${year}`}>

@@ -7,13 +7,13 @@ import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Save, Calculator, User, Calendar, Minus, Plus, HardHat } from "lucide-react";
+import { ArrowRight, Save, Calculator, User, Calendar, Minus, Plus, HardHat, Lock } from "lucide-react";
 
 export default function EntryPage() {
     const params = useParams();
     const searchParams = useSearchParams();
     const router = useRouter();
-    const { workers, getWorkerAttendance, saveAttendance } = useAttendance();
+    const { workers, getWorkerAttendance, saveAttendance, currentUser } = useAttendance();
 
     const workerId = params.id as string;
     const month = Number(searchParams.get("month"));
@@ -73,6 +73,44 @@ export default function EntryPage() {
 
     const { normalDays, otNormal, otHoliday, otEid } = formData;
     const calculatedTotal = normalDays + (otNormal * 0.5) + (otHoliday * 1.0) + (otEid * 1.0);
+
+    // Determine if editing is allowed based on role and status
+    const canEdit = (() => {
+        if (!currentRecord) return true; // New record, can edit
+        const { status } = currentRecord;
+
+        if (currentUser?.role === 'SUPERVISOR') {
+            return status === 'PENDING_GS';
+        }
+        if (currentUser?.role === 'GENERAL_SUPERVISOR') {
+            return status === 'PENDING_GS' || status === 'PENDING_HR';
+        }
+        if (currentUser?.role === 'HR') {
+            return status === 'PENDING_HR' || status === 'PENDING_FINANCE';
+        }
+        if (currentUser?.role === 'ADMIN') {
+            return true; // Admin can always edit
+        }
+        return false;
+    })();
+
+    const getStatusMessage = () => {
+        if (!currentRecord) return null;
+        const { status } = currentRecord;
+
+        if (currentUser?.role === 'SUPERVISOR' && status !== 'PENDING_GS') {
+            return 'تم اعتماد هذا السجل من قبل المراقب العام. لا يمكن التعديل بعد الاعتماد.';
+        }
+        if (currentUser?.role === 'GENERAL_SUPERVISOR' && (status === 'PENDING_FINANCE' || status === 'APPROVED')) {
+            return 'تم اعتماد هذا السجل من قبل الموارد البشرية. لا يمكن التعديل بعد الاعتماد.';
+        }
+        if (currentUser?.role === 'HR' && status === 'APPROVED') {
+            return 'تم اعتماد هذا السجل من قبل قسم الرواتب. لا يمكن التعديل بعد الاعتماد النهائي.';
+        }
+        return null;
+    };
+
+    const statusMessage = getStatusMessage();
 
     const handleSave = () => {
         saveAttendance({
@@ -134,6 +172,18 @@ export default function EntryPage() {
                                 </div>
                             </CardHeader>
                             <CardContent className="p-8 space-y-10">
+                                {/* Edit Prevention Notice */}
+                                {!canEdit && statusMessage && (
+                                    <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 flex items-start gap-4">
+                                        <div className="bg-red-100 p-3 rounded-xl text-red-600">
+                                            <Lock className="h-6 w-6" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-red-900 text-lg mb-1">السجل معتمد - التعديل غير مسموح</h3>
+                                            <p className="text-sm text-red-700">{statusMessage}</p>
+                                        </div>
+                                    </div>
+                                )}
                                 {/* Entry Grid */}
                                 <div className="space-y-8">
                                     {/* Normal Days Input */}
@@ -148,7 +198,7 @@ export default function EntryPage() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
-                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl" onClick={() => handleDecrement(setNormalDays, normalDays)}>
+                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl" onClick={() => handleDecrement(setNormalDays, normalDays)} disabled={!canEdit}>
                                                 <Minus className="h-5 w-5" />
                                             </Button>
                                             <Input
@@ -160,9 +210,10 @@ export default function EntryPage() {
                                                     const val = parseInt(e.target.value) || 0;
                                                     setNormalDays(Math.min(val, daysInMonth));
                                                 }}
-                                                className="w-16 h-10 text-center text-xl font-black border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+                                                disabled={!canEdit}
+                                                className="w-16 h-10 text-center text-xl font-black border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                                             />
-                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => handleIncrement(setNormalDays, normalDays, daysInMonth)}>
+                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => handleIncrement(setNormalDays, normalDays, daysInMonth)} disabled={!canEdit}>
                                                 <Plus className="h-5 w-5" />
                                             </Button>
                                         </div>
@@ -180,7 +231,7 @@ export default function EntryPage() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
-                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl" onClick={() => handleDecrement(setOtNormal, otNormal)}>
+                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl" onClick={() => handleDecrement(setOtNormal, otNormal)} disabled={!canEdit}>
                                                 <Minus className="h-5 w-5" />
                                             </Button>
                                             <Input
@@ -189,9 +240,10 @@ export default function EntryPage() {
                                                 max={31}
                                                 value={otNormal}
                                                 onChange={(e) => setOtNormal(parseInt(e.target.value) || 0)}
-                                                className="w-16 h-10 text-center text-xl font-black border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+                                                disabled={!canEdit}
+                                                className="w-16 h-10 text-center text-xl font-black border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                                             />
-                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => handleIncrement(setOtNormal, otNormal, 31)}>
+                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => handleIncrement(setOtNormal, otNormal, 31)} disabled={!canEdit}>
                                                 <Plus className="h-5 w-5" />
                                             </Button>
                                         </div>
@@ -209,7 +261,7 @@ export default function EntryPage() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
-                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl" onClick={() => handleDecrement(setOtHoliday, otHoliday)}>
+                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl" onClick={() => handleDecrement(setOtHoliday, otHoliday)} disabled={!canEdit}>
                                                 <Minus className="h-5 w-5" />
                                             </Button>
                                             <Input
@@ -218,9 +270,10 @@ export default function EntryPage() {
                                                 max={31}
                                                 value={otHoliday}
                                                 onChange={(e) => setOtHoliday(parseInt(e.target.value) || 0)}
-                                                className="w-16 h-10 text-center text-xl font-black border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+                                                disabled={!canEdit}
+                                                className="w-16 h-10 text-center text-xl font-black border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                                             />
-                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => handleIncrement(setOtHoliday, otHoliday, 31)}>
+                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => handleIncrement(setOtHoliday, otHoliday, 31)} disabled={!canEdit}>
                                                 <Plus className="h-5 w-5" />
                                             </Button>
                                         </div>
@@ -238,7 +291,7 @@ export default function EntryPage() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
-                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl" onClick={() => handleDecrement(setOtEid, otEid)}>
+                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl" onClick={() => handleDecrement(setOtEid, otEid)} disabled={!canEdit}>
                                                 <Minus className="h-5 w-5" />
                                             </Button>
                                             <Input
@@ -247,9 +300,10 @@ export default function EntryPage() {
                                                 max={10}
                                                 value={otEid}
                                                 onChange={(e) => setOtEid(parseInt(e.target.value) || 0)}
-                                                className="w-16 h-10 text-center text-xl font-black border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+                                                disabled={!canEdit}
+                                                className="w-16 h-10 text-center text-xl font-black border-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                                             />
-                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => handleIncrement(setOtEid, otEid, 10)}>
+                                            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => handleIncrement(setOtEid, otEid, 10)} disabled={!canEdit}>
                                                 <Plus className="h-5 w-5" />
                                             </Button>
                                         </div>
@@ -266,10 +320,11 @@ export default function EntryPage() {
                                 </Button>
                                 <Button
                                     onClick={handleSave}
-                                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 px-12 rounded-2xl h-12 text-white font-black shadow-lg shadow-blue-200 gap-2 transition-all hover:scale-105 active:scale-95"
+                                    disabled={!canEdit}
+                                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 px-12 rounded-2xl h-12 text-white font-black shadow-lg shadow-blue-200 gap-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <Save className="h-5 w-5" />
-                                    حفظ السجل
+                                    {canEdit ? 'حفظ السجل' : 'لا يمكن التعديل'}
                                 </Button>
                             </CardFooter>
                         </Card>

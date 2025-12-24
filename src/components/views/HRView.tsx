@@ -81,7 +81,7 @@ export function HRView() {
     const [year, setYear] = useState(new Date().getFullYear());
     const [reportSearchTerm, setReportSearchTerm] = useState('');
     const [reportAreaFilter, setReportAreaFilter] = useState('ALL');
-    const [reportStatusFilter, setReportStatusFilter] = useState<'ALL' | 'PENDING_HR' | 'APPROVED'>('PENDING_HR');
+    const [reportStatusFilter, setReportStatusFilter] = useState<'ALL' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED'>('PENDING_HR');
 
     // Filter supervisors and general supervisors
     const supervisors = useMemo(() => users.filter((u: User) => u.role === 'SUPERVISOR' || u.role === 'GENERAL_SUPERVISOR'), [users]);
@@ -245,12 +245,12 @@ export function HRView() {
 
         if (pendingRecords.length === 0) return;
 
-        if (!window.confirm(`هل أنت متأكد من اعتماد ${pendingRecords.length} سجلات نهائياً؟`)) return;
+        if (!window.confirm(`هل أنت متأكد من اعتماد ${pendingRecords.length} سجلات وتحويلها لقسم الرواتب؟`)) return;
 
         setIsSaving(true);
         try {
             for (const record of pendingRecords) {
-                if (record) await approveAttendance(record.id, 'APPROVED');
+                if (record) await approveAttendance(record.id, 'PENDING_FINANCE');
             }
             showToast(`تم اعتماد ${pendingRecords.length} سجلات بنجاح`);
         } catch (err) {
