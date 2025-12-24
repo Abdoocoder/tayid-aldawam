@@ -181,7 +181,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         } finally {
             setIsLoading(false);
         }
-    }, [appUser?.role, loadWorkers, loadAttendance, loadAreas, loadUsers, loadAuditLogs]);
+    }, [appUser?.role, appUser?.isActive, loadWorkers, loadAttendance, loadAreas, loadUsers, loadAuditLogs]);
 
     const refreshData = useCallback(async () => {
         await loadData();
