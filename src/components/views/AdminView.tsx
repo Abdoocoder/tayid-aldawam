@@ -36,7 +36,7 @@ interface WorkerEditingData extends Partial<Worker> {
 
 export const AdminView = () => {
     const { workers, attendanceRecords, users, auditLogs, areas, isLoading, addWorker, updateWorker, deleteWorker, updateUser, deleteUser, rejectAttendance, getWorkerAttendance } = useAttendance();
-    const { signUp, appUser } = useAuth();
+    const { appUser } = useAuth();
     const { showToast } = useToast();
     const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'workers' | 'logs' | 'attendance'>('overview');
 
