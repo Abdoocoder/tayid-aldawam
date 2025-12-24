@@ -7,6 +7,7 @@ import { HRView } from "@/components/views/HRView";
 import { FinanceView } from "@/components/views/FinanceView";
 import { GeneralSupervisorView } from "@/components/views/GeneralSupervisorView";
 import { AdminView } from "@/components/views/AdminView";
+import { MayorView } from "@/components/views/MayorView";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -33,6 +34,7 @@ export default function DashboardPage() {
                 {currentUser.role === "HR" && <HRView />}
                 {currentUser.role === "FINANCE" && <FinanceView />}
                 {currentUser.role === "ADMIN" && <AdminView />}
+                {currentUser.role === "MAYOR" && <MayorView />}
             </main>
         </div>
     );

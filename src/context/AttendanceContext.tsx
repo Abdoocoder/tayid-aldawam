@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 
 // --- Types ---
 
-export type UserRole = "SUPERVISOR" | "GENERAL_SUPERVISOR" | "HR" | "FINANCE" | "ADMIN";
+export type UserRole = "SUPERVISOR" | "GENERAL_SUPERVISOR" | "HR" | "FINANCE" | "ADMIN" | "MAYOR";
 
 export interface User {
     id: string;

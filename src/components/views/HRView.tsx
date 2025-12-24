@@ -555,6 +555,7 @@ export function HRView() {
                                         >
                                             <option value="SUPERVISOR">مراقب ميداني</option>
                                             <option value="GENERAL_SUPERVISOR">مراقب عام</option>
+                                            <option value="MAYOR">رئيس البلدية</option>
                                         </Select>
                                     </div>
                                     {editingItem.data.id === 'NEW' && (
