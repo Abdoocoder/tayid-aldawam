@@ -170,7 +170,7 @@ export function MayorView() {
                             <Badge className="bg-purple-50 text-purple-700 border-none">القيمة المالية</Badge>
                         </div>
                         <div>
-                            <p className="text-3xl font-black text-slate-800">{stats.approvedAmount.toLocaleString()} <span className="text-sm font-bold">د.ل</span></p>
+                            <p className="text-3xl font-black text-slate-800">{stats.approvedAmount.toLocaleString()} <span className="text-sm font-bold">د.أ</span></p>
                             <p className="text-sm text-slate-500 font-medium mt-1">للسجلات المعتمدة نهائياً</p>
                         </div>
                     </CardContent>
@@ -314,7 +314,7 @@ export function MayorView() {
                                                 </Badge>
                                             </td>
                                             <td className="p-4 text-slate-400 text-xs font-medium">
-                                                {new Date(record.updatedAt).toLocaleDateString('ar-LY')}
+                                                {new Date(record.updatedAt).toLocaleDateString('ar-JO')}
                                             </td>
                                             <td className="p-4">
                                                 <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-emerald-500 transition-all group-hover:translate-x-[-4px]" />

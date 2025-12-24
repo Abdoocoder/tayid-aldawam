@@ -194,10 +194,10 @@ export function FinanceView() {
             {/* Quick Insights Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                    { label: 'إجمالي المرتبات', value: stats.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), unit: 'د.ل', icon: DollarSign, color: 'green', desc: 'للكشوف المعتمدة فقط' },
+                    { label: 'إجمالي المرتبات', value: stats.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), unit: 'د.أ', icon: DollarSign, color: 'green', desc: 'للكشوف المعتمدة فقط' },
                     { label: 'العمال المستحقين', value: stats.workersCount, unit: 'عامل', icon: Users, color: 'blue', desc: 'تم اعتماد حضورهم' },
                     { label: 'إجمالي الأيام', value: stats.totalDays, unit: 'يوم', icon: Calendar, color: 'orange', desc: 'مجموع الأيام المحتسبة' },
-                    { label: 'متوسط الراتب', value: stats.avgSalary.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), unit: 'د.ل', icon: TrendingUp, color: 'purple', desc: 'لكل عامل مستحق' }
+                    { label: 'متوسط الراتب', value: stats.avgSalary.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), unit: 'د.أ', icon: TrendingUp, color: 'purple', desc: 'لكل عامل مستحق' }
                 ].map((stat, i) => (
                     <Card key={i} className="group border-none shadow-sm hover:shadow-xl transition-all duration-300 rounded-[1.5rem] overflow-hidden bg-white border border-transparent hover:border-gray-100">
                         <CardContent className="p-4 md:p-6">
@@ -335,17 +335,17 @@ export function FinanceView() {
                                                 <div className="font-black text-gray-700 text-lg">{p.record?.totalCalculatedDays || "-"}</div>
                                             </td>
                                             <td className="p-6 text-center text-sm font-bold text-gray-500 whitespace-nowrap">
-                                                {p.worker.dayValue} <span className="text-[10px] font-medium opacity-60 mr-1">د.ل</span>
+                                                {p.worker.dayValue} <span className="text-[10px] font-medium opacity-60 mr-1">د.أ</span>
                                             </td>
                                             <td className="p-6 text-center bg-green-50/10">
                                                 <div className="text-xl font-black text-green-700">
                                                     {p.totalAmount.toLocaleString()}
-                                                    <span className="text-xs font-medium mr-1.5 opacity-80 uppercase">د.ل</span>
+                                                    <span className="text-xs font-medium mr-1.5 opacity-80 uppercase">د.أ</span>
                                                 </div>
                                             </td>
                                             <td className="p-6 text-center">
                                                 <div className="text-[11px] text-gray-400 font-bold uppercase">
-                                                    {p.record ? new Date(p.record.updatedAt).toLocaleDateString('ar-LY') : "-"}
+                                                    {p.record ? new Date(p.record.updatedAt).toLocaleDateString('ar-JO') : "-"}
                                                 </div>
                                             </td>
                                             {statusFilter === 'PENDING_FINANCE' && (
@@ -405,14 +405,14 @@ export function FinanceView() {
                     <div className="flex justify-center gap-8 text-sm text-gray-600 font-bold uppercase tracking-widest">
                         <span>فترة الاستحقاق: {month}/{year}</span>
                         <span>القطاع: {areaFilter === "ALL" ? "كافة القطاعات" : areas.find(a => a.id === areaFilter)?.name}</span>
-                        <span>التاريخ: {new Date().toLocaleDateString('ar-LY')}</span>
+                        <span>التاريخ: {new Date().toLocaleDateString('ar-JO')}</span>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-6 mb-10">
                     <div className="p-6 bg-gray-50 rounded-3xl border border-gray-200">
                         <p className="text-xs font-black text-gray-400 uppercase mb-1">إجمالي المبلغ المطلوب</p>
-                        <p className="text-3xl font-black text-green-900">{stats.totalAmount.toLocaleString()} د.ل</p>
+                        <p className="text-3xl font-black text-green-900">{stats.totalAmount.toLocaleString()} د.أ</p>
                     </div>
                     <div className="p-6 bg-gray-50 rounded-3xl border border-gray-200">
                         <p className="text-xs font-black text-gray-400 uppercase mb-1">عدد العمال المدرجين</p>
@@ -432,7 +432,7 @@ export function FinanceView() {
                             <th className="border border-gray-300 p-3 text-right">القطاع</th>
                             <th className="border border-gray-300 p-3 text-center">الأيام</th>
                             <th className="border border-gray-300 p-3 text-center">سعر اليوم</th>
-                            <th className="border border-gray-300 p-3 text-center font-black">الصافي (د.ل)</th>
+                            <th className="border border-gray-300 p-3 text-center font-black">الصافي (د.أ)</th>
                             <th className="border border-gray-300 p-3 text-center">التوقيع</th>
                         </tr>
                     </thead>

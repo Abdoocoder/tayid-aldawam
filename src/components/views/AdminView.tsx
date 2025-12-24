@@ -453,7 +453,7 @@ export const AdminView = () => {
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-2">
                                                     <Badge className="text-[10px] py-0">{log.action}</Badge>
-                                                    <span className="text-xs text-gray-400">{new Date(log.changed_at).toLocaleString('ar-EG')}</span>
+                                                    <span className="text-xs text-gray-400">{new Date(log.changed_at).toLocaleString('ar-JO')}</span>
                                                 </div>
                                                 <p className="text-sm font-medium text-gray-700">
                                                     تعديل في جدول {log.table_name}
@@ -835,7 +835,7 @@ export const AdminView = () => {
                                             </div>
                                             <div className="flex flex-col items-end">
                                                 <span className="text-xs font-medium text-gray-700">{log.changed_by || 'نظام آلي'}</span>
-                                                <span className="text-[10px] text-gray-400">{new Date(log.changed_at).toLocaleString('ar-EG')}</span>
+                                                <span className="text-[10px] text-gray-400">{new Date(log.changed_at).toLocaleString('ar-JO')}</span>
                                             </div>
                                         </div>
 
@@ -869,7 +869,7 @@ export const AdminView = () => {
                 <div className="text-center mb-6 border-b-2 pb-4">
                     <h1 className="text-2xl font-bold mb-1">قائمة بيانات العمال والأسعار</h1>
                     <p className="text-gray-600">
-                        التاريخ: {new Date().toLocaleDateString('ar-LY')} | القطاع: جميع العمال
+                        التاريخ: {new Date().toLocaleDateString('ar-JO')} | القطاع: جميع العمال
                     </p>
                     <p className="text-sm mt-1 text-red-600 font-bold uppercase">لوحة إدارة النظام</p>
                 </div>
@@ -905,7 +905,7 @@ export const AdminView = () => {
                 </div>
 
                 <div className="mt-12 text-[10px] text-gray-400 text-center">
-                    تم استخراج هذه القائمة بتاريخ {new Date().toLocaleDateString('ar-LY')}
+                    تم استخراج هذه القائمة بتاريخ {new Date().toLocaleDateString('ar-JO')}
                 </div>
             </div>
         </div>

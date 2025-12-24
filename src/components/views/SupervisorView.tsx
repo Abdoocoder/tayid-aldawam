@@ -317,7 +317,7 @@ export function SupervisorView() {
                 </div>
 
                 <div className="mt-12 text-[10px] text-gray-400 text-center">
-                    تم استخراج هذا التقرير بتاريخ {new Date().toLocaleDateString('ar-LY')}
+                    تم استخراج هذا التقرير بتاريخ {new Date().toLocaleDateString('ar-JO')}
                 </div>
             </div>
 
