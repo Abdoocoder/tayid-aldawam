@@ -66,7 +66,7 @@ export function HRView() {
         deleteArea
     } = useAttendance();
 
-    const { signUp } = useAuth();
+    const { signUp, appUser } = useAuth();
     const { showToast } = useToast();
 
     // UI State
@@ -217,6 +217,10 @@ export function HRView() {
     };
 
     const handleDeleteSupervisor = async (id: string) => {
+        if (appUser?.id === id) {
+            showToast('تنبيه', 'لا يمكنك حذف حسابك الشخصي', 'warning');
+            return;
+        }
         if (!window.confirm('هل أنت متأكد من حذف هذا المراقب؟')) return;
         try {
             await deleteUser(id);

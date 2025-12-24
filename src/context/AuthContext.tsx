@@ -62,7 +62,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setIsPendingApproval(!data.is_active);
             } else {
                 console.warn('No app user profile found for auth user:', authUserId);
+                // Clear stale session if profile is missing
                 setAppUser(null);
+                await supabase.auth.signOut();
             }
         } catch (err) {
             console.error('Failed to load app user:', err);
