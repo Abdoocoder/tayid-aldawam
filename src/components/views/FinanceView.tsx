@@ -24,13 +24,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export function FinanceView() {
-    const { workers, getWorkerAttendance, isLoading, error, areas, approveAttendance } = useAttendance();
+    const { workers, getWorkerAttendance, isLoading, error, areas, approveAttendance, rejectAttendance } = useAttendance();
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [searchTerm, setSearchTerm] = useState("");
     const [areaFilter, setAreaFilter] = useState("ALL");
     const [statusFilter, setStatusFilter] = useState<'PENDING_FINANCE' | 'APPROVED'>('PENDING_FINANCE');
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
+    const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
 
     // Filter workers based on search and area
     const approvedPayrolls = workers.map(w => {
@@ -62,6 +63,22 @@ export function FinanceView() {
             console.error(err);
         } finally {
             setApprovingIds(prev => {
+                const next = new Set(prev);
+                next.delete(recordId);
+                return next;
+            });
+        }
+    };
+
+    const handleReject = async (recordId: string) => {
+        if (!confirm("هل أنت متأكد من رفض هذا السجل وإعادته؟")) return;
+        setRejectingIds(prev => new Set(prev).add(recordId));
+        try {
+            await rejectAttendance(recordId, 'PENDING_HR');
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setRejectingIds(prev => {
                 const next = new Set(prev);
                 next.delete(recordId);
                 return next;
@@ -345,6 +362,19 @@ export function FinanceView() {
                                                             <><CheckCircle className="h-4 w-4 ml-2" /> اعتماد نهائي</>
                                                         )}
                                                     </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        className="h-10 font-bold px-4 rounded-xl mr-2"
+                                                        onClick={() => p.record && handleReject(p.record.id)}
+                                                        disabled={p.record ? rejectingIds.has(p.record.id) || approvingIds.has(p.record.id) : true}
+                                                    >
+                                                        {p.record && rejectingIds.has(p.record.id) ? (
+                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                        ) : (
+                                                            "رفض"
+                                                        )}
+                                                    </Button>
                                                 </td>
                                             )}
                                         </tr>
@@ -434,6 +464,6 @@ export function FinanceView() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

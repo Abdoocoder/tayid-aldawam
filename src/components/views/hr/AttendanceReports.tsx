@@ -20,6 +20,7 @@ interface AttendanceReportsProps {
     reportStatusFilter: string;
     getWorkerAttendance: (workerId: string, month: number, year: number) => AttendanceRecord | undefined;
     approveAttendance: (recordId: string, nextStatus: 'PENDING_FINANCE') => Promise<void>;
+    onReject?: (recordId: string) => Promise<void>;
     onMonthChange: (m: number, y: number) => void;
     onSearchChange: (value: string) => void;
     onAreaFilterChange: (value: string) => void;
@@ -38,6 +39,7 @@ export function AttendanceReports({
     reportStatusFilter,
     getWorkerAttendance,
     approveAttendance,
+    onReject,
     onMonthChange,
     onSearchChange,
     onAreaFilterChange,
@@ -191,9 +193,9 @@ export function AttendanceReports({
                                             <div className="flex justify-center">
                                                 {isFilled ? (
                                                     <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${record.status === 'APPROVED' ? 'text-green-600 bg-green-50 border-green-100' :
-                                                            record.status === 'PENDING_FINANCE' ? 'text-blue-600 bg-blue-50 border-blue-100' :
-                                                                record.status === 'PENDING_HR' ? 'text-purple-600 bg-purple-50 border-purple-100' :
-                                                                    'text-amber-600 bg-amber-50 border-amber-100'
+                                                        record.status === 'PENDING_FINANCE' ? 'text-blue-600 bg-blue-50 border-blue-100' :
+                                                            record.status === 'PENDING_HR' ? 'text-purple-600 bg-purple-50 border-purple-100' :
+                                                                'text-amber-600 bg-amber-50 border-amber-100'
                                                         }`}>
                                                         {record.status === 'APPROVED' ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
                                                         {record.status === 'APPROVED' ? 'معتمد' :
@@ -216,6 +218,16 @@ export function AttendanceReports({
                                                     onClick={() => approveAttendance(record.id, 'PENDING_FINANCE')}
                                                 >
                                                     إعتماد
+                                                </Button>
+                                            )}
+                                            {isFilled && record.status === 'PENDING_HR' && onReject && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="destructive"
+                                                    className="h-7 w-20 text-[10px] font-bold mr-2"
+                                                    onClick={() => onReject(record.id)}
+                                                >
+                                                    رفض
                                                 </Button>
                                             )}
                                         </td>

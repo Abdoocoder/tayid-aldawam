@@ -80,7 +80,7 @@ export default function EntryPage() {
         const { status } = currentRecord;
 
         if (currentUser?.role === 'SUPERVISOR') {
-            return status === 'PENDING_GS';
+            return status === 'PENDING_GS' || status === 'PENDING_SUPERVISOR';
         }
         if (currentUser?.role === 'GENERAL_SUPERVISOR') {
             return status === 'PENDING_GS' || status === 'PENDING_HR';
@@ -98,8 +98,11 @@ export default function EntryPage() {
         if (!currentRecord) return null;
         const { status } = currentRecord;
 
-        if (currentUser?.role === 'SUPERVISOR' && status !== 'PENDING_GS') {
+        if (currentUser?.role === 'SUPERVISOR' && status !== 'PENDING_GS' && status !== 'PENDING_SUPERVISOR') {
             return 'تم اعتماد هذا السجل من قبل المراقب العام. لا يمكن التعديل بعد الاعتماد.';
+        }
+        if (currentUser?.role === 'SUPERVISOR' && status === 'PENDING_SUPERVISOR') {
+            return null; // Allowed to edit
         }
         if (currentUser?.role === 'GENERAL_SUPERVISOR' && (status === 'PENDING_FINANCE' || status === 'APPROVED')) {
             return 'تم اعتماد هذا السجل من قبل الموارد البشرية. لا يمكن التعديل بعد الاعتماد.';

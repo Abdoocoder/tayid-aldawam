@@ -38,7 +38,7 @@ export interface AttendanceRecord {
     overtimeHolidayDays: number; // 1.0 value
     overtimeEidDays: number; // 1.0 value
     totalCalculatedDays: number;
-    status: 'PENDING_GS' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED';
+    status: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED';
     updatedAt: string;
 }
 
@@ -65,6 +65,7 @@ interface AttendanceContextType {
     deleteArea: (id: string) => Promise<void>;
     refreshData: () => Promise<void>;
     approveAttendance: (recordId: string, nextStatus: 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED') => Promise<void>;
+    rejectAttendance: (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HR') => Promise<void>;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(undefined);
@@ -368,6 +369,22 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     }, [loadAttendance]);
 
+    const rejectAttendance = useCallback(async (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HR') => {
+        try {
+            console.log(`Rejecting record ${recordId} to ${newStatus}`);
+            const { error } = await supabase
+                .from('attendance_records')
+                .update({ status: newStatus })
+                .eq('id', recordId);
+
+            if (error) throw error;
+            await loadAttendance();
+        } catch (err) {
+            console.error('Failed to reject attendance:', err);
+            throw err;
+        }
+    }, [loadAttendance]);
+
     return (
         <AttendanceContext.Provider value={{
             currentUser: appUser,
@@ -389,7 +406,8 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             updateArea,
             deleteArea,
             refreshData,
-            approveAttendance
+            approveAttendance,
+            rejectAttendance
         }}>
             {children}
         </AttendanceContext.Provider>

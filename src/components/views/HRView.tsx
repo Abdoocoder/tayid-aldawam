@@ -52,6 +52,7 @@ export function HRView() {
         users,
         getWorkerAttendance,
         approveAttendance,
+        rejectAttendance,
         isLoading,
         error,
         addWorker,
@@ -621,6 +622,16 @@ export function HRView() {
                     approveAttendance={async (id, status) => {
                         await approveAttendance(id, status);
                         showToast('تم اعتماد السجل بنجاح');
+                    }}
+                    onReject={async (id) => {
+                        if (!confirm('هل أنت متأكد من رفض السجل وإعادته للمراقب العام؟')) return;
+                        try {
+                            await rejectAttendance(id, 'PENDING_GS');
+                            showToast('تم رفض السجل وإعادته للمراقب العام');
+                        } catch (err) {
+                            console.error(err);
+                            showToast('فشل في رفض السجل', '', 'error');
+                        }
                     }}
                     onMonthChange={(m, y) => { setMonth(m); setYear(y); }}
                     onSearchChange={setReportSearchTerm}

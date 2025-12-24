@@ -17,12 +17,13 @@ import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 
 export function GeneralSupervisorView() {
-    const { currentUser, workers, attendanceRecords, areas, approveAttendance, isLoading } = useAttendance();
+    const { currentUser, workers, attendanceRecords, areas, approveAttendance, rejectAttendance, isLoading } = useAttendance();
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedAreaId, setSelectedAreaId] = useState<string>("ALL");
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
+    const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
 
     const supervisorAreas = areas.filter(a =>
         currentUser?.role === 'ADMIN' ||
@@ -64,6 +65,22 @@ export function GeneralSupervisorView() {
             console.error(err);
         } finally {
             setApprovingIds(prev => {
+                const next = new Set(prev);
+                next.delete(recordId);
+                return next;
+            });
+        }
+    };
+
+    const handleReject = async (recordId: string) => {
+        if (!confirm("هل أنت متأكد من رفض هذا السجل وإعادته للمراقب؟")) return;
+        setRejectingIds(prev => new Set(prev).add(recordId));
+        try {
+            await rejectAttendance(recordId, 'PENDING_SUPERVISOR');
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setRejectingIds(prev => {
                 const next = new Set(prev);
                 next.delete(recordId);
                 return next;
@@ -199,6 +216,19 @@ export function GeneralSupervisorView() {
                                                     <Loader2 className="h-3 w-3 animate-spin" />
                                                 ) : (
                                                     "إعتماد"
+                                                )}
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                onClick={() => handleReject(record.id)}
+                                                disabled={rejectingIds.has(record.id) || approvingIds.has(record.id)}
+                                                className="mr-2 h-8 px-4 font-bold"
+                                            >
+                                                {rejectingIds.has(record.id) ? (
+                                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                                ) : (
+                                                    "رفض"
                                                 )}
                                             </Button>
                                         </td>

@@ -236,12 +236,13 @@ export function SupervisorView() {
                                                     record.status === 'PENDING_GS' ? "بانتظار المراقب العام" :
                                                         record.status === 'PENDING_HR' ? "بانتظار الموارد البشرية" :
                                                             record.status === 'PENDING_FINANCE' ? "بانتظار قسم الرواتب" :
-                                                                "معتمد نهائياً"
+                                                                record.status === 'PENDING_SUPERVISOR' ? "معاد للتصحيح" :
+                                                                    "معتمد نهائياً"
                                                 ) : "بانتظار الإدخال"}
                                             </Badge>
                                             <Link href={`/dashboard/entry/${worker.id}?month=${month}&year=${year}`}>
                                                 <Button size="sm" variant={isFilled ? "ghost" : "default"} className={`h-8 px-4 rounded-lg font-bold shadow-sm ${!isFilled ? 'bg-blue-600 hover:bg-blue-700' : 'text-blue-600 hover:bg-blue-50 border-blue-100 border'}`}>
-                                                    {isFilled ? "تعديل" : "إدخال الحضور"}
+                                                    {isFilled ? (record.status === 'PENDING_SUPERVISOR' ? "تصحيح" : "تعديل") : "إدخال الحضور"}
                                                 </Button>
                                             </Link>
                                         </div>
