@@ -62,9 +62,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setIsPendingApproval(!data.is_active);
             } else {
                 console.warn('No app user profile found for auth user:', authUserId);
-                // Clear stale session if profile is missing
                 setAppUser(null);
-                await supabase.auth.signOut();
+                // Important: If a user is authenticated but has no profile in public.users,
+                // we should sign them out to clear the stale session.
+                // However, we wait a bit to allow for async profile creation during signup
+                setTimeout(async () => {
+                    const { data: currentSession } = await supabase.auth.getSession();
+                    if (currentSession.session?.user.id === authUserId) {
+                        const { data: recheck } = await supabase.from('users').select('id').eq('auth_user_id', authUserId).maybeSingle();
+                        if (!recheck) {
+                            console.log('AuthContext: Confirming missing profile after delay, signing out...');
+                            await supabase.auth.signOut();
+                        } else {
+                            console.log('AuthContext: Profile appeared after delay, reloading...');
+                            loadAppUser(authUserId);
+                        }
+                    }
+                }, 3000);
             }
         } catch (err) {
             console.error('Failed to load app user:', err);
@@ -169,37 +183,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 console.warn('AuthContext: User created but identities are empty. This means the user might already exist in auth.users.');
             }
 
-            // --- Robustness Fallback: Only manually ensure profile if it's an existing user without identities ---
-            // Brand new users are handled by the database trigger which is more reliable.
-            const isExistingUser = data.user && data.user.identities && data.user.identities.length === 0;
+            // --- Robust Profile Ensuring Logic ---
+            if (data.user) {
+                const userId = data.user.id;
+                console.log('AuthContext: Ensuring public profile for user:', userId);
 
-            if (isExistingUser && data.user) {
-                console.log('AuthContext: Existing user detected, ensuring public profile exists...');
-                // Check if profile already exists first to avoid unnecessary upserts/conflicts
-                const { data: profile } = await supabase.from('users').select('id').eq('auth_user_id', data.user.id).maybeSingle();
+                // 1. Check for existing profile by BOTH auth_user_id and username (email)
+                // This covers cases where a user was manually added or is re-registering
+                const { data: existingProfiles } = await supabase
+                    .from('users')
+                    .select('id, auth_user_id, username')
+                    .or(`auth_user_id.eq.${userId},username.eq.${finalEmail}`);
 
-                if (!profile) {
-                    console.log('AuthContext: Profile missing for existing auth user, creating now...');
-                    const { error: profileError } = await supabase.from('users').insert({
-                        auth_user_id: data.user.id,
+                const matchingProfile = existingProfiles && existingProfiles.length > 0 ? existingProfiles[0] : null;
+
+                if (!matchingProfile) {
+                    console.log('AuthContext: No profile found by ID or email, creating new...');
+                    const { error: insertError } = await supabase.from('users').insert({
+                        auth_user_id: userId,
                         username: finalEmail,
                         name: name.trim(),
                         role: role,
                         area_id: areaId?.trim(),
                         is_active: false
                     });
-
-                    if (profileError) {
-                        console.error('AuthContext: Manual profile creation failed:', profileError);
-                        // We don't throw here if it's just a profile issue, but we log it
+                    if (insertError) {
+                        console.error('AuthContext: Profile insert failed:', insertError);
                     } else {
                         console.log('AuthContext: Public profile created successfully.');
+                        // Trigger a reload to update UI state
+                        loadAppUser(userId);
+                    }
+                } else if (!matchingProfile.auth_user_id || matchingProfile.auth_user_id !== userId) {
+                    console.log('AuthContext: Existing profile found with different/missing link, updating...');
+                    const { error: updateError } = await supabase
+                        .from('users')
+                        .update({
+                            auth_user_id: userId,
+                            name: name.trim(),
+                            role: role,
+                            area_id: areaId?.trim()
+                        })
+                        .eq('id', matchingProfile.id);
+
+                    if (updateError) {
+                        console.error('AuthContext: Profile update/link failed:', updateError);
+                    } else {
+                        console.log('AuthContext: Profile linked successfully.');
+                        loadAppUser(userId);
                     }
                 } else {
-                    console.log('AuthContext: Profile already exists.');
+                    console.log('AuthContext: Profile already correctly linked.');
+                    loadAppUser(userId);
                 }
-            } else if (data.user) {
-                console.log('AuthContext: New user detected, relying on DB trigger for profile creation.');
             }
 
             // Note: User might need to verify email depending on Supabase settings
