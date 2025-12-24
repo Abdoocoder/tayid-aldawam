@@ -38,7 +38,7 @@ BEGIN
 EXCEPTION WHEN OTHERS THEN
     RETURN 'error_getting_user';
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- 2. Main Trigger Function
 CREATE OR REPLACE FUNCTION log_audit_event()
@@ -93,7 +93,7 @@ BEGIN
         RETURN NEW;
     END IF;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- 3. Apply Triggers to Tables
 
