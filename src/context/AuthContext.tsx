@@ -169,24 +169,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 console.warn('AuthContext: User created but identities are empty. This means the user might already exist in auth.users.');
             }
 
-            // --- Robustness Fallback: Manually ensure profile exists in public.users ---
-            if (data.user) {
-                console.log('AuthContext: Ensuring public profile exists...');
-                const { error: profileError } = await supabase.from('users').upsert({
-                    auth_user_id: data.user.id,
-                    username: finalEmail, // Using generated email as username
-                    name: name.trim(),
-                    role: role,
-                    area_id: areaId?.trim(),
-                    is_active: false // New accounts are inactive by default
-                }, { onConflict: 'auth_user_id' });
+            // --- Robustness Fallback: Only manually ensure profile if it's an existing user without identities ---
+            // Brand new users are handled by the database trigger which is more reliable.
+            const isExistingUser = data.user && data.user.identities && data.user.identities.length === 0;
 
-                if (profileError) {
-                    console.error('AuthContext: Manual profile creation/update failed:', profileError);
-                    throw new Error(`فشل إنشاء ملف المستخدم: ${profileError.message}`);
+            if (isExistingUser && data.user) {
+                console.log('AuthContext: Existing user detected, ensuring public profile exists...');
+                // Check if profile already exists first to avoid unnecessary upserts/conflicts
+                const { data: profile } = await supabase.from('users').select('id').eq('auth_user_id', data.user.id).maybeSingle();
+
+                if (!profile) {
+                    console.log('AuthContext: Profile missing for existing auth user, creating now...');
+                    const { error: profileError } = await supabase.from('users').insert({
+                        auth_user_id: data.user.id,
+                        username: finalEmail,
+                        name: name.trim(),
+                        role: role,
+                        area_id: areaId?.trim(),
+                        is_active: false
+                    });
+
+                    if (profileError) {
+                        console.error('AuthContext: Manual profile creation failed:', profileError);
+                        // We don't throw here if it's just a profile issue, but we log it
+                    } else {
+                        console.log('AuthContext: Public profile created successfully.');
+                    }
                 } else {
-                    console.log('AuthContext: Public profile ensured successfully.');
+                    console.log('AuthContext: Profile already exists.');
                 }
+            } else if (data.user) {
+                console.log('AuthContext: New user detected, relying on DB trigger for profile creation.');
             }
 
             // Note: User might need to verify email depending on Supabase settings

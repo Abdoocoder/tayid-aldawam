@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAttendance, User, Worker, UserRole } from '@/context/AttendanceContext';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,7 +35,8 @@ interface WorkerEditingData extends Partial<Worker> {
 }
 
 export const AdminView = () => {
-    const { workers, attendanceRecords, users, auditLogs, areas, isLoading, addWorker, updateWorker, deleteWorker, updateUser, rejectAttendance, getWorkerAttendance } = useAttendance();
+    const { workers, attendanceRecords, users, auditLogs, areas, isLoading, addWorker, updateWorker, deleteWorker, updateUser, deleteUser, rejectAttendance, getWorkerAttendance } = useAttendance();
+    const { signUp, appUser } = useAuth();
     const { showToast } = useToast();
     const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'workers' | 'logs' | 'attendance'>('overview');
 
@@ -141,6 +143,23 @@ export const AdminView = () => {
         } catch (err) {
             console.error(err);
             showToast('فشل حذف العامل', 'يرجى المحاولة مرة أخرى', 'error');
+        }
+    };
+
+    const handleDeleteUser = async (id: string) => {
+        // Prevent self-deletion
+        if (appUser?.id === id) {
+            showToast('تنبيه', 'لا يمكنك حذف حسابك الشخصي', 'warning');
+            return;
+        }
+
+        if (!window.confirm('هل أنت متأكد من حذف هذا المستخدم؟')) return;
+        try {
+            await deleteUser(id);
+            showToast('تم حذف المستخدم بنجاح');
+        } catch (err) {
+            console.error(err);
+            showToast('فشل حذف المستخدم', 'يرجى المحاولة مرة أخرى', 'error');
         }
     };
 
@@ -565,6 +584,9 @@ export const AdminView = () => {
                                                         setSelectedAreaIds(u.areaId ? u.areaId.split(',') : []);
                                                     }}>
                                                         <Edit2 className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600 hover:bg-red-50" onClick={() => handleDeleteUser(u.id)}>
+                                                        <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>
                                             </td>
