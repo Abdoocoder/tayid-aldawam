@@ -108,7 +108,7 @@ export function GeneralSupervisorView() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
                 <div className="flex items-center gap-4">
                     <div className="bg-indigo-600 p-3 rounded-lg text-white shadow-lg">
                         <ShieldCheck className="h-6 w-6" />
@@ -166,16 +166,16 @@ export function GeneralSupervisorView() {
                 )}
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
                 <table className="w-full text-right border-collapse">
                     <thead>
                         <tr className="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider">
-                            <th className="p-4 border-b">العامل</th>
-                            <th className="p-4 border-b">القطاع</th>
-                            <th className="p-4 border-b text-center">أيام العمل</th>
-                            <th className="p-4 border-b text-center">إضافي (عادي/عطلة/عيد)</th>
-                            <th className="p-4 border-b text-center">الإجمالي</th>
-                            <th className="p-4 border-b text-center">الإجراء</th>
+                            <th className="p-3 md:p-4 border-b">العامل</th>
+                            <th className="p-3 md:p-4 border-b">القطاع</th>
+                            <th className="p-3 md:p-4 border-b text-center">أيام العمل</th>
+                            <th className="p-3 md:p-4 border-b text-center">إضافي (عادي/عطلة/عيد)</th>
+                            <th className="p-3 md:p-4 border-b text-center">الإجمالي</th>
+                            <th className="p-3 md:p-4 border-b text-center">الإجراء</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 text-sm">
@@ -210,7 +210,7 @@ export function GeneralSupervisorView() {
                                                 size="sm"
                                                 onClick={() => handleApprove(record.id)}
                                                 disabled={approvingIds.has(record.id)}
-                                                className="bg-green-600 hover:bg-green-700 text-white font-bold h-8 px-4"
+                                                className="bg-green-600 hover:bg-green-700 text-white font-bold h-8 px-3 md:px-4"
                                             >
                                                 {approvingIds.has(record.id) ? (
                                                     <Loader2 className="h-3 w-3 animate-spin" />

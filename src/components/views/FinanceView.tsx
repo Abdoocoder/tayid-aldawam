@@ -168,7 +168,7 @@ export function FinanceView() {
     return (
         <div className="space-y-8 pb-20 animate-in fade-in duration-700">
             {/* Main Header Card */}
-            <div className="relative overflow-hidden bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100">
+            <div className="relative overflow-hidden bg-white p-4 md:p-8 rounded-[2rem] shadow-sm border border-gray-100">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-green-50 rounded-full -mr-32 -mt-32 opacity-50 blur-3xl"></div>
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-50 rounded-full -ml-24 -mb-24 opacity-30 blur-2xl"></div>
 
@@ -178,8 +178,8 @@ export function FinanceView() {
                             <Banknote className="h-8 w-8" />
                         </div>
                         <div>
-                            <h2 className="text-3xl font-black text-gray-900 leading-tight">القسم المالي</h2>
-                            <p className="text-gray-500 font-medium mt-1">إدارة المستحقات والكشوفات المالية المعتمدة</p>
+                            <h2 className="text-xl md:text-3xl font-black text-gray-900 leading-tight">القسم المالي</h2>
+                            <p className="text-xs md:text-base text-gray-500 font-medium mt-1">إدارة المستحقات والكشوفات المالية المعتمدة</p>
                         </div>
                     </div>
 
@@ -200,7 +200,7 @@ export function FinanceView() {
                     { label: 'متوسط الراتب', value: stats.avgSalary.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), unit: 'د.ل', icon: TrendingUp, color: 'purple', desc: 'لكل عامل مستحق' }
                 ].map((stat, i) => (
                     <Card key={i} className="group border-none shadow-sm hover:shadow-xl transition-all duration-300 rounded-[1.5rem] overflow-hidden bg-white border border-transparent hover:border-gray-100">
-                        <CardContent className="p-6">
+                        <CardContent className="p-4 md:p-6">
                             <div className="flex justify-between items-start mb-4">
                                 <div className={`p-3 rounded-2xl bg-${stat.color}-50 text-${stat.color}-600 group-hover:scale-110 transition-transform duration-300`}>
                                     <stat.icon className="h-6 w-6" />
@@ -212,8 +212,8 @@ export function FinanceView() {
                             <div>
                                 <p className="text-gray-500 text-xs font-bold mb-1 uppercase tracking-tight">{stat.label}</p>
                                 <div className="flex items-baseline gap-1.5">
-                                    <span className="text-2xl font-black text-gray-900">{stat.value}</span>
-                                    <span className="text-sm font-bold text-gray-400">{stat.unit}</span>
+                                    <span className="text-xl md:text-2xl font-black text-gray-900">{stat.value}</span>
+                                    <span className="text-xs md:text-sm font-bold text-gray-400">{stat.unit}</span>
                                 </div>
                                 <p className="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
                                     <AlertCircle className="h-3 w-3" />
@@ -232,14 +232,14 @@ export function FinanceView() {
                         <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-green-600 transition-colors" />
                         <Input
                             placeholder="بحث بالاسم، الرقم، أو القطاع..."
-                            className="pr-12 h-14 bg-white border-gray-100 focus:border-green-500 focus:ring-green-500/20 rounded-2xl text-lg shadow-sm"
+                            className="pr-12 h-12 md:h-14 bg-white border-gray-100 focus:border-green-500 focus:ring-green-500/20 rounded-2xl text-base md:text-lg shadow-sm"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <div className="relative min-w-[200px]">
                         <select
-                            className="w-full h-14 pr-4 pl-4 bg-white border border-gray-100 rounded-2xl text-gray-700 outline-none focus:ring-2 focus:ring-green-500/20 appearance-none shadow-sm cursor-pointer font-bold"
+                            className="w-full h-12 md:h-14 pr-4 pl-4 bg-white border border-gray-100 rounded-2xl text-gray-700 outline-none focus:ring-2 focus:ring-green-500/20 appearance-none shadow-sm cursor-pointer font-bold"
                             value={statusFilter}
                             onChange={e => setStatusFilter(e.target.value as 'PENDING_FINANCE' | 'APPROVED')}
                         >
@@ -251,7 +251,7 @@ export function FinanceView() {
                 <div className="relative min-w-[240px]">
                     <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <select
-                        className="w-full h-14 pr-12 pl-4 bg-white border border-gray-100 rounded-2xl text-gray-700 outline-none focus:ring-2 focus:ring-green-500/20 appearance-none shadow-sm cursor-pointer"
+                        className="w-full h-12 md:h-14 pr-12 pl-4 bg-white border border-gray-100 rounded-2xl text-gray-700 outline-none focus:ring-2 focus:ring-green-500/20 appearance-none shadow-sm cursor-pointer"
                         value={areaFilter}
                         onChange={e => setAreaFilter(e.target.value)}
                     >
@@ -263,7 +263,7 @@ export function FinanceView() {
                 </div>
             </div>
 
-            <div className="lg:col-span-4 flex gap-3">
+            <div className="lg:col-span-4 flex flex-col sm:flex-row gap-3">
                 <Button
                     variant="outline"
                     onClick={() => window.print()}
@@ -304,9 +304,9 @@ export function FinanceView() {
                         <table className="w-full text-right border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/50 text-gray-400 font-bold text-[11px] uppercase tracking-widest border-b border-gray-100">
-                                    <th className="p-6 font-black">المعرف</th>
-                                    <th className="p-6 font-black">اسم الموظف</th>
-                                    <th className="p-6 font-black text-center">القطاع / المنطقة</th>
+                                    <th className="p-3 md:p-6 font-black">المعرف</th>
+                                    <th className="p-3 md:p-6 font-black">اسم الموظف</th>
+                                    <th className="p-3 md:p-6 font-black text-center">القطاع / المنطقة</th>
                                     <th className="p-6 font-black text-center">الأيام</th>
                                     <th className="p-6 font-black text-center">سعر اليوم</th>
                                     <th className="p-6 font-black text-center bg-green-50/30 text-green-800">إجمالي الراتب</th>
@@ -349,32 +349,34 @@ export function FinanceView() {
                                                 </div>
                                             </td>
                                             {statusFilter === 'PENDING_FINANCE' && (
-                                                <td className="p-6 text-center">
-                                                    <Button
-                                                        size="sm"
-                                                        className="h-10 bg-green-600 hover:bg-green-700 text-white font-bold px-6 rounded-xl"
-                                                        onClick={() => p.record && handleApprove(p.record.id)}
-                                                        disabled={p.record ? approvingIds.has(p.record.id) : true}
-                                                    >
-                                                        {p.record && approvingIds.has(p.record.id) ? (
-                                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                                        ) : (
-                                                            <><CheckCircle className="h-4 w-4 ml-2" /> اعتماد نهائي</>
-                                                        )}
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="destructive"
-                                                        className="h-10 font-bold px-4 rounded-xl mr-2"
-                                                        onClick={() => p.record && handleReject(p.record.id)}
-                                                        disabled={p.record ? rejectingIds.has(p.record.id) || approvingIds.has(p.record.id) : true}
-                                                    >
-                                                        {p.record && rejectingIds.has(p.record.id) ? (
-                                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                                        ) : (
-                                                            "رفض"
-                                                        )}
-                                                    </Button>
+                                                <td className="p-3 md:p-6 text-center">
+                                                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                                                        <Button
+                                                            size="sm"
+                                                            className="h-10 bg-green-600 hover:bg-green-700 text-white font-bold px-6 rounded-xl"
+                                                            onClick={() => p.record && handleApprove(p.record.id)}
+                                                            disabled={p.record ? approvingIds.has(p.record.id) : true}
+                                                        >
+                                                            {p.record && approvingIds.has(p.record.id) ? (
+                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                            ) : (
+                                                                <><CheckCircle className="h-4 w-4 ml-2" /> اعتماد نهائي</>
+                                                            )}
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="destructive"
+                                                            className="h-10 font-bold px-4 rounded-xl mr-2"
+                                                            onClick={() => p.record && handleReject(p.record.id)}
+                                                            disabled={p.record ? rejectingIds.has(p.record.id) || approvingIds.has(p.record.id) : true}
+                                                        >
+                                                            {p.record && rejectingIds.has(p.record.id) ? (
+                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                            ) : (
+                                                                "رفض"
+                                                            )}
+                                                        </Button>
+                                                    </div>
                                                 </td>
                                             )}
                                         </tr>

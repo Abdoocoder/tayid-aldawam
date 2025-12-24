@@ -319,7 +319,7 @@ export function HRView() {
     return (
         <div className="space-y-6 pb-20">
             {/* Header section */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div className="flex items-center gap-4">
                     <div className="bg-purple-600 p-3 rounded-xl text-white shadow-lg shadow-purple-100">
                         <LayoutDashboard className="h-6 w-6" />
@@ -330,7 +330,7 @@ export function HRView() {
                     </div>
                 </div>
 
-                <div className="flex bg-gray-100 p-1 rounded-xl border border-gray-200 w-full lg:w-auto">
+                <div className="flex bg-gray-100 p-1 rounded-xl border border-gray-200 w-full lg:w-auto overflow-x-auto no-scrollbar">
                     {[
                         { id: 'reports', label: 'التقارير', icon: FileText },
                         { id: 'supervisors', label: 'المراقبين', icon: Users },
@@ -340,12 +340,12 @@ export function HRView() {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                            className={`flex-1 lg:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === tab.id
+                            className={`flex-1 lg:flex-none px-4 md:px-6 py-2 rounded-lg text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === tab.id
                                 ? 'bg-white text-purple-600 shadow-sm'
                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50/50'
                                 }`}
                         >
-                            <tab.icon className="h-4 w-4" />
+                            <tab.icon className="h-3 w-3 md:h-4 md:w-4" />
                             {tab.label}
                         </button>
                     ))}
@@ -371,13 +371,13 @@ export function HRView() {
                     <div className="absolute -right-4 -bottom-4 opacity-10 text-blue-900">
                         <HardHat className="h-24 w-24" />
                     </div>
-                    <CardContent className="p-5 flex items-center gap-4 relative z-10">
-                        <div className="bg-blue-100 p-2.5 rounded-xl text-blue-600">
-                            <Users className="h-5 w-5" />
+                    <CardContent className="p-4 md:p-5 flex items-center gap-3 md:gap-4 relative z-10">
+                        <div className="bg-blue-100 p-2 md:p-2.5 rounded-xl text-blue-600">
+                            <Users className="h-4 w-4 md:h-5 md:w-5" />
                         </div>
                         <div>
-                            <p className="text-xs text-blue-600 font-bold mb-0.5">إجمالي العمال</p>
-                            <p className="text-2xl font-black text-blue-900">{totalWorkersCount}</p>
+                            <p className="text-[10px] md:text-xs text-blue-600 font-bold mb-0.5">إجمالي العمال</p>
+                            <p className="text-xl md:text-2xl font-black text-blue-900">{totalWorkersCount}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -386,13 +386,13 @@ export function HRView() {
                     <div className="absolute -right-4 -bottom-4 opacity-10 text-purple-900">
                         <Users className="h-24 w-24" />
                     </div>
-                    <CardContent className="p-5 flex items-center gap-4 relative z-10">
-                        <div className="bg-purple-100 p-2.5 rounded-xl text-purple-600">
-                            <ShieldCheck className="h-5 w-5" />
+                    <CardContent className="p-4 md:p-5 flex items-center gap-3 md:gap-4 relative z-10">
+                        <div className="bg-purple-100 p-2 md:p-2.5 rounded-xl text-purple-600">
+                            <ShieldCheck className="h-4 w-4 md:h-5 md:w-5" />
                         </div>
                         <div>
-                            <p className="text-xs text-purple-600 font-bold mb-0.5">المراقبين النشطين</p>
-                            <p className="text-2xl font-black text-purple-900">{activeSupervisorsCount}</p>
+                            <p className="text-[10px] md:text-xs text-purple-600 font-bold mb-0.5">المراقبين النشطين</p>
+                            <p className="text-xl md:text-2xl font-black text-purple-900">{activeSupervisorsCount}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -401,13 +401,13 @@ export function HRView() {
                     <div className="absolute -right-4 -bottom-4 opacity-10 text-amber-900">
                         <MapPin className="h-24 w-24" />
                     </div>
-                    <CardContent className="p-5 flex items-center gap-4 relative z-10">
-                        <div className="bg-amber-100 p-2.5 rounded-xl text-amber-600">
-                            <Briefcase className="h-5 w-5" />
+                    <CardContent className="p-4 md:p-5 flex items-center gap-3 md:gap-4 relative z-10">
+                        <div className="bg-amber-100 p-2 md:p-2.5 rounded-xl text-amber-600">
+                            <Briefcase className="h-4 w-4 md:h-5 md:w-5" />
                         </div>
                         <div>
-                            <p className="text-xs text-amber-600 font-bold mb-0.5">إجمالي القطاعات</p>
-                            <p className="text-2xl font-black text-amber-900">{totalSectorsCount}</p>
+                            <p className="text-[10px] md:text-xs text-amber-600 font-bold mb-0.5">إجمالي القطاعات</p>
+                            <p className="text-xl md:text-2xl font-black text-amber-900">{totalSectorsCount}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -416,14 +416,14 @@ export function HRView() {
                     <div className="absolute -right-4 -bottom-4 opacity-10 text-green-900">
                         <TrendingUp className="h-24 w-24" />
                     </div>
-                    <CardContent className="p-5 flex items-center gap-4 relative z-10">
-                        <div className="bg-green-100 p-2.5 rounded-xl text-green-600">
-                            <TrendingUp className="h-5 w-5" />
+                    <CardContent className="p-4 md:p-5 flex items-center gap-3 md:gap-4 relative z-10">
+                        <div className="bg-green-100 p-2 md:p-2.5 rounded-xl text-green-600">
+                            <TrendingUp className="h-4 w-4 md:h-5 md:w-5" />
                         </div>
                         <div className="flex-1">
-                            <p className="text-xs text-green-600 font-bold mb-0.5">نسبة الإنجاز ({month}/{year})</p>
+                            <p className="text-[10px] md:text-xs text-green-600 font-bold mb-0.5">نسبة الإنجاز ({month}/{year})</p>
                             <div className="flex items-center gap-2">
-                                <p className="text-2xl font-black text-green-900">{completionRate}%</p>
+                                <p className="text-xl md:text-2xl font-black text-green-900">{completionRate}%</p>
                                 <div className="flex-1 h-2 bg-green-200/50 rounded-full overflow-hidden">
                                     <div className="h-full bg-green-500 rounded-full" style={{ width: `${completionRate}%` }} />
                                 </div>

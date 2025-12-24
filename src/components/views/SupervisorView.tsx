@@ -73,7 +73,7 @@ export function SupervisorView() {
     return (
         <div className="space-y-6">
             {/* Header & Month Picker */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
                 <div className="flex items-center gap-4">
                     <div className="bg-blue-600 p-3 rounded-lg text-white shadow-lg shadow-blue-100">
                         <ClipboardList className="h-6 w-6" />
@@ -203,7 +203,7 @@ export function SupervisorView() {
 
                                 {isFilled && (
                                     <div className="absolute top-1.5 right-1.5 z-10">
-                                        <CheckCircle className="text-white h-4 w-4" />
+                                        <CheckCircle className="text-white h-3 w-3 md:h-4 md:w-4" />
                                     </div>
                                 )}
 
