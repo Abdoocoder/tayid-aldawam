@@ -28,18 +28,32 @@ body {
     margin: 1cm;
   }
 
-  body {
-    background: white;
-  }
-  
-  /* Hide typical interactive elements automatically */
-  .no-print, [role="button"], button {
-    display: none !important;
+  /* Force collapse all layout-perserving containers */
+  html, body {
+    background: white !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
   }
 
-  /* Ensure print blocks interact correctly with flow */
+  /* Aggressive hide interactive elements */
+  .no-print, 
+  button, 
+  [role="button"],
+  .print\:hidden {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Isolate print blocks to their own flow */
   .print\:block {
-    width: 100%;
     display: block !important;
+    width: 100% !important;
+    position: relative !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 }

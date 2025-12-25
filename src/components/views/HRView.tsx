@@ -320,9 +320,9 @@ export function HRView() {
     }
 
     return (
-        <div className="space-y-6 pb-24">
+        <div className="space-y-6 pb-24 print:space-y-0 print:pb-0">
             {/* Header section - Sticky & Premium Glass */}
-            <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500 print:hidden">
                 <div className="max-w-7xl mx-auto flex flex-col gap-3">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
@@ -370,7 +370,7 @@ export function HRView() {
 
             {/* Tab-Specific Global Search Bar - Refined for mobile */}
             {activeTab !== 'reports' && (
-                <div className="relative w-full px-1 animate-in fade-in slide-in-from-bottom-2 duration-700">
+                <div className="relative w-full px-1 animate-in fade-in slide-in-from-bottom-2 duration-700 print:hidden">
                     <div className="relative group">
                         <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-purple-600 transition-colors" />
                         <Input
@@ -384,7 +384,7 @@ export function HRView() {
             )}
 
             {/* Quick Stats Grid - Responsive & Premium */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 px-1 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 fill-mode-both">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 px-1 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 fill-mode-both print:hidden">
                 <Card className="border-none shadow-sm bg-gradient-to-br from-blue-50 to-blue-100/30 ring-1 ring-blue-100 rounded-2xl overflow-hidden group">
                     <CardContent className="p-4 flex flex-col items-center text-center gap-2">
                         <div className="bg-white p-2.5 rounded-xl text-blue-600 shadow-sm border border-blue-50 group-hover:scale-110 transition-transform">
@@ -436,7 +436,7 @@ export function HRView() {
 
             {/* Editing/Adding Form Overlay (Simple inline version) */}
             {editingItem && (
-                <Card className="border-2 border-purple-200 shadow-lg animate-in zoom-in-95 duration-200">
+                <Card className="border-2 border-purple-200 shadow-lg animate-in zoom-in-95 duration-200 print:hidden">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <CardTitle>{editingItem.data.id === 'NEW' ? 'إضافة جديد' : 'تعديل البيانات'}</CardTitle>
@@ -614,7 +614,7 @@ export function HRView() {
             )}
 
 
-            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200">
+            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200 print:contents">
                 {activeTab === 'reports' && (
                     <AttendanceReports
                         workers={workers}
@@ -649,7 +649,7 @@ export function HRView() {
                 )}
             </div>
 
-            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200">
+            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200 print:hidden">
                 {activeTab === 'supervisors' && (
                     <SupervisorSection
                         supervisors={filteredUsers}
@@ -674,7 +674,7 @@ export function HRView() {
                 )}
             </div>
 
-            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200">
+            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200 print:hidden">
                 {activeTab === 'workers' && (
                     <WorkerSection
                         workers={workers}
@@ -686,7 +686,7 @@ export function HRView() {
                 )}
             </div>
 
-            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200">
+            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200 print:hidden">
                 {activeTab === 'areas' && (
                     <AreaSection
                         areas={areas}
