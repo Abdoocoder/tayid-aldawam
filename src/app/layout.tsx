@@ -4,6 +4,8 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner";
 
+import { SpeedInsights } from "@vercel/speed-insights/next"
+
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
   variable: "--font-cairo",
@@ -38,6 +40,7 @@ export default function RootLayout({
           <ServiceWorkerCleaner />
           <main className="min-h-screen">
             {children}
+            <SpeedInsights />
           </main>
         </Providers>
       </body>
