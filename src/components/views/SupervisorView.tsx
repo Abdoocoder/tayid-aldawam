@@ -7,8 +7,9 @@ import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { User, ClipboardList, CheckCircle, Loader2, AlertCircle, Users, Clock, Target, Search, MapPin, Printer } from "lucide-react";
-import Link from "next/link"; // For navigation
-import { Input } from "../ui/input"; // Added for search input
+import Link from "next/link";
+import Image from "next/image";
+import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 
 export function SupervisorView() {
@@ -277,12 +278,15 @@ export function SupervisorView() {
 
             {/* Printable Area - Hidden by default, visible only during print */}
             <div className="hidden print:block print:m-0 print:p-0">
-                <div className="text-center mb-6 border-b-2 pb-4">
-                    <h1 className="text-2xl font-bold mb-1">كشف حضور وانصراف شهري</h1>
-                    <p className="text-gray-600">
-                        الشهر: {month} / {year} | القطاع: {selectedAreaId === "ALL" ? "جميع المناطق التابعة" : areas.find(a => a.id === selectedAreaId)?.name}
-                    </p>
-                    <p className="text-sm mt-1">المراقب: {currentUser?.name}</p>
+                <div className="flex justify-between items-center mb-6 border-b-2 pb-4">
+                    <div className="text-right">
+                        <h1 className="text-2xl font-bold mb-1">كشف حضور وانصراف شهري</h1>
+                        <p className="text-gray-600">
+                            الشهر: {month} / {year} | القطاع: {selectedAreaId === "ALL" ? "جميع المناطق التابعة" : areas.find(a => a.id === selectedAreaId)?.name}
+                        </p>
+                        <p className="text-sm mt-1">المراقب: {currentUser?.name}</p>
+                    </div>
+                    <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
                 </div>
 
                 <table className="w-full border-collapse border border-gray-300 text-sm">

@@ -3,6 +3,8 @@
 import React, { useState, useMemo } from "react";
 import { useAttendance } from "@/context/AttendanceContext";
 import { MonthYearPicker } from "../ui/month-year-picker";
+import { Button } from "../ui/button";
+import Image from "next/image";
 import { Badge } from "../ui/badge";
 import {
     Activity,
@@ -14,7 +16,8 @@ import {
     ShieldCheck,
     Briefcase,
     Landmark,
-    Target
+    Target,
+    Printer
 } from "lucide-react";
 
 export function MayorView() {
@@ -100,7 +103,7 @@ export function MayorView() {
         <>
             <div className="space-y-6 pb-24 print:hidden">
                 {/* Executive Header - Ultra Premium Glass */}
-                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm">
                     <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="flex items-center gap-4">
                             <div className="bg-gradient-to-br from-fuchsia-600 to-purple-700 p-2.5 rounded-2xl text-white shadow-xl shadow-fuchsia-500/20 ring-1 ring-white/30">
@@ -116,6 +119,15 @@ export function MayorView() {
                         </div>
 
                         <div className="flex items-center gap-3">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => window.print()}
+                                className="flex gap-2 text-fuchsia-600 hover:bg-fuchsia-50"
+                            >
+                                <Printer className="h-4 w-4" />
+                                <span className="text-xs font-black">طباعة التقرير الاستراتيجي</span>
+                            </Button>
                             <div className="bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner">
                                 <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                             </div>
@@ -124,7 +136,7 @@ export function MayorView() {
                 </div>
 
                 {/* Strategic Overview Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
                         { label: "القوة العاملة", value: stats.totalWorkers, unit: "عامل", icon: Users, color: "blue", trend: "إجمالي السجلات" },
                         { label: "قيد المراجعة", value: stats.totalPending, unit: "معاملة", icon: Clock, color: "amber", trend: "بانتظار التدقيق" },
@@ -134,7 +146,7 @@ export function MayorView() {
                         <div key={i} className="relative group overflow-hidden">
                             <div className="relative z-10 bg-white/60 backdrop-blur-xl p-5 rounded-[2.5rem] border border-white/40 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 hover:-translate-y-1">
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className={`p-3 rounded-2xl bg-gradient-to-br from-${kpi.color}-50 to-${kpi.color}-100/50 text-${kpi.color}-600 ring-1 ring-${kpi.color}-100 shadow-inner group-hover:scale-110 transition-transform duration-500`}>
+                                    <div className={`p-3 rounded-2xl bg-${kpi.color}-50 text-${kpi.color}-600 ring-1 ring-${kpi.color}-100 shadow-inner group-hover:scale-110 transition-transform duration-500`}>
                                         <kpi.icon className="h-6 w-6" />
                                     </div>
                                     <div className={`text-[10px] font-black px-2.5 py-1 rounded-full bg-${kpi.color}-50 text-${kpi.color}-700 uppercase tracking-tighter shadow-sm`}>
@@ -148,8 +160,6 @@ export function MayorView() {
                                         <span className="text-xs font-bold text-slate-400 uppercase">{kpi.unit}</span>
                                     </div>
                                 </div>
-
-                                {/* Decorative background shape */}
                                 <div className={`absolute -right-4 -bottom-4 w-24 h-24 bg-${kpi.color}-50 rounded-full opacity-0 group-hover:opacity-40 transition-opacity duration-700 blur-2xl`}></div>
                             </div>
                         </div>
@@ -230,8 +240,8 @@ export function MayorView() {
                                     <div className="h-2 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/30">
                                         <div
                                             className={`h-full rounded-full transition-all duration-1000 ${idx === 0 ? 'bg-gradient-to-r from-emerald-400 to-teal-500' :
-                                                idx < 3 ? 'bg-gradient-to-r from-blue-400 to-indigo-500' :
-                                                    'bg-slate-300'
+                                                    idx < 3 ? 'bg-gradient-to-r from-blue-400 to-indigo-500' :
+                                                        'bg-slate-300'
                                                 }`}
                                             style={{ width: `${area.percentage}%` }}
                                         ></div>
@@ -307,6 +317,75 @@ export function MayorView() {
                                     })}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            {/* Printable Area for Executive Overview */}
+            <div className="hidden print:block print:m-0 print:p-0">
+                <div className="flex justify-between items-center mb-8 border-b-2 pb-6">
+                    <div className="text-right">
+                        <h1 className="text-3xl font-black text-slate-900 mb-1">تقرير الملخص الإداري التنفيذي</h1>
+                        <p className="text-slate-600 font-bold">الشهر: {month} / {year} | رئاسة البلدية</p>
+                        <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest">نظام الرقابة والحوكمة الذكي</p>
+                    </div>
+                    <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
+                </div>
+
+                <div className="grid grid-cols-2 gap-6 mb-12">
+                    <div className="p-6 bg-slate-50 border border-slate-200 rounded-3xl">
+                        <p className="text-xs font-black text-slate-400 uppercase mb-2">القوة العاملة الإجمالية</p>
+                        <p className="text-4xl font-black text-slate-900">{stats.totalWorkers} عامل</p>
+                    </div>
+                    <div className="p-6 bg-slate-50 border border-slate-200 rounded-3xl">
+                        <p className="text-xs font-black text-slate-400 uppercase mb-2">نسبة الإنجاز الكلية</p>
+                        <p className="text-4xl font-black text-slate-900">{stats.completionRate}%</p>
+                    </div>
+                    <div className="p-6 bg-slate-50 border border-slate-200 rounded-3xl">
+                        <p className="text-xs font-black text-slate-400 uppercase mb-2">المستحقات المعتمدة</p>
+                        <p className="text-4xl font-black text-slate-900">{stats.approvedAmount.toLocaleString()} د.أ</p>
+                    </div>
+                    <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl">
+                        <p className="text-xs font-black text-slate-400 uppercase mb-2">بانتظار التدقيق</p>
+                        <p className="text-4xl font-black text-slate-600">{stats.totalPending} سجل</p>
+                    </div>
+                </div>
+
+                <h3 className="text-xl font-black text-slate-800 mb-4 border-r-4 border-fuchsia-600 pr-4">كفاءة القطاعات</h3>
+                <table className="w-full border-collapse border border-slate-300 text-sm mb-12">
+                    <thead className="bg-slate-50">
+                        <tr>
+                            <th className="border border-slate-300 p-3 text-right">المنطقة</th>
+                            <th className="border border-slate-300 p-3 text-center">الإنجاز (%)</th>
+                            <th className="border border-slate-300 p-3 text-center">سجلات منجزة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {areaProgress.map(area => (
+                            <tr key={area.id}>
+                                <td className="border border-slate-300 p-3 font-bold">{area.name}</td>
+                                <td className="border border-slate-300 p-3 text-center">
+                                    <div className="flex items-center gap-2 justify-center">
+                                        <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                            <div className="h-full bg-fuchsia-600" style={{ width: `${area.percentage}%` }}></div>
+                                        </div>
+                                        <span className="mr-2">{area.percentage}%</span>
+                                    </div>
+                                </td>
+                                <td className="border border-slate-300 p-3 text-center">{area.approvedCount} / {area.totalCount}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+
+                <div className="mt-20 flex justify-between px-12">
+                    <div className="text-center">
+                        <p className="font-black text-slate-800 mb-12 italic tracking-tighter">اعتماد رئيس البلدية</p>
+                        <div className="border-t-2 border-slate-900 w-48 mx-auto"></div>
+                    </div>
+                    <div className="text-center">
+                        <p className="font-black text-slate-800 mb-12 italic tracking-tighter">ختم رئاسة الوزراء</p>
+                        <div className="border-t-2 border-slate-900 w-48 mx-auto"></div>
                     </div>
                 </div>
             </div>

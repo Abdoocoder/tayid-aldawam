@@ -56,4 +56,11 @@ body {
     margin: 0 !important;
     padding: 0 !important;
   }
+
+  .print-logo {
+    height: 70px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    print-color-adjust: exact !important;
+  }
 }

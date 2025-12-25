@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import { useAttendance } from "@/context/AttendanceContext";
 import { MonthYearPicker } from "../ui/month-year-picker";
 import { Badge } from "../ui/badge";
+import Image from "next/image"; // Added import for Image
 import {
     Banknote,
     AlertCircle,
@@ -202,10 +203,10 @@ export function FinanceView() {
                         <div key={i} className="relative group overflow-hidden">
                             <div className="relative z-10 bg-white/60 backdrop-blur-xl p-5 rounded-[2.5rem] border border-white/40 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 hover:-translate-y-1">
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className={`p-3 rounded-2xl bg-gradient-to-br from-${stat.color}-50 to-${stat.color}-100/50 text-${stat.color}-600 ring-1 ring-${stat.color}-100 shadow-inner group-hover:scale-110 transition-transform duration-500`}>
+                                    <div className={`p - 3 rounded - 2xl bg - gradient - to - br from - ${stat.color} -50 to - ${stat.color} -100 / 50 text - ${stat.color} -600 ring - 1 ring - ${stat.color} -100 shadow - inner group - hover: scale - 110 transition - transform duration - 500`}>
                                         <stat.icon className="h-6 w-6" />
                                     </div>
-                                    <div className={`text-[10px] font-black px-2.5 py-1 rounded-full bg-${stat.color}-50 text-${stat.color}-700 uppercase tracking-tighter shadow-sm`}>
+                                    <div className={`text - [10px] font - black px - 2.5 py - 1 rounded - full bg - ${stat.color} -50 text - ${stat.color} -700 uppercase tracking - tighter shadow - sm`}>
                                         {stat.trend}
                                     </div>
                                 </div>
@@ -218,7 +219,7 @@ export function FinanceView() {
                                 </div>
 
                                 {/* Decorative background shape */}
-                                <div className={`absolute -right-4 -bottom-4 w-24 h-24 bg-${stat.color}-50 rounded-full opacity-0 group-hover:opacity-40 transition-opacity duration-700 blur-2xl`}></div>
+                                <div className={`absolute - right - 4 - bottom - 4 w - 24 h - 24 bg - ${stat.color} -50 rounded - full opacity - 0 group - hover: opacity - 40 transition - opacity duration - 700 blur - 2xl`}></div>
                             </div>
                         </div>
                     ))}
@@ -326,8 +327,8 @@ export function FinanceView() {
                                             </td>
                                             <td className="p-5 text-center">
                                                 <div className="flex justify-center">
-                                                    <div className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1.5 rounded-xl border ${p.record?.status === 'APPROVED' ? 'text-emerald-700 bg-emerald-50 border-emerald-100' : 'text-amber-700 bg-amber-50 border-amber-100'
-                                                        }`}>
+                                                    <div className={`flex items - center gap - 1.5 text - [10px] font - black px - 3 py - 1.5 rounded - xl border ${p.record?.status === 'APPROVED' ? 'text-emerald-700 bg-emerald-50 border-emerald-100' : 'text-amber-700 bg-amber-50 border-amber-100'
+                                                        } `}>
                                                         {p.record?.status === 'APPROVED' ? <CheckCircle className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
                                                         {p.record?.status === 'APPROVED' ? 'معتمد للصرف' : 'بانتظار الاعتماد'}
                                                     </div>
@@ -375,13 +376,20 @@ export function FinanceView() {
 
             {/* Print Section (Hidden on screen) */}
             <div className="hidden print:block p-8 bg-white" dir="rtl">
-                <div className="text-center border-b-4 border-slate-900 pb-8 mb-10">
-                    <h1 className="text-4xl font-black mb-2 tracking-tighter text-slate-900">كشف مسير رواتب العمال - الإدارة المالية</h1>
-                    <div className="flex justify-center gap-8 text-sm text-slate-600 font-bold uppercase tracking-widest">
-                        <span>فترة الاستحقاق: {month}/{year}</span>
-                        <span>القطاع: {areaFilter === "ALL" ? "كافة القطاعات" : areas.find(a => a.id === areaFilter)?.name}</span>
-                        <span>تاريخ الطباعة: {new Date().toLocaleDateString('ar-JO')}</span>
+                <div className="flex justify-between items-center mb-6 border-b-2 pb-4">
+                    <div className="text-right">
+                        <h1 className="text-2xl font-bold mb-1">كشف مسحوبات الرواتب</h1>
+                        <p className="text-gray-600">
+                            الشهر: {month} / {year} | حالة التدقيق: {statusFilter === 'APPROVED' ? 'معتمد نهائياً' : 'بانتظار الصرف'}
+                        </p>
+                        <p className="text-sm mt-1 text-emerald-600 font-bold uppercase">قسم المحاسبة والمالية</p>
                     </div>
+                    <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
+                </div>
+                <div className="flex justify-center gap-8 text-sm text-slate-600 font-bold uppercase tracking-widest mb-10">
+                    <span>فترة الاستحقاق: {month}/{year}</span>
+                    <span>القطاع: {areaFilter === "ALL" ? "كافة القطاعات" : areas.find(a => a.id === areaFilter)?.name}</span>
+                    <span>تاريخ الطباعة: {new Date().toLocaleDateString('ar-JO')}</span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-6 mb-10">

@@ -6,10 +6,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { Button } from '@/components/ui/button';
 import {
-    Users,
-    HardHat,
-    History,
-    ShieldCheck,
     Plus,
     Edit2,
     Trash2,
@@ -21,12 +17,17 @@ import {
     Search,
     MapPin,
     Printer,
-    Download
+    Download,
+    Users,
+    HardHat,
+    History,
+    ShieldCheck,
+    FileText,
 } from 'lucide-react';
+import Image from "next/image";
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { MonthYearPicker } from "../ui/month-year-picker";
-import { FileText } from "lucide-react";
 import { Select } from "@/components/ui/select";
 
 interface WorkerEditingData extends Partial<Worker> {
@@ -835,12 +836,15 @@ export const AdminView = () => {
             </div>
             {/* Printable Area - Hidden by default */}
             <div className="hidden print:block print:m-0 print:p-0">
-                <div className="text-center mb-6 border-b-2 pb-4">
-                    <h1 className="text-2xl font-bold mb-1">قائمة بيانات العمال والأسعار</h1>
-                    <p className="text-gray-600">
-                        التاريخ: {new Date().toLocaleDateString('ar-JO')} | القطاع: جميع العمال
-                    </p>
-                    <p className="text-sm mt-1 text-red-600 font-bold uppercase">لوحة إدارة النظام</p>
+                <div className="flex justify-between items-center mb-6 border-b-2 pb-4">
+                    <div className="text-right">
+                        <h1 className="text-2xl font-bold mb-1">قائمة بيانات العمال والأسعار</h1>
+                        <p className="text-gray-600">
+                            التاريخ: {new Date().toLocaleDateString('ar-JO')} | القطاع: جميع العمال
+                        </p>
+                        <p className="text-sm mt-1 text-red-600 font-bold uppercase">لوحة إدارة النظام</p>
+                    </div>
+                    <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
                 </div>
 
                 <table className="w-full border-collapse border border-gray-300 text-sm">

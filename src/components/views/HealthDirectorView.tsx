@@ -6,6 +6,7 @@ import { MonthYearPicker } from "../ui/month-year-picker";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
+import Image from "next/image";
 import {
     Activity,
     Search,
@@ -465,12 +466,11 @@ export function HealthDirectorView() {
                 <div className="text-center mb-10 border-b-[6px] border-emerald-700 pb-8">
                     <div className="flex justify-between items-center mb-6">
                         <div className="text-right">
-                            <h3 className="text-xl font-black text-slate-900 leading-none">بلدية الدائرة المختصة</h3>
-                            <p className="text-sm font-bold text-slate-500 mt-1">قسم إدارة الكوادر الصحية</p>
+                            <h1 className="text-2xl font-bold mb-1">كشف مراقبة دوام الكوادر</h1>
+                            <p className="text-gray-600">الشهر: {month} / {year} | القطاع: جميع المناطق</p>
+                            <p className="text-sm mt-1 text-blue-600 font-bold uppercase">مديرية الشؤون الصحية</p>
                         </div>
-                        <div className="bg-emerald-700 text-white p-4 rounded-3xl font-black text-2xl">
-                            LOGO
-                        </div>
+                        <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
                         <div className="text-left text-sm font-bold text-slate-500">
                             <p>التاريخ: {new Date().toLocaleDateString('ar-JO')}</p>
                             <p>الرقم: AD/H-{year}-{month}</p>
@@ -543,7 +543,7 @@ export function HealthDirectorView() {
                         نظام تأييد الدوام الذكي - الرقم المرجعي للتقرير: {Math.random().toString(36).substring(7).toUpperCase()}
                     </p>
                 </div>
-            </div>
+            </div >
         </>
     );
 }

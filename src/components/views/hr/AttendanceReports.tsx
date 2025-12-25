@@ -3,6 +3,7 @@
 import React from "react";
 import { Search, Printer, Download, CheckCircle, Clock, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { MonthYearPicker } from "../../ui/month-year-picker";
@@ -268,12 +269,15 @@ export function AttendanceReports({
 
             {/* Printable Area - Hidden by default */}
             <div className="hidden print:block print:m-0 print:p-0">
-                <div className="text-center mb-6 border-b-2 pb-4">
-                    <h1 className="text-2xl font-bold mb-1">تقرير الحضور الشهري العام</h1>
-                    <p className="text-gray-600">
-                        الشهر: {month} / {year} | القطاع: {reportAreaFilter === "ALL" ? "جميع المناطق" : areas.find(a => a.id === reportAreaFilter)?.name}
-                    </p>
-                    <p className="text-sm mt-1 text-purple-600 font-bold">إدارة الموارد البشرية</p>
+                <div className="flex justify-between items-center mb-6 border-b-2 pb-4">
+                    <div className="text-right">
+                        <h1 className="text-2xl font-bold mb-1">تقرير الحضور الشهري العام</h1>
+                        <p className="text-gray-600">
+                            الشهر: {month} / {year} | القطاع: {reportAreaFilter === "ALL" ? "جميع المناطق" : areas.find(a => a.id === reportAreaFilter)?.name}
+                        </p>
+                        <p className="text-sm mt-1">تاريخ الاستخراج: {new Date().toLocaleDateString('ar-JO')}</p>
+                    </div>
+                    <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
                 </div>
 
                 <table className="w-full border-collapse border border-gray-300 text-sm">

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
+import Image from "next/image";
 
 export function GeneralSupervisorView() {
     const { currentUser, workers, attendanceRecords, areas, approveAttendance, rejectAttendance, isLoading } = useAttendance();
@@ -289,10 +290,13 @@ export function GeneralSupervisorView() {
             </div>
 
             {/* Printable Area */}
-            <div className="hidden print:block">
-                <div className="text-center mb-6 border-b-2 pb-4">
-                    <h1 className="text-2xl font-bold mb-1">تقرير اعتماد المراقب العام</h1>
-                    <p className="text-gray-600">الشهر: {month}/{year} | المراقب العام: {currentUser?.name}</p>
+            <div className="hidden print:block print:m-0 print:p-0">
+                <div className="flex justify-between items-center mb-6 border-b-2 pb-4">
+                    <div className="text-right">
+                        <h1 className="text-2xl font-bold mb-1">تقرير اعتماد المراقب العام</h1>
+                        <p className="text-gray-600">الشهر: {month}/{year} | المراقب العام: {currentUser?.name}</p>
+                    </div>
+                    <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
                 </div>
                 <table className="w-full border-collapse border border-gray-300 text-sm">
                     <thead>
