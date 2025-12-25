@@ -25,6 +25,12 @@ export function MayorView() {
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
 
+    // Stable print metadata - generated on mount to fix purity lint errors
+    const [printMetadata] = useState(() => ({
+        date: new Date().toLocaleDateString('ar-JO'),
+        ref: `MAYOR-${Math.random().toString(36).substring(7).toUpperCase()}`
+    }));
+
     const stats = useMemo(() => {
         const periodRecords = attendanceRecords.filter(r => r.month === month && r.year === year);
 
@@ -240,8 +246,8 @@ export function MayorView() {
                                     <div className="h-2 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/30">
                                         <div
                                             className={`h-full rounded-full transition-all duration-1000 ${idx === 0 ? 'bg-gradient-to-r from-emerald-400 to-teal-500' :
-                                                    idx < 3 ? 'bg-gradient-to-r from-blue-400 to-indigo-500' :
-                                                        'bg-slate-300'
+                                                idx < 3 ? 'bg-gradient-to-r from-blue-400 to-indigo-500' :
+                                                    'bg-slate-300'
                                                 }`}
                                             style={{ width: `${area.percentage}%` }}
                                         ></div>
@@ -321,15 +327,21 @@ export function MayorView() {
                 </div>
             </div>
 
-            {/* Printable Area for Executive Overview */}
-            <div className="hidden print:block print:m-0 print:p-0">
-                <div className="flex justify-between items-center mb-8 border-b-2 pb-6">
-                    <div className="text-right">
-                        <h1 className="text-3xl font-black text-slate-900 mb-1">تقرير الملخص الإداري التنفيذي</h1>
-                        <p className="text-slate-600 font-bold">الشهر: {month} / {year} | رئاسة البلدية</p>
-                        <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest">نظام الرقابة والحوكمة الذكي</p>
+            {/* Printable Area for Executive Overview - Standardized Official Layout */}
+            <div className="hidden print:block font-sans">
+                <div className="text-center mb-10 border-b-[6px] border-slate-900 pb-8">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="text-right">
+                            <h1 className="text-2xl font-bold mb-1">تقرير الملخص الإداري التنفيذي</h1>
+                            <p className="text-gray-600">الشهر: {month} / {year} | رئاسة البلدية</p>
+                            <p className="text-sm mt-1 text-slate-800 font-bold uppercase">المكتب التنفيذي لعطوفة العمدة</p>
+                        </div>
+                        <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
+                        <div className="text-left text-sm font-bold text-slate-500">
+                            <p>التاريخ: {printMetadata.date}</p>
+                            <p>الرقم: AD/{printMetadata.ref}</p>
+                        </div>
                     </div>
-                    <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
                 </div>
 
                 <div className="grid grid-cols-2 gap-6 mb-12">

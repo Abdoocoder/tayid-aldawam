@@ -58,6 +58,12 @@ export function SupervisorView() {
     const pendingEntries = totalWorkers - completedEntries;
     const completionPercentage = totalWorkers > 0 ? Math.round((completedEntries / totalWorkers) * 100) : 0;
 
+    // Stable print metadata - generated on mount to fix purity lint errors
+    const [printMetadata] = useState(() => ({
+        date: new Date().toLocaleDateString('ar-JO'),
+        ref: `SUP-${Math.random().toString(36).substring(7).toUpperCase()}`
+    }));
+
     // Show loading state
     if (isLoading) {
         return (
@@ -213,11 +219,11 @@ export function SupervisorView() {
                             const areaName = areas.find(a => a.id === worker.areaId)?.name || "غير محدد";
 
                             return (
-                                <Card key={worker.id} className={`group hover:shadow-2xl transition-all duration-300 relative overflow-hidden border-none rounded-3xl ${isFilled ? 'bg-gradient-to-br from-white to-emerald-50/30' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
+                                <Card key={worker.id} className={`group hover: shadow - 2xl transition - all duration - 300 relative overflow - hidden border - none rounded - 3xl ${isFilled ? 'bg-gradient-to-br from-white to-emerald-50/30' : 'bg-white shadow-xl shadow-slate-200/50'} `}>
                                     <CardContent className="p-0">
                                         <div className="p-5 flex items-center justify-between">
                                             <div className="flex items-center gap-3">
-                                                <div className={`p-3 rounded-2xl transition-all duration-300 ${isFilled ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                                                <div className={`p - 3 rounded - 2xl transition - all duration - 300 ${isFilled ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-50 text-blue-600'} `}>
                                                     <User className="h-5 w-5" />
                                                 </div>
                                                 <div>
@@ -238,7 +244,7 @@ export function SupervisorView() {
                                             <div className="flex items-center justify-between gap-3 bg-slate-50/50 p-2.5 rounded-2xl border border-slate-100">
                                                 <div className="flex flex-col">
                                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">الحالة</span>
-                                                    <span className={`text-[11px] font-black ${isFilled ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                    <span className={`text - [11px] font - black ${isFilled ? 'text-emerald-600' : 'text-amber-600'} `}>
                                                         {isFilled ? (
                                                             record.status === 'PENDING_GS' ? "بانتظار المشرف العام" :
                                                                 record.status === 'PENDING_HR' ? "بانتظار الموارد" :
@@ -248,8 +254,8 @@ export function SupervisorView() {
                                                         ) : "بانتظار الإدخال"}
                                                     </span>
                                                 </div>
-                                                <Link href={`/dashboard/entry/${worker.id}?month=${month}&year=${year}`}>
-                                                    <Button size="sm" className={`h-9 px-5 rounded-xl font-black shadow-lg transition-all active:scale-95 ${!isFilled ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-200 text-white' : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-100'}`}>
+                                                <Link href={`/ dashboard / entry / ${worker.id}?month = ${month}& year=${year} `}>
+                                                    <Button size="sm" className={`h - 9 px - 5 rounded - xl font - black shadow - lg transition - all active: scale - 95 ${!isFilled ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-200 text-white' : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-100'} `}>
                                                         {isFilled ? (record.status === 'PENDING_SUPERVISOR' ? "تصحيح" : "تعديل") : "إدخال الحضور"}
                                                     </Button>
                                                 </Link>
@@ -276,59 +282,88 @@ export function SupervisorView() {
                 </div>
             </div>
 
-            {/* Printable Area - Hidden by default, visible only during print */}
-            <div className="hidden print:block print:m-0 print:p-0">
-                <div className="flex justify-between items-center mb-6 border-b-2 pb-4">
-                    <div className="text-right">
-                        <h1 className="text-2xl font-bold mb-1">كشف حضور وانصراف شهري</h1>
-                        <p className="text-gray-600">
-                            الشهر: {month} / {year} | القطاع: {selectedAreaId === "ALL" ? "جميع المناطق التابعة" : areas.find(a => a.id === selectedAreaId)?.name}
-                        </p>
-                        <p className="text-sm mt-1">المراقب: {currentUser?.name}</p>
+            {/* Printable Area - Standardized Official Layout */}
+            <div className="hidden print:block font-sans">
+                <div className="text-center mb-10 border-b-[6px] border-emerald-700 pb-8">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="text-right">
+                            <h1 className="text-2xl font-bold mb-1">كشف حصور وانصراف الكوادر</h1>
+                            <p className="text-gray-600">
+                                الشهر: {month} / {year} | القطاع: {selectedAreaId === "ALL" ? "جميع المناطق التابعة" : areas.find(a => a.id === selectedAreaId)?.name}
+                            </p>
+                            <p className="text-sm mt-1 text-emerald-600 font-bold uppercase">قسم المراقبة والرقابة</p>
+                        </div>
+                        <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
+                        <div className="text-left text-sm font-bold text-slate-500">
+                            <p>التاريخ: {printMetadata.date}</p>
+                            <p>الرقم: AD/{printMetadata.ref}</p>
+                        </div>
                     </div>
-                    <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
+                    <h1 className="text-4xl font-black text-slate-900 mb-2">تقرير إثبات الدوام الشهري</h1>
+                    <div className="flex justify-center gap-12 mt-4 text-slate-600 font-black">
+                        <p>الشهر: <span className="text-emerald-700">{month}</span></p>
+                        <p>السنة: <span className="text-emerald-700">{year}</span></p>
+                        <p>المراقب المسؤول: <span className="text-emerald-700">{currentUser?.name}</span></p>
+                    </div>
                 </div>
 
-                <table className="w-full border-collapse border border-gray-300 text-sm">
+                <table className="w-full border-collapse text-sm mb-12">
                     <thead>
-                        <tr className="bg-gray-100">
-                            <th className="border border-gray-300 p-2 text-right">رقم العامل</th>
-                            <th className="border border-gray-300 p-2 text-right">اسم العامل</th>
-                            <th className="border border-gray-300 p-2 text-right">المنطقة</th>
-                            <th className="border border-gray-300 p-2 text-center">أيام عادية</th>
-                            <th className="border border-gray-300 p-2 text-center">إضافي عادي (x0.5)</th>
-                            <th className="border border-gray-300 p-2 text-center">إضافي عطل (x1.0)</th>
-                            <th className="border border-gray-300 p-2 text-center">أيام أعياد (x1.0)</th>
-                            <th className="border border-gray-300 p-2 text-center font-bold">الإجمالي</th>
+                        <tr className="bg-slate-100 font-black border-2 border-slate-900">
+                            <th className="border-2 border-slate-900 p-3 text-right">م</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">رقم العامل</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">اسم العامل</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">المنطقة</th>
+                            <th className="border-2 border-slate-900 p-3 text-center">أيام عادية</th>
+                            <th className="border-2 border-slate-900 p-3 text-center text-[10px]">إضافي عادي (0.5)</th>
+                            <th className="border-2 border-slate-900 p-3 text-center text-[10px]">إضافي عطل (1.0)</th>
+                            <th className="border-2 border-slate-900 p-3 text-center text-[10px]">أيام أعياد (1.0)</th>
+                            <th className="border-2 border-slate-900 p-3 text-center font-black bg-slate-50">الإجمالي</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredWorkers.map(worker => {
+                        {filteredWorkers.map((worker, index) => {
                             const record = getWorkerAttendance(worker.id, month, year);
                             const areaName = areas.find(a => a.id === worker.areaId)?.name || worker.areaId;
                             return (
-                                <tr key={worker.id}>
-                                    <td className="border border-gray-300 p-2">{worker.id}</td>
-                                    <td className="border border-gray-300 p-2 font-bold">{worker.name}</td>
-                                    <td className="border border-gray-300 p-2">{areaName}</td>
-                                    <td className="border border-gray-300 p-2 text-center">{record ? record.normalDays : "0"}</td>
-                                    <td className="border border-gray-300 p-2 text-center">{record ? record.overtimeNormalDays : "0"}</td>
-                                    <td className="border border-gray-300 p-2 text-center">{record ? record.overtimeHolidayDays : "0"}</td>
-                                    <td className="border border-gray-300 p-2 text-center">{record ? (record.overtimeEidDays || 0) : "0"}</td>
-                                    <td className="border border-gray-300 p-2 text-center font-bold">{record ? record.totalCalculatedDays : "0"}</td>
+                                <tr key={worker.id} className="border-b-2 border-slate-400">
+                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{index + 1}</td>
+                                    <td className="border-2 border-slate-900 p-3 font-mono">{worker.id}</td>
+                                    <td className="border-2 border-slate-900 p-3 font-black">{worker.name}</td>
+                                    <td className="border-2 border-slate-900 p-3">{areaName}</td>
+                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{record ? record.normalDays : "0"}</td>
+                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{record ? record.overtimeNormalDays : "0"}</td>
+                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{record ? record.overtimeHolidayDays : "0"}</td>
+                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{record ? (record.overtimeEidDays || 0) : "0"}</td>
+                                    <td className="border-2 border-slate-900 p-3 text-center font-black bg-slate-50">{record ? record.totalCalculatedDays : "0"}</td>
                                 </tr>
                             );
                         })}
                     </tbody>
                 </table>
 
-                <div className="mt-8 grid grid-cols-2 gap-8 text-center no-print">
-                    <div className="border-t border-black pt-2">توقيع المراقب</div>
-                    <div className="border-t border-black pt-2">اعتماد الإدارة</div>
+                <div className="grid grid-cols-3 gap-8 mt-20">
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">توقيع المراقب المسؤول</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400 text-xs">الاسم والتوقيع</p>
+                    </div>
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">اعتماد المراقب العام</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400 text-xs">الاسم والتوقيع والختم</p>
+                    </div>
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">اعتماد إدارة المشاريع</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400 text-[10px] border-2 border-dashed border-slate-200 rounded-full w-24 h-24 flex items-center justify-center mx-auto">ختم الدائرة</p>
+                    </div>
                 </div>
 
-                <div className="mt-12 text-[10px] text-gray-400 text-center">
-                    تم استخراج هذا التقرير بتاريخ {new Date().toLocaleDateString('ar-JO')}
+                <div className="mt-32 pt-8 border-t border-slate-200 text-center">
+                    <p className="text-[10px] text-slate-400 font-mono tracking-widest">
+                        نظام تأييد الدوام الذكي - التاريخ: {printMetadata.date} - الرقم المرجعي: {printMetadata.ref}
+                    </p>
                 </div>
             </div>
 

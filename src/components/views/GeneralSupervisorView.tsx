@@ -50,6 +50,12 @@ export function GeneralSupervisorView() {
         return isCorrectPeriod && isPendingGS && matchesArea && matchesSearch && isResponsibleArea;
     });
 
+    // Stable print metadata - generated on mount to fix purity lint errors
+    const [printMetadata] = useState(() => ({
+        date: new Date().toLocaleDateString('ar-JO'),
+        ref: `GS-${Math.random().toString(36).substring(7).toUpperCase()}`
+    }));
+
     const handleApprove = async (recordId: string) => {
         setApprovingIds(prev => new Set(prev).add(recordId));
         try {
@@ -289,42 +295,84 @@ export function GeneralSupervisorView() {
 
             </div>
 
-            {/* Printable Area */}
-            <div className="hidden print:block print:m-0 print:p-0">
-                <div className="flex justify-between items-center mb-6 border-b-2 pb-4">
-                    <div className="text-right">
-                        <h1 className="text-2xl font-bold mb-1">تقرير اعتماد المراقب العام</h1>
-                        <p className="text-gray-600">الشهر: {month}/{year} | المراقب العام: {currentUser?.name}</p>
+            {/* Printable Area - Standardized Official Layout */}
+            <div className="hidden print:block font-sans">
+                <div className="text-center mb-10 border-b-[6px] border-emerald-700 pb-8">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="text-right">
+                            <h1 className="text-2xl font-bold mb-1">اعتماد كشوفات المراقب العام</h1>
+                            <p className="text-gray-600">الشهر: {month} / {year} | المراقب العام: {currentUser?.name}</p>
+                            <p className="text-sm mt-1 text-emerald-600 font-bold uppercase">الإدارة العامة للرقابة</p>
+                        </div>
+                        <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
+                        <div className="text-left text-sm font-bold text-slate-500">
+                            <p>التاريخ: {printMetadata.date}</p>
+                            <p>الرقم: AD/{printMetadata.ref}</p>
+                        </div>
                     </div>
-                    <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
+                    <h1 className="text-4xl font-black text-slate-900 mb-2">تقرير تدقيق ومراجعة المراقب العام</h1>
+                    <div className="flex justify-center gap-12 mt-4 text-slate-600 font-black">
+                        <p>الشهر: <span className="text-emerald-700">{month}</span></p>
+                        <p>السنة: <span className="text-emerald-700">{year}</span></p>
+                        <p>المراقب العام: <span className="text-emerald-700">{currentUser?.name}</span></p>
+                    </div>
                 </div>
-                <table className="w-full border-collapse border border-gray-300 text-sm">
+
+                <table className="w-full border-collapse text-sm mb-12">
                     <thead>
-                        <tr className="bg-gray-100 font-bold">
-                            <th className="border border-gray-300 p-2 text-right">العامل</th>
-                            <th className="border border-gray-300 p-2 text-right">القطاع</th>
-                            <th className="border border-gray-300 p-2 text-center">أيام عادية</th>
-                            <th className="border border-gray-300 p-2 text-center">إجمالي الأيام</th>
+                        <tr className="bg-slate-100 font-black border-2 border-slate-900">
+                            <th className="border-2 border-slate-900 p-3 text-right">م</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">اسم العامل</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">المنطقة</th>
+                            <th className="border-2 border-slate-900 p-3 text-center">أيام عادية</th>
+                            <th className="border-2 border-slate-900 p-3 text-center text-[10px]">إضافي عادي (0.5)</th>
+                            <th className="border-2 border-slate-900 p-3 text-center text-[10px]">إضافي عطل (1.0)</th>
+                            <th className="border-2 border-slate-900 p-3 text-center text-[10px]">أيام أعياد (1.0)</th>
+                            <th className="border-2 border-slate-900 p-3 text-center font-black bg-slate-50">إجمالي الأيام</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredRecords.map(record => {
+                        {filteredRecords.map((record, index) => {
                             const worker = workers.find(w => w.id === record.workerId);
                             const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
                             return (
-                                <tr key={record.id}>
-                                    <td className="border border-gray-300 p-2">{worker?.name}</td>
-                                    <td className="border border-gray-300 p-2">{areaName}</td>
-                                    <td className="border border-gray-300 p-2 text-center">{record.normalDays}</td>
-                                    <td className="border border-gray-300 p-2 text-center font-bold">{record.totalCalculatedDays}</td>
+                                <tr key={record.id} className="border-b-2 border-slate-400">
+                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{index + 1}</td>
+                                    <td className="border-2 border-slate-900 p-3 font-black">{worker?.name}</td>
+                                    <td className="border-2 border-slate-900 p-3">{areaName}</td>
+                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{record.normalDays}</td>
+                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{record.overtimeNormalDays}</td>
+                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{record.overtimeHolidayDays}</td>
+                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{record.overtimeEidDays || 0}</td>
+                                    <td className="border-2 border-slate-900 p-3 text-center font-black bg-slate-50">{record.totalCalculatedDays}</td>
                                 </tr>
                             );
                         })}
                     </tbody>
                 </table>
-                <div className="mt-8 grid grid-cols-2 gap-8 text-center no-print">
-                    <div className="border-t border-black pt-2 font-bold">توقيع المراقب العام</div>
-                    <div className="border-t border-black pt-2 font-bold">ختم الجهة المسؤولة</div>
+
+                <div className="grid grid-cols-3 gap-8 mt-20">
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">توقيع المراقب العام</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400 text-xs">الاسم والتوقيع</p>
+                    </div>
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">تدقيق الدائرة الصحية</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400 text-xs">الاسم والتوقيع</p>
+                    </div>
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">اعتماد عطوفة العمدة</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400 text-[10px] border-2 border-dashed border-slate-200 rounded-full w-24 h-24 flex items-center justify-center mx-auto">ختم رئاسة البلدية</p>
+                    </div>
+                </div>
+
+                <div className="mt-32 pt-8 border-t border-slate-200 text-center">
+                    <p className="text-[10px] text-slate-400 font-mono tracking-widest">
+                        نظام تأييد الدوام الذكي - التاريخ: {printMetadata.date} - الرقم المرجعي: {printMetadata.ref}
+                    </p>
                 </div>
             </div>
         </>

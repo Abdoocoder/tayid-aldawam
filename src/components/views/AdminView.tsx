@@ -1,34 +1,34 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useAttendance, User, Worker, UserRole } from '@/context/AttendanceContext';
+import { useAttendance, Worker, User, UserRole } from '@/context/AttendanceContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
-import { Button } from '@/components/ui/button';
+import { Button } from '../ui/button';
 import {
-    Plus,
     Edit2,
     Trash2,
     UserPlus,
-    Activity,
-    Loader2,
-    LayoutDashboard,
-    Save,
     Search,
-    MapPin,
     Printer,
-    Download,
     Users,
-    HardHat,
     History,
-    ShieldCheck,
     FileText,
+    HardHat,
+    LayoutDashboard,
+    ShieldCheck,
+    Plus,
+    Activity,
+    MapPin,
+    Download,
+    Loader2,
+    Save
 } from 'lucide-react';
 import Image from "next/image";
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { Input } from '../ui/input';
+import { Badge } from '../ui/badge';
 import { MonthYearPicker } from "../ui/month-year-picker";
-import { Select } from "@/components/ui/select";
+import { Select } from "../ui/select";
 
 interface WorkerEditingData extends Partial<Worker> {
     id: string;
@@ -40,6 +40,12 @@ export const AdminView = () => {
     const { appUser } = useAuth();
     const { showToast } = useToast();
     const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'workers' | 'logs' | 'attendance'>('overview');
+
+    // Stable print metadata - generated on mount to fix purity lint errors
+    const [printMetadata] = useState(() => ({
+        date: new Date().toLocaleDateString('ar-JO'),
+        ref: `ADM-${Math.random().toString(36).substring(7).toUpperCase()}`
+    }));
 
     // Attendance Management State
     const [attendanceMonth, setAttendanceMonth] = useState(new Date().getMonth() + 1);
@@ -206,12 +212,12 @@ export const AdminView = () => {
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                                    className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-black transition-all duration-300 whitespace-nowrap ${activeTab === tab.id
+                                    className={`flex items - center gap - 2 px - 6 py - 2 rounded - xl text - xs font - black transition - all duration - 300 whitespace - nowrap ${activeTab === tab.id
                                         ? 'bg-white text-rose-600 shadow-md ring-1 ring-slate-100'
                                         : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'
-                                        }`}
+                                        } `}
                                 >
-                                    <tab.icon className={`h-4 w-4 ${activeTab === tab.id ? 'text-rose-600' : 'text-slate-400'}`} />
+                                    <tab.icon className={`h - 4 w - 4 ${activeTab === tab.id ? 'text-rose-600' : 'text-slate-400'} `} />
                                     {tab.label}
                                 </button>
                             ))}
@@ -234,10 +240,10 @@ export const AdminView = () => {
                                 <div key={i} className="group relative transition-all duration-500 hover:-translate-y-1">
                                     <div className="bg-white/60 backdrop-blur-xl p-5 rounded-[2rem] border border-white/40 shadow-xl shadow-slate-200/50 group-hover:shadow-2xl transition-all">
                                         <div className="flex justify-between items-start mb-4">
-                                            <div className={`p-3 rounded-2xl bg-gradient-to-br from-${stat.color}-50 to-${stat.color}-100/50 text-${stat.color}-600 ring-1 ring-${stat.color}-100 shadow-inner group-hover:scale-110 transition-transform duration-500`}>
+                                            <div className={`p - 3 rounded - 2xl bg - gradient - to - br from - ${stat.color} -50 to - ${stat.color} -100 / 50 text - ${stat.color} -600 ring - 1 ring - ${stat.color} -100 shadow - inner group - hover: scale - 110 transition - transform duration - 500`}>
                                                 <stat.icon className="h-6 w-6" />
                                             </div>
-                                            <div className={`text-[9px] font-black px-2 py-1 rounded-full bg-${stat.color}-50 text-${stat.color}-700 uppercase tracking-tighter shadow-sm`}>
+                                            <div className={`text - [9px] font - black px - 2 py - 1 rounded - full bg - ${stat.color} -50 text - ${stat.color} -700 uppercase tracking - tighter shadow - sm`}>
                                                 {stat.trend}
                                             </div>
                                         </div>
@@ -248,7 +254,7 @@ export const AdminView = () => {
                                                 <span className="text-xs font-bold text-slate-400 uppercase">{stat.unit}</span>
                                             </div>
                                         </div>
-                                        <div className={`absolute -right-4 -bottom-4 w-20 h-20 bg-${stat.color}-50 rounded-full opacity-0 group-hover:opacity-40 transition-opacity duration-700 blur-2xl`}></div>
+                                        <div className={`absolute - right - 4 - bottom - 4 w - 20 h - 20 bg - ${stat.color} -50 rounded - full opacity - 0 group - hover: opacity - 40 transition - opacity duration - 700 blur - 2xl`}></div>
                                     </div>
                                 </div>
                             ))}
@@ -278,8 +284,7 @@ export const AdminView = () => {
                                                     <p className="text-[10px] text-slate-400 font-bold uppercase">{u.role}</p>
                                                 </div>
                                             </div>
-                                            <div className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter ${u.role === 'ADMIN' ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-600'
-                                                }`}>
+                                            <div className={`px - 2.5 py - 1 rounded - full text - [9px] font - black uppercase tracking - tighter ${u.role === 'ADMIN' ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-600'} `}>
                                                 {u.role}
                                             </div>
                                         </div>
@@ -405,8 +410,7 @@ export const AdminView = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-8 py-5 text-center">
-                                                    <Badge variant="outline" className={`font-black text-[9px] uppercase tracking-tighter ring-1 ${u.role === 'ADMIN' ? 'bg-rose-50 text-rose-700 ring-rose-100 border-rose-200' : 'bg-slate-50 text-slate-600 ring-slate-100'
-                                                        }`}>
+                                                    <Badge variant="outline" className={`font - black text - [9px] uppercase tracking - tighter ring - 1 ${u.role === 'ADMIN' ? 'bg-rose-50 text-rose-700 ring-rose-100 border-rose-200' : 'bg-slate-50 text-slate-600 ring-slate-100'} `}>
                                                         {u.role}
                                                     </Badge>
                                                 </td>
@@ -417,9 +421,8 @@ export const AdminView = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-8 py-5 text-center">
-                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black ${u.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                                                        }`}>
-                                                        <span className={`w-1.5 h-1.5 rounded-full ${u.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
+                                                    <span className={`inline - flex items - center gap - 1.5 px - 3 py - 1 rounded - full text - [10px] font - black ${u.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'} `}>
+                                                        <span className={`w - 1.5 h - 1.5 rounded - full ${u.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'} `}></span>
                                                         {u.isActive ? 'نشط' : 'معطل'}
                                                     </span>
                                                 </td>
@@ -439,8 +442,7 @@ export const AdminView = () => {
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
-                                                            className={`h-9 w-9 rounded-xl transition-all ${u.isActive ? 'text-slate-400 hover:text-amber-600 hover:bg-amber-50' : 'text-emerald-500 hover:bg-emerald-50'
-                                                                }`}
+                                                            className={`h - 9 w - 9 rounded - xl transition - all ${u.isActive ? 'text-slate-400 hover:text-amber-600 hover:bg-amber-50' : 'text-emerald-500 hover:bg-emerald-50'} `}
                                                             onClick={() => updateUser(u.id, { isActive: !u.isActive })}
                                                         >
                                                             <ShieldCheck className="h-4 w-4" />
@@ -643,8 +645,7 @@ export const AdminView = () => {
                                                 </td>
                                                 <td className="px-8 py-5 text-center">
                                                     {record ? (
-                                                        <Badge className={`rounded-xl text-[9px] font-black uppercase tracking-tighter shadow-sm ring-1 ${record.status === 'APPROVED' ? "bg-emerald-600 text-white ring-emerald-500" : "bg-slate-100 text-slate-600 ring-slate-200"
-                                                            }`}>
+                                                        <Badge className={`rounded - xl text - [9px] font - black uppercase tracking - tighter shadow - sm ring - 1 ${record.status === 'APPROVED' ? "bg-emerald-600 text-white ring-emerald-500" : "bg-slate-100 text-slate-600 ring-slate-200"} `}>
                                                             {record.status === 'APPROVED' ? 'معتمد نهائياً' :
                                                                 record.status === 'PENDING_FINANCE' ? 'بانتظار الرواتب' :
                                                                     record.status === 'PENDING_HR' ? 'بانتظار الموارد' :
@@ -785,10 +786,10 @@ export const AdminView = () => {
                                             <tr key={log.id} className="hover:bg-indigo-50/20 transition-all group">
                                                 <td className="px-8 py-5 text-center">
                                                     <Badge
-                                                        className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter shadow-sm ${log.action === 'INSERT' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' :
+                                                        className={`px - 2.5 py - 1 rounded - full text - [9px] font - black uppercase tracking - tighter shadow - sm ${log.action === 'INSERT' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' :
                                                             log.action === 'UPDATE' ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100' :
                                                                 'bg-rose-50 text-rose-700 ring-1 ring-rose-100'
-                                                            }`}
+                                                            } `}
                                                     >
                                                         {log.action}
                                                     </Badge>
@@ -834,51 +835,78 @@ export const AdminView = () => {
                     </div>
                 )}
             </div>
-            {/* Printable Area - Hidden by default */}
-            <div className="hidden print:block print:m-0 print:p-0">
-                <div className="flex justify-between items-center mb-6 border-b-2 pb-4">
-                    <div className="text-right">
-                        <h1 className="text-2xl font-bold mb-1">قائمة بيانات العمال والأسعار</h1>
-                        <p className="text-gray-600">
-                            التاريخ: {new Date().toLocaleDateString('ar-JO')} | القطاع: جميع العمال
-                        </p>
-                        <p className="text-sm mt-1 text-red-600 font-bold uppercase">لوحة إدارة النظام</p>
+            {/* Printable Area - Standardized Official Layout */}
+            <div className="hidden print:block font-sans">
+                <div className="text-center mb-10 border-b-[6px] border-slate-900 pb-8">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="text-right">
+                            <h1 className="text-2xl font-bold mb-1">بيانات العمال والمستحقات الأساسية</h1>
+                            <p className="text-gray-600">التاريخ: {new Date().toLocaleDateString('ar-JO')} | القطاع: جميع المناطق</p>
+                            <p className="text-sm mt-1 text-red-600 font-bold uppercase">مركز إدارة النظام</p>
+                        </div>
+                        <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
+                        <div className="text-left text-sm font-bold text-slate-500">
+                            <p>التاريخ: {printMetadata.date}</p>
+                            <p>الرقم: AD/{printMetadata.ref}</p>
+                        </div>
                     </div>
-                    <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
+                    <h1 className="text-4xl font-black text-slate-900 mb-2">كشف بيانات القوى العاملة المعتمد</h1>
+                    <div className="flex justify-center gap-12 mt-4 text-slate-600 font-black">
+                        <p>عدد العمال: <span className="text-red-600">{workers.length}</span></p>
+                        <p>تاريخ النسخة: <span className="text-red-600">{new Date().toLocaleDateString('ar-JO')}</span></p>
+                    </div>
                 </div>
 
-                <table className="w-full border-collapse border border-gray-300 text-sm">
+                <table className="w-full border-collapse text-sm mb-12">
                     <thead>
-                        <tr className="bg-gray-100">
-                            <th className="border border-gray-300 p-2 text-right">الرقم</th>
-                            <th className="border border-gray-300 p-2 text-right">الاسم</th>
-                            <th className="border border-gray-300 p-2 text-right">المنطقة</th>
-                            <th className="border border-gray-300 p-2 text-center">أجر اليوم (د.أ)</th>
-                            <th className="border border-gray-300 p-2 text-center">الراتب الأساسي</th>
+                        <tr className="bg-slate-100 font-black border-2 border-slate-900">
+                            <th className="border-2 border-slate-900 p-3 text-right">م</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">رقم العامل</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">الاسم الكامل</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">المنطقة</th>
+                            <th className="border-2 border-slate-900 p-3 text-center">أجر اليوم</th>
+                            <th className="border-2 border-slate-900 p-3 text-center">الراتب الأساسي</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {workers.map(w => {
+                        {workers.map((w, index) => {
                             const areaName = areas.find(a => a.id === w.areaId)?.name || w.areaId;
                             return (
-                                <tr key={w.id}>
-                                    <td className="border border-gray-300 p-2 font-mono">{w.id}</td>
-                                    <td className="border border-gray-300 p-2 font-bold">{w.name}</td>
-                                    <td className="border border-gray-300 p-2">{areaName}</td>
-                                    <td className="border border-gray-300 p-2 text-center">{w.dayValue}</td>
-                                    <td className="border border-gray-300 p-2 text-center">{w.baseSalary}</td>
+                                <tr key={w.id} className="border-b-2 border-slate-400">
+                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{index + 1}</td>
+                                    <td className="border-2 border-slate-900 p-3 font-mono">{w.id}</td>
+                                    <td className="border-2 border-slate-900 p-3 font-black">{w.name}</td>
+                                    <td className="border-2 border-slate-900 p-3">{areaName}</td>
+                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{w.dayValue} د.أ</td>
+                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{w.baseSalary} د.أ</td>
                                 </tr>
                             );
                         })}
                     </tbody>
                 </table>
 
-                <div className="mt-8 text-center no-print">
-                    <div className="border-t border-black pt-2 font-bold inline-block px-12">اعتماد الإدارة العليا</div>
+                <div className="grid grid-cols-3 gap-8 mt-20">
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">مدير النظام</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400 text-xs">الاسم والتوقيع</p>
+                    </div>
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">تدقيق الموارد البشرية</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400 text-xs">الاسم والتوقيع</p>
+                    </div>
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">اعتماد الإدارة العليا</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400 text-[10px] border-2 border-dashed border-slate-200 rounded-full w-24 h-24 flex items-center justify-center mx-auto">ختم الإدارة</p>
+                    </div>
                 </div>
 
-                <div className="mt-12 text-[10px] text-gray-400 text-center">
-                    تم استخراج هذه القائمة بتاريخ {new Date().toLocaleDateString('ar-JO')}
+                <div className="mt-32 pt-8 border-t border-slate-200 text-center">
+                    <p className="text-[10px] text-slate-400 font-mono tracking-widest uppercase">
+                        Admin Control Panel - Ref: {printMetadata.ref} - Date: {printMetadata.date}
+                    </p>
                 </div>
             </div>
 
@@ -888,7 +916,7 @@ export const AdminView = () => {
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setEditingItem(null)} />
                         <div className="relative w-full max-w-xl bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-2xl border border-white/50 overflow-hidden animate-in zoom-in-95 duration-300">
-                            <div className={`h-2 w-full ${editingItem.type === 'user' ? 'bg-rose-500' : 'bg-blue-500'}`} />
+                            <div className={`h - 2 w - full ${editingItem.type === 'user' ? 'bg-rose-500' : 'bg-blue-500'} `} />
                             <div className="p-8">
                                 <h2 className="text-2xl font-black text-slate-900 mb-2">
                                     {editingItem.data.id === 'NEW' ? 'إضافة سجل جديد' : 'تعديل البيانات'}
@@ -937,10 +965,10 @@ export const AdminView = () => {
                                                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">النطاق الجغرافي / القطاع</label>
                                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 overflow-y-auto max-h-40 p-1">
                                                     <div
-                                                        className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-center text-center text-[11px] font-black ${selectedAreaIds.includes('ALL')
+                                                        className={`p - 3 rounded - 2xl border transition - all cursor - pointer flex items - center justify - center text - center text - [11px] font - black ${selectedAreaIds.includes('ALL')
                                                             ? 'bg-rose-600 text-white border-rose-600 shadow-lg shadow-rose-200'
                                                             : 'bg-white text-slate-500 border-slate-100 hover:border-rose-200'
-                                                            }`}
+                                                            } `}
                                                         onClick={() => {
                                                             const newIds = selectedAreaIds.includes('ALL') ? [] : ['ALL'];
                                                             setSelectedAreaIds(newIds);
@@ -952,10 +980,10 @@ export const AdminView = () => {
                                                     {areas.map(area => (
                                                         <div
                                                             key={area.id}
-                                                            className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-center text-center text-[11px] font-black ${selectedAreaIds.includes(area.id)
+                                                            className={`p - 3 rounded - 2xl border transition - all cursor - pointer flex items - center justify - center text - center text - [11px] font - black ${selectedAreaIds.includes(area.id)
                                                                 ? 'bg-rose-50 text-white border-rose-500 shadow-md'
                                                                 : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300'
-                                                                }`}
+                                                                } `}
                                                             onClick={() => {
                                                                 let newIds = [...selectedAreaIds].filter(id => id !== 'ALL');
                                                                 if (newIds.includes(area.id)) {
@@ -1028,8 +1056,7 @@ export const AdminView = () => {
                                     <div className="flex gap-4 pt-4">
                                         <Button
                                             type="submit"
-                                            className={`flex-1 h-14 rounded-2xl font-black text-white shadow-xl group transition-all ${editingItem.type === 'user' ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-200' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'
-                                                }`}
+                                            className={`flex - 1 h - 14 rounded - 2xl font - black text - white shadow - xl group transition - all ${editingItem.type === 'user' ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-200' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'} `}
                                             disabled={isSaving}
                                         >
                                             {isSaving ? <Loader2 className="h-5 w-5 ml-2 animate-spin" /> : <Save className="h-5 w-5 ml-2 group-hover:scale-110 transition-transform" />}

@@ -109,6 +109,12 @@ export function FinanceView() {
         };
     }, [workers, getWorkerAttendance, month, year]);
 
+    // Stable print metadata - generated on mount to fix purity lint errors
+    const [printMetadata] = useState(() => ({
+        date: new Date().toLocaleDateString('ar-JO'),
+        ref: `PAY-${Math.random().toString(36).substring(7).toUpperCase()}`
+    }));
+
     const handleExportCSV = () => {
         const headers = ["الرقم", "الاسم", "القطاع", "الأيام المحتسبة", "قيمة اليوم", "الصافي المستحق"];
         const rows = approvedPayrolls.map(p => [
@@ -374,61 +380,85 @@ export function FinanceView() {
 
             </div>
 
-            {/* Print Section (Hidden on screen) */}
-            <div className="hidden print:block p-8 bg-white" dir="rtl">
-                <div className="flex justify-between items-center mb-6 border-b-2 pb-4">
-                    <div className="text-right">
-                        <h1 className="text-2xl font-bold mb-1">كشف مسحوبات الرواتب</h1>
-                        <p className="text-gray-600">
-                            الشهر: {month} / {year} | حالة التدقيق: {statusFilter === 'APPROVED' ? 'معتمد نهائياً' : 'بانتظار الصرف'}
-                        </p>
-                        <p className="text-sm mt-1 text-emerald-600 font-bold uppercase">قسم المحاسبة والمالية</p>
+            {/* Printable Area - Standardized Official Layout */}
+            <div className="hidden print:block font-sans">
+                <div className="text-center mb-10 border-b-[6px] border-emerald-900 pb-8">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="text-right">
+                            <h1 className="text-2xl font-bold mb-1">كشف الصرف المالي الشهري</h1>
+                            <p className="text-gray-600 text-xs">
+                                الشهر: {month} / {year} | حالة الاعتماد: مكتملة
+                            </p>
+                            <p className="text-sm mt-1 text-emerald-800 font-bold uppercase">الدائرة المالية والمحاسبية</p>
+                        </div>
+                        <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
+                        <div className="text-left text-sm font-bold text-slate-500">
+                            <p>التاريخ: {printMetadata.date}</p>
+                            <p>الرقم: AD/{printMetadata.ref}</p>
+                        </div>
                     </div>
-                    <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
-                </div>
-                <div className="flex justify-center gap-8 text-sm text-slate-600 font-bold uppercase tracking-widest mb-10">
-                    <span>فترة الاستحقاق: {month}/{year}</span>
-                    <span>القطاع: {areaFilter === "ALL" ? "كافة القطاعات" : areas.find(a => a.id === areaFilter)?.name}</span>
-                    <span>تاريخ الطباعة: {new Date().toLocaleDateString('ar-JO')}</span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-6 mb-10">
-                    <div className="p-6 bg-slate-50 rounded-3xl border border-slate-200">
-                        <p className="text-xs font-black text-slate-400 uppercase mb-1">إجمالي المبلغ</p>
-                        <p className="text-3xl font-black text-slate-900">{stats.totalAmount.toLocaleString()} د.أ</p>
-                    </div>
-                    <div className="p-6 bg-slate-50 rounded-3xl border border-slate-200">
-                        <p className="text-xs font-black text-slate-400 uppercase mb-1">عدد الموظفين</p>
-                        <p className="text-3xl font-black text-slate-900">{approvedPayrolls.length} عامل</p>
-                    </div>
-                    <div className="p-6 bg-slate-50 rounded-3xl border border-slate-200">
-                        <p className="text-xs font-black text-slate-400 uppercase mb-1">مجموع الأيام</p>
-                        <p className="text-3xl font-black text-slate-900">{stats.totalDays} يوم</p>
+                    <h1 className="text-4xl font-black text-slate-900 mb-2">تقرير مسيرات الرواتب والمستحقات</h1>
+                    <div className="flex justify-center gap-12 mt-4 text-slate-600 font-black">
+                        <p>الشهر: <span className="text-emerald-900">{month}</span></p>
+                        <p>السنة: <span className="text-emerald-900">{year}</span></p>
+                        <p>إجمالي المصروفات: <span className="text-emerald-900">{stats.totalAmount.toLocaleString()} د.أ</span></p>
                     </div>
                 </div>
 
-                <table className="w-full border-collapse border border-slate-300">
-                    <thead className="bg-slate-100">
-                        <tr>
-                            <th className="border border-slate-300 p-3 text-right">الاسم</th>
-                            <th className="border border-slate-300 p-3 text-right">القطاع</th>
-                            <th className="border border-slate-300 p-3 text-center">الأيام</th>
-                            <th className="border border-slate-300 p-3 text-center font-black">الصافي (د.أ)</th>
-                            <th className="border border-slate-300 p-3 text-center">التوقيع</th>
+                <table className="w-full border-collapse text-sm mb-12">
+                    <thead>
+                        <tr className="bg-slate-100 font-black border-2 border-slate-900">
+                            <th className="border-2 border-slate-900 p-3 text-right">م</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">اسم العامل</th>
+                            <th className="border-2 border-slate-900 p-3 text-center">أيام العمل</th>
+                            <th className="border-2 border-slate-900 p-3 text-center">أجر اليوم</th>
+                            <th className="border-2 border-slate-900 p-3 text-center font-black bg-slate-50 text-base">صافي المستحق</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {approvedPayrolls.map((p) => (
-                            <tr key={p.worker.id}>
-                                <td className="border border-slate-300 p-3 font-bold">{p.worker.name}</td>
-                                <td className="border border-slate-300 p-3">{p.areaName}</td>
-                                <td className="border border-slate-300 p-3 text-center">{p.record?.totalCalculatedDays || 0}</td>
-                                <td className="border border-slate-300 p-3 text-center font-black">{p.totalAmount.toLocaleString()}</td>
-                                <td className="border border-slate-300 p-3 min-w-[150px]"></td>
+                        {approvedPayrolls.map((p, index) => (
+                            <tr key={p.worker.id} className="border-b-2 border-slate-400">
+                                <td className="border-2 border-slate-900 p-3 text-center font-bold">{index + 1}</td>
+                                <td className="border-2 border-slate-900 p-3 font-black">{p.worker.name}</td>
+                                <td className="border-2 border-slate-900 p-3 text-center">{p.record?.totalCalculatedDays || 0}</td>
+                                <td className="border-2 border-slate-900 p-3 text-center">{p.worker.dayValue}</td>
+                                <td className="border-2 border-slate-900 p-3 text-center font-black bg-slate-50 text-base">
+                                    {p.totalAmount.toLocaleString()} د.أ
+                                </td>
                             </tr>
                         ))}
                     </tbody>
+                    <tfoot>
+                        <tr className="bg-slate-900 text-white font-black border-2 border-slate-900">
+                            <td colSpan={4} className="p-4 text-left text-lg">إجمالي مسير الرواتب العام:</td>
+                            <td className="p-4 text-center text-xl">{stats.totalAmount.toLocaleString()} د.أ</td>
+                        </tr>
+                    </tfoot>
                 </table>
+
+                <div className="grid grid-cols-3 gap-8 mt-20">
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">توقيع المحاسب</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400 text-xs text-left px-8">التوقيع:</p>
+                    </div>
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">مدير الدائرة المالية</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400 text-xs text-left px-8">التوقيع:</p>
+                    </div>
+                    <div className="space-y-16 text-center">
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">اعتماد عطوفة العمدة</p>
+                        <div className="h-20" />
+                        <p className="font-bold text-slate-400 text-[10px] border-2 border-dashed border-slate-200 rounded-full w-24 h-24 flex items-center justify-center mx-auto">ختم رئاسة البلدية</p>
+                    </div>
+                </div>
+
+                <div className="mt-32 pt-8 border-t border-slate-200 text-center">
+                    <p className="text-[10px] text-slate-400 font-mono tracking-widest uppercase">
+                        Financial Support System - Payment Serial: {printMetadata.ref} - Date: {printMetadata.date}
+                    </p>
+                </div>
             </div>
         </>
     );
