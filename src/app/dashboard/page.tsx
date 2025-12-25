@@ -27,9 +27,9 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-10">
+        <div className="min-h-screen bg-gray-50 pb-10 print:bg-white print:min-h-0 print:pb-0">
             <Header />
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print:max-w-none print:w-full print:mx-0 print:px-0 print:py-0">
                 {currentUser.role === "SUPERVISOR" && <SupervisorView />}
                 {currentUser.role === "GENERAL_SUPERVISOR" && <GeneralSupervisorView />}
                 {currentUser.role === "HEALTH_DIRECTOR" && <HealthDirectorView />}

@@ -38,7 +38,7 @@ export default function RootLayout({
       >
         <Providers>
           <ServiceWorkerCleaner />
-          <main className="min-h-screen">
+          <main className="min-h-screen print:min-h-0 print:h-auto">
             {children}
             <SpeedInsights />
           </main>
