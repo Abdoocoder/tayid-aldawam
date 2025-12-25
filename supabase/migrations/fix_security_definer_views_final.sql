@@ -1,29 +1,21 @@
--- Database Consistency Sync (Standardizing Multipliers)
--- Run this in Supabase SQL Editor to ensure all records follow the correct multipliers
+-- ==============================================================================
+-- Fix: Security Definer View Issue (FINAL)
+-- Description: Re-creating 'monthly_summary' and 'payroll_view' with 'security_invoker = true'
+-- This ensures that the view respects the Row Level Security (RLS) policies
+-- of the querying user. 
+-- Includes 'overtime_eid_days' column.
+-- ==============================================================================
 
--- 1. Ensure the trigger function is up to date with the latest multipliers
-CREATE OR REPLACE FUNCTION calculate_total_days()
-RETURNS TRIGGER AS $$
+DO $$
 BEGIN
-    NEW.total_calculated_days = 
-        NEW.normal_days + 
-        (NEW.overtime_normal_days * 0.5) + 
-        (NEW.overtime_holiday_days * 1.0) +
-        (COALESCE(NEW.overtime_eid_days, 0) * 1.0);
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+    RAISE NOTICE 'Applying security fix for views: monthly_summary and payroll_view';
+END $$;
 
--- 2. Force a recalculation for all existing records
--- This triggers the 'BEFORE UPDATE' trigger for every row
-UPDATE public.attendance_records 
-SET updated_at = NOW() 
-WHERE true;
-
--- 3. Verify consistency in views
--- Refresh payroll_view
+-- 1. DROP and RECREATE payroll_view with security_invoker
 DROP VIEW IF EXISTS public.payroll_view;
-CREATE OR REPLACE VIEW public.payroll_view WITH (security_invoker = true) AS
+CREATE OR REPLACE VIEW public.payroll_view
+WITH (security_invoker = true)
+AS
 SELECT 
     w.id,
     w.name,
@@ -43,9 +35,11 @@ FROM public.workers w
 LEFT JOIN public.attendance_records ar ON w.id = ar.worker_id
 ORDER BY w.area_id, w.name;
 
--- Refresh monthly_summary
+-- 2. DROP and RECREATE monthly_summary with security_invoker
 DROP VIEW IF EXISTS public.monthly_summary;
-CREATE OR REPLACE VIEW public.monthly_summary WITH (security_invoker = true) AS
+CREATE OR REPLACE VIEW public.monthly_summary
+WITH (security_invoker = true)
+AS
 SELECT 
     ar.year,
     ar.month,

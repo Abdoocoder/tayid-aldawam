@@ -26,7 +26,7 @@ $$ LANGUAGE plpgsql;
 
 -- 3. UPDATE VIEWS (Drop first to avoid column name change errors)
 DROP VIEW IF EXISTS public.payroll_view;
-CREATE OR REPLACE VIEW public.payroll_view AS
+CREATE OR REPLACE VIEW public.payroll_view WITH (security_invoker = true) AS
 SELECT 
     w.id,
     w.name,
@@ -47,7 +47,7 @@ LEFT JOIN public.attendance_records ar ON w.id = ar.worker_id
 ORDER BY w.area_id, w.name;
 
 DROP VIEW IF EXISTS public.monthly_summary;
-CREATE OR REPLACE VIEW public.monthly_summary AS
+CREATE OR REPLACE VIEW public.monthly_summary WITH (security_invoker = true) AS
 SELECT 
     ar.year,
     ar.month,
