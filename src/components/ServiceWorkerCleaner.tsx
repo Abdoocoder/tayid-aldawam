@@ -10,7 +10,6 @@ export function ServiceWorkerCleaner() {
         ) {
             navigator.serviceWorker.getRegistrations().then((registrations) => {
                 for (const registration of registrations) {
-                    console.log("Unregistering service worker:", registration);
                     registration.unregister();
                 }
             });

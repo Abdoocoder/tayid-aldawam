@@ -71,10 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     if (currentSession.session?.user.id === authUserId) {
                         const { data: recheck } = await supabase.from('users').select('id').eq('auth_user_id', authUserId).maybeSingle();
                         if (!recheck) {
-                            console.log('AuthContext: Confirming missing profile after delay, signing out...');
                             await supabase.auth.signOut();
                         } else {
-                            console.log('AuthContext: Profile appeared after delay, reloading...');
                             loadAppUser(authUserId);
                         }
                     }
@@ -158,7 +156,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 finalEmail = `${prefix}.sv@tayid-attendance.com`;
             }
 
-            console.log(`AuthContext: Attempting signup with email: [${finalEmail}]`);
 
             const { data, error } = await supabase.auth.signUp({
                 email: finalEmail,
@@ -177,7 +174,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 throw error;
             }
 
-            console.log('AuthContext: Signup successful, user ID:', data.user?.id);
 
             if (data.user && data.user.identities && data.user.identities.length === 0) {
                 console.warn('AuthContext: User created but identities are empty. This means the user might already exist in auth.users.');
@@ -186,7 +182,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // --- Robust Profile Ensuring Logic ---
             if (data.user) {
                 const userId = data.user.id;
-                console.log('AuthContext: Ensuring public profile for user:', userId);
 
                 // 1. Check for existing profile by BOTH auth_user_id and username (email)
                 // This covers cases where a user was manually added or is re-registering
@@ -198,7 +193,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 const matchingProfile = existingProfiles && existingProfiles.length > 0 ? existingProfiles[0] : null;
 
                 if (!matchingProfile) {
-                    console.log('AuthContext: No profile found by ID or email, creating new...');
                     const { error: insertError } = await supabase.from('users').insert({
                         auth_user_id: userId,
                         username: finalEmail,
@@ -210,12 +204,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     if (insertError) {
                         console.error('AuthContext: Profile insert failed:', insertError);
                     } else {
-                        console.log('AuthContext: Public profile created successfully.');
                         // Trigger a reload to update UI state
                         loadAppUser(userId);
                     }
                 } else if (!matchingProfile.auth_user_id || matchingProfile.auth_user_id !== userId) {
-                    console.log('AuthContext: Existing profile found with different/missing link, updating...');
                     const { error: updateError } = await supabase
                         .from('users')
                         .update({
@@ -229,11 +221,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     if (updateError) {
                         console.error('AuthContext: Profile update/link failed:', updateError);
                     } else {
-                        console.log('AuthContext: Profile linked successfully.');
                         loadAppUser(userId);
                     }
                 } else {
-                    console.log('AuthContext: Profile already correctly linked.');
                     loadAppUser(userId);
                 }
             }

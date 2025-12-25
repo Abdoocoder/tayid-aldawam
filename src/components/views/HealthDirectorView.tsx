@@ -141,7 +141,6 @@ export function HealthDirectorView() {
         setRejectingIds(prev => new Set(prev).add(recordId));
         try {
             // We use audit log or a field if it exists, but for now we just log it
-            console.log(`Rejecting ${recordId} due to: ${reason}`);
             await rejectAttendance(recordId, 'PENDING_GS');
         } catch (err) {
             console.error(err);

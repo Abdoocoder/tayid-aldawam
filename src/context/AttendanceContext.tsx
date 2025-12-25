@@ -87,7 +87,6 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             const dbWorkers = await workersAPI.getAll();
             const frontendWorkers = dbWorkers.map(workerFromDb);
             setWorkers(frontendWorkers);
-            console.log(`AttendanceContext: Loaded ${frontendWorkers.length} workers`);
         } catch (err) {
             console.error('Failed to load workers:', err);
             throw err;
@@ -99,7 +98,6 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             const dbRecords = await attendanceAPI.getAll();
             const frontendRecords = dbRecords.map(attendanceFromDb);
             setAttendanceRecords(frontendRecords);
-            console.log(`AttendanceContext: Loaded ${frontendRecords.length} attendance records`);
         } catch (err) {
             console.error('Failed to load attendance:', err);
             throw err;
@@ -131,7 +129,6 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         try {
             const dbAreas = await areasAPI.getAll();
             setAreas(dbAreas);
-            console.log(`AttendanceContext: Loaded ${dbAreas.length} areas`);
         } catch (err) {
             console.error('Failed to load areas:', err);
         }
@@ -154,10 +151,8 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     const loadData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
-        console.log(`AttendanceContext: Triggering loadData with role: ${appUser?.role}`);
         try {
             if (!appUser?.isActive) {
-                console.log('AttendanceContext: User is not active, skipping data load');
                 setIsLoading(false);
                 return;
             }
@@ -174,7 +169,6 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             }
 
             await Promise.all(promises);
-            console.log('AttendanceContext: All data loaded successfully');
         } catch (err) {
             console.error('AttendanceContext: Failed to load data:', err);
             setError(err instanceof Error ? err.message : 'فشل تحميل البيانات');
@@ -371,7 +365,6 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
     const rejectAttendance = useCallback(async (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE') => {
         try {
-            console.log(`Rejecting record ${recordId} to ${newStatus}`);
             const { error } = await supabase
                 .from('attendance_records')
                 .update({ status: newStatus })

@@ -49,13 +49,6 @@ export function GeneralSupervisorView() {
         return isCorrectPeriod && isPendingGS && matchesArea && matchesSearch && isResponsibleArea;
     });
 
-    // Debug logs
-    console.log(`GeneralSupervisorView: month=${month}, year=${year}, totalRecords=${attendanceRecords.length}, filtered=${filteredRecords.length}`);
-    if (filteredRecords.length === 0 && attendanceRecords.length > 0) {
-        const sample = attendanceRecords[0];
-        console.log(`Sample record: month=${sample.month}, year=${sample.year}, status=${sample.status}`);
-    }
-
     const handleApprove = async (recordId: string) => {
         setApprovingIds(prev => new Set(prev).add(recordId));
         try {
