@@ -29,14 +29,25 @@ export function SupervisorView() {
     const baseWorkers = workers.filter((w) => {
         if (currentUser?.areaId === 'ALL') return true;
         const isPrimaryArea = w.areaId === currentUser?.areaId;
-        const isInAssignedAreas = currentUser?.areas?.some(a => a.id === w.areaId);
+        // Fix: Check both ID (new) and Name (legacy)
+        const isInAssignedAreas = currentUser?.areas?.some(a => a.id === w.areaId || a.name === w.areaId);
         return isPrimaryArea || isInAssignedAreas;
     });
 
     const filteredWorkers = baseWorkers.filter(w => {
         const matchesSearch = w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             w.id.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesArea = selectedAreaId === "ALL" || w.areaId === selectedAreaId;
+
+        // Fix: Check matches against ID or Name for the selected filter
+        let matchesArea = false;
+        if (selectedAreaId === "ALL") {
+            matchesArea = true;
+        } else {
+            // Find the selected area object to get its name
+            const selectedAreaObj = areas.find(a => a.id === selectedAreaId);
+            matchesArea = w.areaId === selectedAreaId || (selectedAreaObj ? w.areaId === selectedAreaObj.name : false);
+        }
+
         return matchesSearch && matchesArea;
     });
 
