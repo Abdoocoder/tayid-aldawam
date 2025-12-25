@@ -27,24 +27,19 @@ body {
     size: landscape;
     margin: 1cm;
   }
-  
-  body * {
-    visibility: hidden;
-  }
-  
-  .print\:block, .print\:block * {
-    visibility: visible;
-  }
-  
-  .print\:block {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    display: block !important;
-  }
 
+  body {
+    background: white;
+  }
+  
+  /* Hide typical interactive elements automatically */
   .no-print, [role="button"], button {
     display: none !important;
+  }
+
+  /* Ensure print blocks interact correctly with flow */
+  .print\:block {
+    width: 100%;
+    display: block !important;
   }
 }

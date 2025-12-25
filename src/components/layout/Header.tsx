@@ -18,7 +18,7 @@ export function Header() {
     };
 
     return (
-        <header className="bg-white border-b border-gray-200 h-16 px-6 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+        <header className="bg-white border-b border-gray-200 h-16 px-6 flex items-center justify-between sticky top-0 z-10 shadow-sm print:hidden">
             <div className="flex items-center gap-3">
                 <div className="bg-blue-600 p-2 rounded-lg text-white font-bold text-lg">
                     تأييد الدوام
