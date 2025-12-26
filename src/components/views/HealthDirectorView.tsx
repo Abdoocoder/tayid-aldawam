@@ -636,7 +636,7 @@ export function HealthDirectorView() {
                         {filteredRecords.map((record, index) => {
                             const worker = workers.find(w => w.id === record.workerId);
                             const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
-                            const supervisorName = users.find(u => u.role === 'SUPERVISOR' && (u.areaId === worker?.areaId || u.areas?.some(a => a.id === worker?.areaId)))?.name || 'غير محدد';
+                            const supervisorName = supervisors.find(u => u.areaId === worker?.areaId || u.areas?.some(a => a.id === worker?.areaId))?.name || 'غير محدد';
                             return (
                                 <tr key={record.id} className="border-b-2 border-slate-400">
                                     <td className="border-2 border-slate-900 p-4 text-center font-bold">{index + 1}</td>
