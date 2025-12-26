@@ -254,8 +254,8 @@ export function SupervisorView() {
                                                         ) : "بانتظار الإدخال"}
                                                     </span>
                                                 </div>
-                                                <Link href={`/ dashboard / entry / ${worker.id}?month = ${month}& year=${year} `}>
-                                                    <Button size="sm" className={`h - 9 px - 5 rounded - xl font - black shadow - lg transition - all active: scale - 95 ${!isFilled ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-200 text-white' : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-100'} `}>
+                                                <Link href={`/dashboard/entry/${worker.id}?month=${month}&year=${year}`}>
+                                                    <Button size="sm" className={`h-9 px-5 rounded-xl font-black shadow-lg transition-all active:scale-95 ${!isFilled ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-200 text-white' : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-100'}`}>
                                                         {isFilled ? (record.status === 'PENDING_SUPERVISOR' ? "تصحيح" : "تعديل") : "إدخال الحضور"}
                                                     </Button>
                                                 </Link>
