@@ -219,11 +219,11 @@ export function SupervisorView() {
                             const areaName = areas.find(a => a.id === worker.areaId)?.name || "غير محدد";
 
                             return (
-                                <Card key={worker.id} className={`group hover: shadow - 2xl transition - all duration - 300 relative overflow - hidden border - none rounded - 3xl ${isFilled ? 'bg-gradient-to-br from-white to-emerald-50/30' : 'bg-white shadow-xl shadow-slate-200/50'} `}>
+                                <Card key={worker.id} className={`group hover:shadow-2xl transition-all duration-300 relative overflow-hidden border-none rounded-3xl ${isFilled ? 'bg-gradient-to-br from-white to-emerald-50/30' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
                                     <CardContent className="p-0">
                                         <div className="p-5 flex items-center justify-between">
                                             <div className="flex items-center gap-3">
-                                                <div className={`p - 3 rounded - 2xl transition - all duration - 300 ${isFilled ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-50 text-blue-600'} `}>
+                                                <div className={`p-3 rounded-2xl transition-all duration-300 ${isFilled ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
                                                     <User className="h-5 w-5" />
                                                 </div>
                                                 <div>
@@ -244,7 +244,7 @@ export function SupervisorView() {
                                             <div className="flex items-center justify-between gap-3 bg-slate-50/50 p-2.5 rounded-2xl border border-slate-100">
                                                 <div className="flex flex-col">
                                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">الحالة</span>
-                                                    <span className={`text - [11px] font - black ${isFilled ? 'text-emerald-600' : 'text-amber-600'} `}>
+                                                    <span className={`text-[11px] font-black ${isFilled ? 'text-emerald-600' : 'text-amber-600'}`}>
                                                         {isFilled ? (
                                                             record.status === 'PENDING_GS' ? "بانتظار المشرف العام" :
                                                                 record.status === 'PENDING_HR' ? "بانتظار الموارد" :
