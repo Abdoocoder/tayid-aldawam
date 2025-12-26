@@ -26,8 +26,11 @@ import {
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 
+type TabType = 'pending' | 'hr_forwarded' | 'gs_stage' | 'cost_analysis' | 'anomalies';
+
 export function HealthDirectorView() {
     const { currentUser, workers, attendanceRecords, areas, approveAttendance, rejectAttendance, isLoading, users } = useAttendance();
+    const [activeTab, setActiveTab] = useState<TabType>('pending');
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [searchTerm, setSearchTerm] = useState("");
@@ -62,6 +65,7 @@ export function HealthDirectorView() {
             supervisor: 0,
             general: 0,
             health: 0,
+            hrForwarded: 0,
             completed: 0,
             totalCost: currentCost,
             costDiff,
@@ -72,6 +76,7 @@ export function HealthDirectorView() {
             if (r.status === 'PENDING_SUPERVISOR') stats.supervisor++;
             else if (r.status === 'PENDING_GS') stats.general++;
             else if (r.status === 'PENDING_HEALTH') stats.health++;
+            else if (r.status === 'PENDING_HR') stats.hrForwarded++;
             else stats.completed++;
 
             if (r.totalCalculatedDays > 30 || r.overtimeNormalDays > 15 || r.overtimeHolidayDays > 10) {
@@ -88,7 +93,20 @@ export function HealthDirectorView() {
             if (!worker) return false;
 
             const isCorrectPeriod = r.month === month && r.year === year;
-            const isPendingHealth = r.status === 'PENDING_HEALTH';
+
+            // Tab-based status filtering
+            let matchesTab = false;
+            if (activeTab === 'pending') {
+                matchesTab = r.status === 'PENDING_HEALTH';
+            } else if (activeTab === 'hr_forwarded') {
+                matchesTab = r.status === 'PENDING_HR';
+            } else if (activeTab === 'gs_stage') {
+                matchesTab = r.status === 'PENDING_GS';
+            } else if (activeTab === 'anomalies') {
+                matchesTab = true; // Show all for anomalies tab, will filter by anomaly condition
+            } else if (activeTab === 'cost_analysis') {
+                matchesTab = true; // Show all for cost analysis
+            }
 
             // Hierarchy filter
             const matchesArea = selectedAreaId === 'ALL' || worker.areaId === selectedAreaId;
@@ -102,9 +120,12 @@ export function HealthDirectorView() {
             const isAnomaly = r.totalCalculatedDays > 30 || r.overtimeNormalDays > 15 || r.overtimeHolidayDays > 10;
             const matchesAnomaly = !showAnomaliesOnly || isAnomaly;
 
-            return isCorrectPeriod && isPendingHealth && matchesArea && matchesSupervisor && matchesSearch && matchesAnomaly;
+            // For anomalies tab, only show anomalies
+            const matchesAnomalyTab = activeTab !== 'anomalies' || isAnomaly;
+
+            return isCorrectPeriod && matchesTab && matchesArea && matchesSupervisor && matchesSearch && matchesAnomaly && matchesAnomalyTab;
         });
-    }, [attendanceRecords, workers, month, year, selectedAreaId, selectedSupervisorId, searchTerm, showAnomaliesOnly, supervisors]);
+    }, [attendanceRecords, workers, month, year, activeTab, selectedAreaId, selectedSupervisorId, searchTerm, showAnomaliesOnly, supervisors]);
 
     const handleApprove = async (recordId: string) => {
         setApprovingIds(prev => new Set(prev).add(recordId));
@@ -245,6 +266,40 @@ export function HealthDirectorView() {
                     ))}
                 </div>
 
+                {/* Tab Navigation - Violet & Slate Theme */}
+                <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] shadow-xl shadow-slate-200/40 border border-white/40 p-3">
+                    <div className="flex flex-wrap gap-2">
+                        {[
+                            { id: 'pending' as TabType, label: 'بانتظار اعتمادك', icon: Activity, count: analytics.health, color: 'emerald' },
+                            { id: 'hr_forwarded' as TabType, label: 'تم التحويل للموارد', icon: CheckCircle2, count: analytics.hrForwarded, color: 'indigo' },
+                            { id: 'gs_stage' as TabType, label: 'مرحلة المراقب العام', icon: ShieldCheck, count: analytics.general, color: 'violet' },
+                            { id: 'cost_analysis' as TabType, label: 'تحليل التكاليف', icon: Coins, count: null, color: 'amber' },
+                            { id: 'anomalies' as TabType, label: 'التنبيهات', icon: AlertTriangle, count: analytics.anomalies, color: 'rose' },
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`group relative flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-sm transition-all duration-300 ${activeTab === tab.id
+                                    ? `bg-white text-${tab.color}-600 shadow-lg shadow-${tab.color}-200 ring-1 ring-${tab.color}-100 scale-[1.02]`
+                                    : 'text-slate-500 hover:text-slate-900 hover:bg-white/40'
+                                    }`}
+                            >
+                                <tab.icon className={`h-5 w-5 transition-transform group-hover:scale-110 ${activeTab === tab.id ? `text-${tab.color}-600` : 'text-slate-400 group-hover:text-slate-600'
+                                    }`} />
+                                <span>{tab.label}</span>
+                                {tab.count !== null && tab.count > 0 && (
+                                    <span className={`px-2.5 py-1 rounded-lg text-xs font-black ${activeTab === tab.id
+                                        ? `bg-${tab.color}-50 text-${tab.color}-700`
+                                        : 'bg-slate-100 text-slate-600'
+                                        }`}>
+                                        {tab.count}
+                                    </span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
                 {/* Main Action Area */}
                 <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden transition-all duration-500">
                     <div className="p-8 border-b border-slate-50 flex flex-col xl:flex-row justify-between items-center gap-6 bg-slate-50/30">
@@ -315,149 +370,228 @@ export function HealthDirectorView() {
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-right">
-                            <thead>
-                                <tr className="bg-slate-50/50 text-slate-400 text-[11px] font-black uppercase tracking-widest border-b border-slate-100">
-                                    <th className="p-6">الموظف / المسؤول</th>
-                                    <th className="p-6">المنطقة</th>
-                                    <th className="p-3 md:p-4 border-b text-center">أيام عادية</th>
-                                    <th className="p-3 md:p-4 border-b text-center">إضافي عادي (x0.5)</th>
-                                    <th className="p-3 md:p-4 border-b text-center">إضافي عطل (x1.0)</th>
-                                    <th className="p-3 md:p-4 border-b text-center">أيام أعياد (x1.0)</th>
-                                    <th className="p-3 md:p-4 border-b text-center">الإجمالي</th>
-                                    <th className="p-6 text-center">حالة التدقيق</th>
-                                    <th className="p-6 text-center">القرار الإداري</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {filteredRecords.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={7} className="p-32 text-center">
-                                            <div className="flex flex-col items-center gap-6 group">
-                                                <div className="bg-slate-50 p-8 rounded-[2.5rem] group-hover:scale-110 transition-transform duration-500">
-                                                    <ShieldCheck className="h-20 w-20 text-slate-200" />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <p className="text-2xl font-black text-slate-300">لا توجد سجلات تحتاج للاعتماد</p>
-                                                    <p className="text-slate-400 font-bold">كل شيء يبدو منظماً بشكل رائع</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    filteredRecords.map(record => {
-                                        const worker = workers.find(w => w.id === record.workerId);
-                                        const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
-                                        return (
-                                            <tr key={record.id} className="hover:bg-emerald-50/30 transition-all group/row">
-                                                <td className="p-6">
-                                                    <div className="flex items-center gap-3">
-                                                        {(record.totalCalculatedDays > 30 || record.overtimeNormalDays > 15 || record.overtimeHolidayDays > 10) && (
-                                                            <div className="bg-rose-100 p-2 rounded-full animate-pulse shadow-sm shadow-rose-200">
-                                                                <AlertTriangle className="h-5 w-5 text-rose-600" />
+                    {activeTab === 'cost_analysis' ? (
+                        // Cost Analysis View
+                        <div className="p-8">
+                            <div className="mb-8 text-center">
+                                <h3 className="text-2xl font-black text-slate-900 mb-2">تحليل التكاليف التفصيلي</h3>
+                                <p className="text-slate-500 font-bold">تقرير شامل للتكاليف حسب المنطقة والقطاع - {month}/{year}</p>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-right">
+                                    <thead>
+                                        <tr className="bg-amber-50/50 text-amber-900 text-xs font-black uppercase tracking-widest border-b-2 border-amber-200">
+                                            <th className="p-6">المنطقة/القطاع</th>
+                                            <th className="p-6 text-center">عدد السجلات</th>
+                                            <th className="p-6 text-center">أيام عادية</th>
+                                            <th className="p-6 text-center">إضافي عادي</th>
+                                            <th className="p-6 text-center">إضافي عطل</th>
+                                            <th className="p-6 text-center">الإجمالي الأيام</th>
+                                            <th className="p-6 text-center">التكلفة الإجمالية</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {areas.map(area => {
+                                            const areaRecords = attendanceRecords.filter(r => {
+                                                const worker = workers.find(w => w.id === r.workerId);
+                                                return worker?.areaId === area.id && r.month === month && r.year === year;
+                                            });
+
+                                            if (areaRecords.length === 0) return null;
+
+                                            const normalDays = areaRecords.reduce((sum, r) => sum + r.normalDays, 0);
+                                            const overtimeNormal = areaRecords.reduce((sum, r) => sum + r.overtimeNormalDays, 0);
+                                            const overtimeHoliday = areaRecords.reduce((sum, r) => sum + r.overtimeHolidayDays, 0);
+                                            const totalDays = areaRecords.reduce((sum, r) => sum + r.totalCalculatedDays, 0);
+                                            const totalCost = areaRecords.reduce((sum, r) => {
+                                                const worker = workers.find(w => w.id === r.workerId);
+                                                return sum + (r.totalCalculatedDays * (worker?.dayValue || 0));
+                                            }, 0);
+
+                                            return (
+                                                <tr key={area.id} className="hover:bg-amber-50/20 transition-all group">
+                                                    <td className="p-6">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="bg-amber-100 p-2 rounded-xl">
+                                                                <MapPin className="h-5 w-5 text-amber-600" />
                                                             </div>
-                                                        )}
-                                                        <div>
-                                                            <div className="font-black text-slate-900 group-hover/row:text-emerald-700 transition-colors text-lg tracking-tight">
-                                                                {worker?.name}
-                                                            </div>
-                                                            <div className="flex items-center gap-2 mt-1">
-                                                                <span className="text-[10px] font-mono font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
-                                                                    ID: {worker?.id}
-                                                                </span>
-                                                                <span className="text-[9px] font-bold text-slate-500 flex items-center gap-1">
-                                                                    <UserIcon className="h-3 w-3" />
-                                                                    المراقب: {users.find(u => u.role === 'SUPERVISOR' && (u.areaId === worker?.areaId || u.areas?.some(a => a.id === worker?.areaId)))?.name || 'غير محدد'}
-                                                                </span>
-                                                            </div>
+                                                            <span className="font-black text-slate-800">{area.name}</span>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td className="p-6">
-                                                    <div className="flex items-center gap-2 text-slate-600 font-bold">
-                                                        <div className="bg-slate-100 p-2 rounded-xl">
-                                                            <MapPin className="h-4 w-4 text-slate-400" />
-                                                        </div>
-                                                        {areaName}
-                                                    </div>
-                                                </td>
-                                                <td className="p-6 text-center">
-                                                    <span className="text-xl font-black text-slate-700">{record.normalDays}</span>
-                                                </td>
-                                                <td className="p-6 text-center">
-                                                    <Badge className="bg-blue-50 text-blue-700 border-blue-100 font-black px-3 py-1 rounded-xl">
-                                                        {record.overtimeNormalDays} ع
-                                                    </Badge>
-                                                </td>
-                                                <td className="p-6 text-center">
-                                                    <Badge className="bg-amber-50 text-amber-700 border-amber-100 font-black px-3 py-1 rounded-xl">
-                                                        {record.overtimeHolidayDays} ط
-                                                    </Badge>
-                                                </td>
-                                                <td className="p-6 text-center">
-                                                    <Badge className="bg-purple-50 text-purple-700 border-purple-100 font-black px-4 py-1.5 rounded-xl text-sm">
-                                                        {record.overtimeEidDays || 0} يوم
-                                                    </Badge>
-                                                </td>
-                                                <td className="p-6 text-center">
-                                                    <div className={`inline-flex flex-col items-center bg-gradient-to-br ${record.totalCalculatedDays > 30 ? 'from-rose-600 to-rose-800' : 'from-emerald-600 to-emerald-800'} text-white px-6 py-2 rounded-2xl font-black shadow-lg shadow-emerald-200 ring-4 ring-emerald-50`}>
-                                                        <span className="text-xl leading-none">{record.totalCalculatedDays}</span>
-                                                        <span className="text-[10px] font-bold opacity-80 mt-0.5 uppercase tracking-tighter">يوم استحقاق</span>
-                                                    </div>
-                                                </td>
-                                                <td className="p-6 text-center">
-                                                    <div className="flex flex-col items-center gap-1">
-                                                        <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 font-black px-3 py-1 rounded-xl flex gap-1 items-center">
-                                                            <ShieldCheck className="h-3 w-3" />
-                                                            دققها المراقب العام
+                                                    </td>
+                                                    <td className="p-6 text-center">
+                                                        <Badge className="bg-amber-50 text-amber-700 border border-amber-200 font-black">
+                                                            {areaRecords.length} سجل
                                                         </Badge>
-                                                        <span className="text-[9px] font-bold text-slate-400 flex items-center gap-1 mt-1">
-                                                            <History className="h-3 w-3" />
-                                                            {new Date(record.updatedAt).toLocaleTimeString('ar-JO', { hour: '2-digit', minute: '2-digit' })} - {new Date(record.updatedAt).toLocaleDateString('ar-JO')}
-                                                        </span>
+                                                    </td>
+                                                    <td className="p-6 text-center font-bold text-slate-700">{normalDays.toFixed(1)}</td>
+                                                    <td className="p-6 text-center font-bold text-slate-700">{overtimeNormal.toFixed(1)}</td>
+                                                    <td className="p-6 text-center font-bold text-slate-700">{overtimeHoliday.toFixed(1)}</td>
+                                                    <td className="p-6 text-center font-black text-slate-900 text-lg">{totalDays.toFixed(1)}</td>
+                                                    <td className="p-6 text-center">
+                                                        <div className="font-black text-amber-600 text-lg">
+                                                            {totalCost.toLocaleString()} <span className="text-sm">د.أ</span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                        <tr className="bg-amber-100/50 font-black border-t-2 border-amber-300">
+                                            <td className="p-6 text-lg" colSpan={6}>الإجمالي الكلي</td>
+                                            <td className="p-6 text-center text-xl text-amber-700">
+                                                {analytics.totalCost.toLocaleString()} <span className="text-base">د.أ</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ) : (
+                        // Regular table view for other tabs
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-right">
+                                <thead>
+                                    <tr className="bg-slate-50/50 text-slate-400 text-[11px] font-black uppercase tracking-widest border-b border-slate-100">
+                                        <th className="p-6">الموظف / المسؤول</th>
+                                        <th className="p-6">المنطقة</th>
+                                        <th className="p-3 md:p-4 border-b text-center">أيام عادية</th>
+                                        <th className="p-3 md:p-4 border-b text-center">إضافي عادي (x0.5)</th>
+                                        <th className="p-3 md:p-4 border-b text-center">إضافي عطل (x1.0)</th>
+                                        <th className="p-3 md:p-4 border-b text-center">أيام أعياد (x1.0)</th>
+                                        <th className="p-3 md:p-4 border-b text-center">الإجمالي</th>
+                                        <th className="p-6 text-center">حالة التدقيق</th>
+                                        <th className="p-6 text-center">القرار الإداري</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50">
+                                    {filteredRecords.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="p-32 text-center">
+                                                <div className="flex flex-col items-center gap-6 group">
+                                                    <div className="bg-slate-50 p-8 rounded-[2.5rem] group-hover:scale-110 transition-transform duration-500">
+                                                        <ShieldCheck className="h-20 w-20 text-slate-200" />
                                                     </div>
-                                                </td>
-                                                <td className="p-6 text-center">
-                                                    <div className="flex justify-center gap-3">
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() => handleApprove(record.id)}
-                                                            disabled={approvingIds.has(record.id)}
-                                                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-black h-12 px-6 rounded-2xl shadow-xl shadow-emerald-200 transition-all hover:scale-105 active:scale-95"
-                                                        >
-                                                            {approvingIds.has(record.id) ? (
-                                                                <Loader2 className="h-5 w-5 animate-spin" />
-                                                            ) : (
-                                                                <div className="flex items-center gap-2">
-                                                                    <CheckCircle2 className="h-5 w-5" />
-                                                                    اعتماد الإدارة
+                                                    <div className="space-y-2">
+                                                        <p className="text-2xl font-black text-slate-300">لا توجد سجلات تحتاج للاعتماد</p>
+                                                        <p className="text-slate-400 font-bold">كل شيء يبدو منظماً بشكل رائع</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredRecords.map(record => {
+                                            const worker = workers.find(w => w.id === record.workerId);
+                                            const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
+                                            return (
+                                                <tr key={record.id} className="hover:bg-emerald-50/30 transition-all group/row">
+                                                    <td className="p-6">
+                                                        <div className="flex items-center gap-3">
+                                                            {(record.totalCalculatedDays > 30 || record.overtimeNormalDays > 15 || record.overtimeHolidayDays > 10) && (
+                                                                <div className="bg-rose-100 p-2 rounded-full animate-pulse shadow-sm shadow-rose-200">
+                                                                    <AlertTriangle className="h-5 w-5 text-rose-600" />
                                                                 </div>
                                                             )}
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            onClick={() => handleReject(record.id)}
-                                                            disabled={rejectingIds.has(record.id) || approvingIds.has(record.id)}
-                                                            className="h-12 w-12 p-0 text-rose-500 hover:bg-rose-50 hover:text-rose-700 font-bold rounded-2xl transition-colors"
-                                                            title="رفض وإعادة للمراقب العام"
-                                                        >
-                                                            {rejectingIds.has(record.id) ? (
-                                                                <Loader2 className="h-5 w-5 animate-spin text-rose-500" />
-                                                            ) : (
-                                                                <XCircle className="h-6 w-6" />
-                                                            )}
-                                                        </Button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                                            <div>
+                                                                <div className="font-black text-slate-900 group-hover/row:text-emerald-700 transition-colors text-lg tracking-tight">
+                                                                    {worker?.name}
+                                                                </div>
+                                                                <div className="flex items-center gap-2 mt-1">
+                                                                    <span className="text-[10px] font-mono font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
+                                                                        ID: {worker?.id}
+                                                                    </span>
+                                                                    <span className="text-[9px] font-bold text-slate-500 flex items-center gap-1">
+                                                                        <UserIcon className="h-3 w-3" />
+                                                                        المراقب: {users.find(u => u.role === 'SUPERVISOR' && (u.areaId === worker?.areaId || u.areas?.some(a => a.id === worker?.areaId)))?.name || 'غير محدد'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-6">
+                                                        <div className="flex items-center gap-2 text-slate-600 font-bold">
+                                                            <div className="bg-slate-100 p-2 rounded-xl">
+                                                                <MapPin className="h-4 w-4 text-slate-400" />
+                                                            </div>
+                                                            {areaName}
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-6 text-center">
+                                                        <span className="text-xl font-black text-slate-700">{record.normalDays}</span>
+                                                    </td>
+                                                    <td className="p-6 text-center">
+                                                        <Badge className="bg-blue-50 text-blue-700 border-blue-100 font-black px-3 py-1 rounded-xl">
+                                                            {record.overtimeNormalDays} ع
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="p-6 text-center">
+                                                        <Badge className="bg-amber-50 text-amber-700 border-amber-100 font-black px-3 py-1 rounded-xl">
+                                                            {record.overtimeHolidayDays} ط
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="p-6 text-center">
+                                                        <Badge className="bg-purple-50 text-purple-700 border-purple-100 font-black px-4 py-1.5 rounded-xl text-sm">
+                                                            {record.overtimeEidDays || 0} يوم
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="p-6 text-center">
+                                                        <div className={`inline-flex flex-col items-center bg-gradient-to-br ${record.totalCalculatedDays > 30 ? 'from-rose-600 to-rose-800' : 'from-emerald-600 to-emerald-800'} text-white px-6 py-2 rounded-2xl font-black shadow-lg shadow-emerald-200 ring-4 ring-emerald-50`}>
+                                                            <span className="text-xl leading-none">{record.totalCalculatedDays}</span>
+                                                            <span className="text-[10px] font-bold opacity-80 mt-0.5 uppercase tracking-tighter">يوم استحقاق</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-6 text-center">
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 font-black px-3 py-1 rounded-xl flex gap-1 items-center">
+                                                                <ShieldCheck className="h-3 w-3" />
+                                                                دققها المراقب العام
+                                                            </Badge>
+                                                            <span className="text-[9px] font-bold text-slate-400 flex items-center gap-1 mt-1">
+                                                                <History className="h-3 w-3" />
+                                                                {new Date(record.updatedAt).toLocaleTimeString('ar-JO', { hour: '2-digit', minute: '2-digit' })} - {new Date(record.updatedAt).toLocaleDateString('ar-JO')}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-6 text-center">
+                                                        <div className="flex justify-center gap-3">
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() => handleApprove(record.id)}
+                                                                disabled={approvingIds.has(record.id)}
+                                                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-black h-12 px-6 rounded-2xl shadow-xl shadow-emerald-200 transition-all hover:scale-105 active:scale-95"
+                                                            >
+                                                                {approvingIds.has(record.id) ? (
+                                                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                                                ) : (
+                                                                    <div className="flex items-center gap-2">
+                                                                        <CheckCircle2 className="h-5 w-5" />
+                                                                        اعتماد الإدارة
+                                                                    </div>
+                                                                )}
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                onClick={() => handleReject(record.id)}
+                                                                disabled={rejectingIds.has(record.id) || approvingIds.has(record.id)}
+                                                                className="h-12 w-12 p-0 text-rose-500 hover:bg-rose-50 hover:text-rose-700 font-bold rounded-2xl transition-colors"
+                                                                title="رفض وإعادة للمراقب العام"
+                                                            >
+                                                                {rejectingIds.has(record.id) ? (
+                                                                    <Loader2 className="h-5 w-5 animate-spin text-rose-500" />
+                                                                ) : (
+                                                                    <XCircle className="h-6 w-6" />
+                                                                )}
+                                                            </Button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
 
             </div>
