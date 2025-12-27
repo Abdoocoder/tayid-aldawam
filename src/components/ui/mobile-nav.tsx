@@ -49,7 +49,7 @@ export function MobileNav<T extends string = string>({ isOpen, onClose, items, a
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] md:hidden">
+        <div className="fixed inset-0 z-[100] md:hidden print:hidden">
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
@@ -94,8 +94,14 @@ export function MobileNav<T extends string = string>({ isOpen, onClose, items, a
                         <button
                             key={item.id}
                             onClick={() => {
-                                onTabChange(item.id);
-                                onClose();
+                                // If it's a print action, close menu first then wait a bit for DOM to update
+                                if (item.id === 'print' || item.id === 'report') {
+                                    onClose();
+                                    setTimeout(() => onTabChange(item.id), 500);
+                                } else {
+                                    onTabChange(item.id);
+                                    onClose();
+                                }
                             }}
                             className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition-all duration-300 ${activeTab === item.id
                                 ? 'bg-blue-50 text-blue-600 shadow-sm border border-blue-100'

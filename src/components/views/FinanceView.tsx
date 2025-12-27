@@ -187,7 +187,7 @@ export function FinanceView() {
                 items={navItems}
                 activeTab="overview"
                 onTabChange={(id) => id === 'report' ? window.print() : null}
-                user={{ name: currentUser?.name || "عطوفة العمدة", role: "رئاسة البلدية" }}
+                user={{ name: currentUser?.name || "مدير المالية", role: "الدائرة المالية" }}
             />
 
             <div className="space-y-6 pb-24 print:hidden">
