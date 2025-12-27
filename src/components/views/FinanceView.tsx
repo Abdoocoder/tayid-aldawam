@@ -17,14 +17,16 @@ import {
     TrendingUp,
     CheckCircle,
     Loader2,
-    Clock
+    Clock,
+    Menu
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MobileNav } from "../ui/mobile-nav";
 
 export function FinanceView() {
-    const { workers, getWorkerAttendance, isLoading, error, areas, approveAttendance, rejectAttendance } = useAttendance();
+    const { currentUser, workers, getWorkerAttendance, isLoading, error, areas, approveAttendance, rejectAttendance } = useAttendance();
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [searchTerm, setSearchTerm] = useState("");
@@ -32,6 +34,7 @@ export function FinanceView() {
     const [statusFilter, setStatusFilter] = useState<'PENDING_FINANCE' | 'APPROVED'>('PENDING_FINANCE');
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
+    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
     // Filter workers based on search and area
     const approvedPayrolls = workers.map(w => {
@@ -115,6 +118,11 @@ export function FinanceView() {
         ref: `PAY-${Math.random().toString(36).substring(7).toUpperCase()}`
     }));
 
+    const navItems = [
+        { id: 'PENDING_FINANCE', label: 'بانتظار الاعتماد المالي', icon: Clock },
+        { id: 'APPROVED', label: 'الكشوف المعتمدة', icon: CheckCircle },
+    ];
+
     const handleExportCSV = () => {
         const headers = ["الرقم", "الاسم", "القطاع", "الأيام المحتسبة", "قيمة اليوم", "الصافي المستحق"];
         const rows = approvedPayrolls.map(p => [
@@ -173,10 +181,19 @@ export function FinanceView() {
 
     return (
         <>
+            <MobileNav
+                isOpen={isMobileNavOpen}
+                onClose={() => setIsMobileNavOpen(false)}
+                items={navItems}
+                activeTab="overview"
+                onTabChange={(id) => id === 'report' ? window.print() : null}
+                user={{ name: currentUser?.name || "عطوفة العمدة", role: "رئاسة البلدية" }}
+            />
+
             <div className="space-y-6 pb-24 print:hidden">
                 {/* Header section - Sticky & Premium Glass */}
                 <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="max-w-7xl mx-auto flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <div className="bg-gradient-to-br from-amber-600 to-yellow-600 p-2.5 rounded-2xl text-white shadow-lg shadow-amber-500/20">
                                 <Banknote className="h-5 w-5" />
@@ -190,10 +207,19 @@ export function FinanceView() {
                             </div>
                         </div>
 
+                        {/* Desktop & Mobile Control */}
                         <div className="flex items-center gap-3">
-                            <div className="bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner">
+                            <div className="hidden md:block bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner">
                                 <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                             </div>
+
+                            {/* Mobile Menu Trigger */}
+                            <button
+                                onClick={() => setIsMobileNavOpen(true)}
+                                className="md:hidden p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
+                            >
+                                <Menu className="h-6 w-6" />
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -250,13 +276,19 @@ export function FinanceView() {
 
                     <div className="flex flex-wrap lg:flex-nowrap items-center gap-2">
                         <select
-                            className="h-12 bg-white/80 backdrop-blur-md border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[200px] outline-none px-4 transition-all"
+                            className="hidden md:block h-12 bg-white/80 backdrop-blur-md border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[200px] outline-none px-4 transition-all"
                             value={statusFilter}
                             onChange={e => setStatusFilter(e.target.value as 'PENDING_FINANCE' | 'APPROVED')}
                         >
                             <option value="PENDING_FINANCE">📊 بانتظار الاعتماد المالي</option>
                             <option value="APPROVED">✅ الكشوف المعتمدة</option>
                         </select>
+
+                        <div className="md:hidden flex-1">
+                            <div className="bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner w-full">
+                                <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
+                            </div>
+                        </div>
 
                         <select
                             className="h-12 bg-white/80 backdrop-blur-md border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[160px] outline-none px-4 transition-all"

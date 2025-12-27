@@ -6,6 +6,7 @@ import { MonthYearPicker } from "../ui/month-year-picker";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { Badge } from "../ui/badge";
+import { MobileNav } from "../ui/mobile-nav";
 import {
     Activity,
     Users,
@@ -17,13 +18,21 @@ import {
     Briefcase,
     Landmark,
     Target,
-    Printer
+    Printer,
+    Menu,
+    LayoutDashboard
 } from "lucide-react";
 
 export function MayorView() {
-    const { workers, attendanceRecords, areas, isLoading } = useAttendance();
+    const { currentUser, workers, attendanceRecords, areas, isLoading } = useAttendance();
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
+    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+    const navItems = [
+        { id: 'overview', label: 'نظرة استراتيجية', icon: LayoutDashboard },
+        { id: 'report', label: 'تقرير استراتيجي', icon: Printer },
+    ];
 
     // Stable print metadata - generated on mount to fix purity lint errors
     const [printMetadata] = useState(() => ({
@@ -107,10 +116,19 @@ export function MayorView() {
 
     return (
         <>
+            <MobileNav
+                isOpen={isMobileNavOpen}
+                onClose={() => setIsMobileNavOpen(false)}
+                items={navItems}
+                activeTab="overview"
+                onTabChange={(id) => id === 'report' ? window.print() : null}
+                user={{ name: currentUser?.name || "عطوفة العمدة", role: "رئاسة البلدية" }}
+            />
+
             <div className="space-y-6 pb-24 print:hidden">
                 {/* Executive Header - Ultra Premium Glass */}
                 <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="max-w-7xl mx-auto flex justify-between items-center">
                         <div className="flex items-center gap-4">
                             <div className="bg-gradient-to-br from-fuchsia-600 to-purple-700 p-2.5 rounded-2xl text-white shadow-xl shadow-fuchsia-500/20 ring-1 ring-white/30">
                                 <ShieldCheck className="h-5 w-5" />
@@ -129,14 +147,30 @@ export function MayorView() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => window.print()}
-                                className="hidden sm:flex gap-2 text-fuchsia-600 hover:bg-fuchsia-50 rounded-xl"
+                                className="hidden md:flex gap-2 text-fuchsia-600 hover:bg-fuchsia-50 rounded-xl font-black"
                             >
                                 <Printer className="h-4 w-4" />
-                                <span className="text-xs font-black">تقرير استراتيجي</span>
+                                <span className="text-xs">تقرير استراتيجي</span>
                             </Button>
-                            <div className="flex-1">
+
+                            <div className="hidden md:block">
                                 <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                             </div>
+
+                            {/* Mobile Menu Trigger */}
+                            <button
+                                onClick={() => setIsMobileNavOpen(true)}
+                                className="md:hidden p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
+                            >
+                                <Menu className="h-6 w-6" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Mobile Date Picker Bar */}
+                    <div className="md:hidden mt-3 px-1">
+                        <div className="bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner w-full">
+                            <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                         </div>
                     </div>
                 </div>

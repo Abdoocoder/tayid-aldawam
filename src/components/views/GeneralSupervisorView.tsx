@@ -4,12 +4,14 @@ import React, { useState } from "react";
 import { useAttendance } from "@/context/AttendanceContext";
 import { MonthYearPicker } from "../ui/month-year-picker";
 import { Button } from "../ui/button";
+import { MobileNav } from "../ui/mobile-nav";
 import {
-    Clock,
     Search,
     Printer,
     ShieldCheck,
-    Loader2
+    Loader2,
+    CheckCircle,
+    Menu
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
@@ -19,6 +21,12 @@ export function GeneralSupervisorView() {
     const { currentUser, workers, attendanceRecords, areas, approveAttendance, rejectAttendance, isLoading } = useAttendance();
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
+    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+    const navItems = [
+        { id: 'overview', label: 'اعتمادات المراقبين', icon: ShieldCheck },
+        { id: 'print', label: 'طباعة كشف', icon: Printer },
+    ];
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedAreaId, setSelectedAreaId] = useState<string>("ALL");
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
@@ -88,7 +96,7 @@ export function GeneralSupervisorView() {
 
     const handleBulkApprove = async () => {
         const ids = filteredRecords.map(r => r.id);
-        const confirmBulk = confirm(`هل أنت متأكد من اعتماد ${ids.length} سجلات حفل واحد؟`);
+        const confirmBulk = confirm(`هل أنت متأكد من اعتماد ${ids.length} سجلات دفعة واحدة؟`);
         if (!confirmBulk) return;
 
         for (const id of ids) {
@@ -106,11 +114,20 @@ export function GeneralSupervisorView() {
 
     return (
         <>
+            <MobileNav
+                isOpen={isMobileNavOpen}
+                onClose={() => setIsMobileNavOpen(false)}
+                items={navItems}
+                activeTab="overview"
+                onTabChange={(id) => id === 'print' ? window.print() : null}
+                user={{ name: currentUser?.name || "المراقب العام", role: "مراقب عام البلدية" }}
+            />
+
             <div className="space-y-6 pb-24 print:hidden">
                 {/* Header & Month Picker - Sticky and Glassmorphic */}
                 <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
-                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="max-w-7xl mx-auto flex justify-between items-center">
+                        <div className="flex items-center gap-3">
                             <div className="bg-gradient-to-br from-indigo-600 to-violet-600 p-2.5 rounded-2xl text-white shadow-lg shadow-indigo-500/20 ring-1 ring-white/30">
                                 <ShieldCheck className="h-5 w-5" />
                             </div>
@@ -120,19 +137,35 @@ export function GeneralSupervisorView() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <div className="flex-1">
-                                <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
-                            </div>
+                        <div className="flex items-center gap-2">
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => window.print()}
-                                className="p-2 sm:px-3 rounded-xl border border-slate-200 sm:border-transparent text-indigo-600 hover:bg-indigo-50"
+                                className="hidden md:flex gap-2 text-indigo-600 hover:bg-indigo-50 px-3 rounded-xl border border-transparent font-black"
                             >
                                 <Printer className="h-4 w-4" />
-                                <span className="hidden sm:inline text-xs font-black mr-1">طباعة</span>
+                                <span className="text-xs">طباعة الشعار</span>
                             </Button>
+
+                            <div className="hidden md:block">
+                                <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
+                            </div>
+
+                            {/* Mobile Menu Trigger */}
+                            <button
+                                onClick={() => setIsMobileNavOpen(true)}
+                                className="md:hidden p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
+                            >
+                                <Menu className="h-6 w-6" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Mobile Date Picker Bar */}
+                    <div className="md:hidden mt-3 px-1">
+                        <div className="bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner w-full">
+                            <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                         </div>
                     </div>
                 </div>
@@ -141,10 +174,10 @@ export function GeneralSupervisorView() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 px-1 fill-mode-both animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
                     <div className="relative col-span-2 md:col-span-1 border-none shadow-sm bg-gradient-to-br from-indigo-50 to-indigo-100/30 ring-1 ring-indigo-100 rounded-2xl overflow-hidden group p-5 flex items-center gap-5 transition-all duration-300 hover:shadow-md">
                         {/* Background Watermark Icon */}
-                        <Clock className="absolute -bottom-2 -right-2 h-20 w-20 opacity-[0.08] text-indigo-600 rotate-12 group-hover:scale-110 transition-transform duration-500" />
+                        <CheckCircle className="absolute -bottom-2 -right-2 h-20 w-20 opacity-[0.08] text-indigo-600 rotate-12 group-hover:scale-110 transition-transform duration-500" />
 
                         <div className="relative z-10 bg-white/80 backdrop-blur-sm p-4 rounded-xl text-indigo-600 shadow-sm border border-indigo-50 group-hover:scale-110 transition-transform">
-                            <Clock className="h-6 w-6" />
+                            <CheckCircle className="h-6 w-6" />
                         </div>
                         <div className="relative z-10">
                             <p className="text-[10px] text-indigo-600 font-black uppercase tracking-widest mb-1">بانتظار اعتمادك</p>

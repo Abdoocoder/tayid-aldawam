@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from "react";
 import {
-    LayoutDashboard,
     Users,
     MapPin,
     Save,
@@ -11,11 +10,13 @@ import {
     X,
     FileText,
     TrendingUp,
-    Search
+    Search,
+    Menu
 } from "lucide-react";
 import { useAttendance, User, Worker, UserRole } from "@/context/AttendanceContext";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
+import { MobileNav, NavItem } from "../ui/mobile-nav";
 
 // Modular Components
 import { WorkerSection } from "./hr/WorkerSection";
@@ -76,6 +77,7 @@ export function HRView() {
     const [editingItem, setEditingItem] = useState<EditingItem | null>(null);
     const [selectedAreaIds, setSelectedAreaIds] = useState<string[]>([]);
     const [areaForm, setAreaForm] = useState<{ id?: string, name: string }>({ name: '' });
+    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
     // Filter states for reports
     const [month, setMonth] = useState(new Date().getMonth() + 1);
@@ -97,6 +99,13 @@ export function HRView() {
         const currentMonthEntries = workers.filter((w: Worker) => !!getWorkerAttendance(w.id, month, year)).length;
         return totalWorkersCount > 0 ? Math.round((currentMonthEntries / totalWorkersCount) * 100) : 0;
     }, [workers, month, year, getWorkerAttendance, totalWorkersCount]);
+
+    const navItems: NavItem<'reports' | 'supervisors' | 'workers' | 'areas'>[] = [
+        { id: 'reports', label: 'التقارير والاستحقاقات', icon: FileText },
+        { id: 'supervisors', label: 'إدارة المراقبين', icon: ShieldCheck },
+        { id: 'workers', label: 'قاعدة بيانات العمال', icon: HardHat },
+        { id: 'areas', label: 'توزيع القطاعات', icon: MapPin },
+    ];
 
     const handleSaveWorker = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -320,431 +329,438 @@ export function HRView() {
     }
 
     return (
-        <div className="space-y-6 pb-24 print:space-y-0 print:pb-0">
-            {/* Header section - Sticky & Premium Glass */}
-            <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500 print:hidden">
-                <div className="max-w-7xl mx-auto flex flex-col gap-3">
-                    <div className="flex justify-between items-center">
+        <>
+            <MobileNav<'reports' | 'supervisors' | 'workers' | 'areas'>
+                isOpen={isMobileNavOpen}
+                onClose={() => setIsMobileNavOpen(false)}
+                items={navItems}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                user={{ name: appUser?.name || "مسؤول HR", role: "موظف الموارد البشرية" }}
+            />
+
+            <div className="space-y-6 pb-24">
+                {/* Header section - Sticky & Premium Glass */}
+                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="max-w-7xl mx-auto flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-2.5 rounded-2xl text-white shadow-lg shadow-purple-500/20">
-                                <LayoutDashboard className="h-5 w-5" />
+                                <Users className="h-5 w-5" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-black text-slate-900 tracking-tight">إدارة الموارد</h2>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">التحكم في العمال والمناطق</p>
-                            </div>
-                        </div>
-                        <div className="hidden sm:flex items-center gap-2">
-                            <Badge className="bg-purple-50 text-purple-700 border-purple-100 font-bold py-1 px-3 rounded-full">
-                                {appUser?.username}
-                            </Badge>
-                        </div>
-                    </div>
-
-                    {/* Desktop & Tablet Navigation */}
-                    <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm">
-                        {[
-                            { id: 'reports', label: 'التقارير', icon: FileText },
-                            { id: 'supervisors', label: 'المستخدمين', icon: Users },
-                            { id: 'workers', label: 'العمال', icon: HardHat },
-                            { id: 'areas', label: 'المناطق', icon: MapPin }
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => {
-                                    setActiveTab(tab.id as typeof activeTab);
-                                    setSearchTerm(''); // Clear search when switching tabs
-                                }}
-                                className={`flex-1 px-3 py-2 rounded-xl text-[11px] md:text-xs font-black transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === tab.id
-                                    ? 'bg-white text-purple-700 shadow-md shadow-purple-900/5'
-                                    : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
-                                    }`}
-                            >
-                                <tab.icon className={`h-3.5 w-3.5 ${activeTab === tab.id ? 'scale-110' : ''}`} />
-                                <span className="hidden xs:inline">{tab.label}</span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Tab-Specific Global Search Bar - Refined for mobile */}
-            {activeTab !== 'reports' && (
-                <div className="relative w-full px-1 animate-in fade-in slide-in-from-bottom-2 duration-700 print:hidden">
-                    <div className="relative group">
-                        <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-purple-600 transition-colors" />
-                        <Input
-                            placeholder={`بحث في ${activeTab === 'workers' ? 'العمال' : activeTab === 'supervisors' ? 'المستخدمين' : 'المناطق'}...`}
-                            className="pr-12 h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-purple-500 rounded-2xl shadow-sm shadow-purple-900/5 text-base"
-                            value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                </div>
-            )}
-
-            {/* Quick Stats Grid - Responsive & Premium */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 px-1 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 fill-mode-both print:hidden">
-                <Card className="border-none shadow-sm bg-gradient-to-br from-blue-50 to-blue-100/30 ring-1 ring-blue-100 rounded-2xl overflow-hidden group">
-                    <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                        <div className="bg-white p-2.5 rounded-xl text-blue-600 shadow-sm border border-blue-50 group-hover:scale-110 transition-transform">
-                            <Users className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] text-blue-600 font-black uppercase tracking-tight">العمال</p>
-                            <p className="text-2xl font-black text-blue-900 leading-tight">{totalWorkersCount}</p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-none shadow-sm bg-gradient-to-br from-purple-50 to-purple-100/30 ring-1 ring-purple-100 rounded-2xl overflow-hidden group">
-                    <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                        <div className="bg-white p-2.5 rounded-xl text-purple-600 shadow-sm border border-purple-50 group-hover:scale-110 transition-transform">
-                            <ShieldCheck className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] text-purple-600 font-black uppercase tracking-tight">المستخدمين</p>
-                            <p className="text-2xl font-black text-purple-900 leading-tight">{activeUsersCount}</p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-none shadow-sm bg-gradient-to-br from-amber-50 to-amber-100/30 ring-1 ring-amber-100 rounded-2xl overflow-hidden group">
-                    <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                        <div className="bg-white p-2.5 rounded-xl text-amber-600 shadow-sm border border-amber-50 group-hover:scale-110 transition-transform">
-                            <MapPin className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] text-amber-600 font-black uppercase tracking-tight">القطاعات</p>
-                            <p className="text-2xl font-black text-amber-900 leading-tight">{totalSectorsCount}</p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-none shadow-sm bg-gradient-to-br from-emerald-50 to-emerald-100/30 ring-1 ring-emerald-100 rounded-2xl overflow-hidden group">
-                    <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                        <div className="bg-white p-2.5 rounded-xl text-emerald-600 shadow-sm border border-emerald-50 group-hover:scale-110 transition-transform">
-                            <TrendingUp className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] text-emerald-600 font-black uppercase tracking-tight">الإنجاز الشهرى</p>
-                            <p className="text-2xl font-black text-emerald-900 leading-tight">{completionRate}%</p>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Editing/Adding Form Overlay (Simple inline version) */}
-            {editingItem && (
-                <Card className="border-2 border-purple-200 shadow-lg animate-in zoom-in-95 duration-200 print:hidden">
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <div>
-                            <CardTitle>{editingItem.data.id === 'NEW' ? 'إضافة جديد' : 'تعديل البيانات'}</CardTitle>
-                            <CardDescription>أدخل البيانات المطلوبة واضغط حفظ</CardDescription>
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={() => setEditingItem(null)}>
-                            <X className="h-4 w-4" />
-                        </Button>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={editingItem.type === 'worker' ? handleSaveWorker : handleSaveSupervisor} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {editingItem.type === 'worker' && (
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-500">الرقم الوظيفي (البلدية)</label>
-                                    <Input
-                                        value={editingItem.data.id === 'NEW' ? ((editingItem.data as WorkerEditingData).id_entered || '') : editingItem.data.id}
-                                        onChange={e => {
-                                            if (editingItem.data.id === 'NEW') {
-                                                setEditingItem({ ...editingItem, data: { ...editingItem.data, id_entered: e.target.value } });
-                                            }
-                                        }}
-                                        readOnly={editingItem.data.id !== 'NEW'}
-                                        placeholder="الرقم في نظام البلدية"
-                                        className={editingItem.data.id !== 'NEW' ? "bg-gray-100 font-mono" : "font-mono border-purple-200 focus:border-purple-500"}
-                                        required
-                                    />
+                                <div className="flex items-center gap-2">
+                                    <h2 className="text-xl font-black text-slate-900 tracking-tight">إدارة الموارد البشرية</h2>
+                                    <Badge className="bg-purple-50 text-purple-700 border-purple-100 text-[9px] font-black uppercase tracking-tighter">Certified</Badge>
                                 </div>
-                            )}
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500">الاسم</label>
-                                <Input
-                                    value={editingItem.data.name}
-                                    onChange={e => {
-                                        if (editingItem.type === 'worker') {
-                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } });
-                                        } else if (editingItem.type === 'supervisor') {
-                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } });
-                                        }
-                                    }}
-                                    required
-                                />
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">نظام تأييد الدوام الذكي</p>
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500">المنطقة / القطاع</label>
-                                <Select
-                                    value={editingItem.data.areaId || ''}
-                                    onChange={e => {
-                                        if (editingItem.type === 'worker') {
-                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } });
-                                        } else if (editingItem.type === 'supervisor') {
-                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } });
-                                        }
-                                    }}
-                                    required
+                        </div>
+
+                        {/* Navigation Tabs - Desktop */}
+                        <div className="hidden md:flex items-center bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner">
+                            {navItems.map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id as 'reports' | 'supervisors' | 'workers' | 'areas')}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === tab.id
+                                        ? "bg-white text-purple-700 shadow-sm ring-1 ring-slate-200/50"
+                                        : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
+                                        }`}
                                 >
-                                    <option value="">اختر المنطقة...</option>
-                                    {areas.map(a => (
-                                        <option key={a.id} value={a.id}>{a.name}</option>
-                                    ))}
-                                    {editingItem.type === 'supervisor' && <option value="ALL">كل المناطق (ADMIN)</option>}
-                                </Select>
+                                    <tab.icon className="h-4 w-4" />
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Mobile Menu Trigger */}
+                        <button
+                            onClick={() => setIsMobileNavOpen(true)}
+                            className="md:hidden p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
+                        >
+                            <Menu className="h-6 w-6" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Tab-Specific Global Search Bar - Refined for mobile */}
+                {activeTab !== 'reports' && (
+                    <div className="relative w-full px-1 animate-in fade-in slide-in-from-bottom-2 duration-700 print:hidden">
+                        <div className="relative group">
+                            <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-purple-600 transition-colors" />
+                            <Input
+                                placeholder={`بحث في ${activeTab === 'workers' ? 'العمال' : activeTab === 'supervisors' ? 'المستخدمين' : 'المناطق'}...`}
+                                className="pr-12 h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-purple-500 rounded-2xl shadow-sm shadow-purple-900/5 text-base"
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {/* Quick Stats Grid - Responsive & Premium */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 px-1 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 fill-mode-both print:hidden">
+                    <Card className="border-none shadow-sm bg-gradient-to-br from-blue-50 to-blue-100/30 ring-1 ring-blue-100 rounded-2xl overflow-hidden group">
+                        <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                            <div className="bg-white p-2.5 rounded-xl text-blue-600 shadow-sm border border-blue-50 group-hover:scale-110 transition-transform">
+                                <Users className="h-5 w-5" />
                             </div>
-                            {editingItem.type === 'worker' && (
-                                <>
+                            <div>
+                                <p className="text-[10px] text-blue-600 font-black uppercase tracking-tight">العمال</p>
+                                <p className="text-2xl font-black text-blue-900 leading-tight">{totalWorkersCount}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-sm bg-gradient-to-br from-purple-50 to-purple-100/30 ring-1 ring-purple-100 rounded-2xl overflow-hidden group">
+                        <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                            <div className="bg-white p-2.5 rounded-xl text-purple-600 shadow-sm border border-purple-50 group-hover:scale-110 transition-transform">
+                                <ShieldCheck className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-purple-600 font-black uppercase tracking-tight">المستخدمين</p>
+                                <p className="text-2xl font-black text-purple-900 leading-tight">{activeUsersCount}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-sm bg-gradient-to-br from-amber-50 to-amber-100/30 ring-1 ring-amber-100 rounded-2xl overflow-hidden group">
+                        <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                            <div className="bg-white p-2.5 rounded-xl text-amber-600 shadow-sm border border-amber-50 group-hover:scale-110 transition-transform">
+                                <MapPin className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-amber-600 font-black uppercase tracking-tight">القطاعات</p>
+                                <p className="text-2xl font-black text-amber-900 leading-tight">{totalSectorsCount}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-sm bg-gradient-to-br from-emerald-50 to-emerald-100/30 ring-1 ring-emerald-100 rounded-2xl overflow-hidden group">
+                        <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                            <div className="bg-white p-2.5 rounded-xl text-emerald-600 shadow-sm border border-emerald-50 group-hover:scale-110 transition-transform">
+                                <TrendingUp className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-emerald-600 font-black uppercase tracking-tight">الإنجاز الشهرى</p>
+                                <p className="text-2xl font-black text-emerald-900 leading-tight">{completionRate}%</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Editing/Adding Form Overlay (Simple inline version) */}
+                {editingItem && (
+                    <Card className="border-2 border-purple-200 shadow-lg animate-in zoom-in-95 duration-200 print:hidden">
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle>{editingItem.data.id === 'NEW' ? 'إضافة جديد' : 'تعديل البيانات'}</CardTitle>
+                                <CardDescription>أدخل البيانات المطلوبة واضغط حفظ</CardDescription>
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={() => setEditingItem(null)}>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                            <form onSubmit={editingItem.type === 'worker' ? handleSaveWorker : handleSaveSupervisor} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {editingItem.type === 'worker' && (
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold text-gray-500">الأجر اليومي (د.أ)</label>
+                                        <label className="text-xs font-bold text-gray-500">الرقم الوظيفي (البلدية)</label>
                                         <Input
-                                            type="number"
-                                            step="0.01"
-                                            value={editingItem.type === 'worker' ? editingItem.data.dayValue : 0}
+                                            value={editingItem.data.id === 'NEW' ? ((editingItem.data as WorkerEditingData).id_entered || '') : editingItem.data.id}
                                             onChange={e => {
-                                                if (editingItem.type === 'worker') {
-                                                    setEditingItem({ ...editingItem, data: { ...editingItem.data, dayValue: parseFloat(e.target.value) } });
-                                                }
-                                            }}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-bold text-gray-500">الراتب الأساسي</label>
-                                        <Input
-                                            type="number"
-                                            step="0.01"
-                                            value={editingItem.type === 'worker' ? editingItem.data.baseSalary : 0}
-                                            onChange={e => {
-                                                if (editingItem.type === 'worker') {
-                                                    setEditingItem({ ...editingItem, data: { ...editingItem.data, baseSalary: parseFloat(e.target.value) } });
-                                                }
-                                            }}
-                                            required
-                                        />
-                                    </div>
-                                </>
-                            )}
-                            {editingItem.type === 'supervisor' && (
-                                <>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-bold text-gray-500">اسم المستخدم (للتسجيل)</label>
-                                        <Input
-                                            value={editingItem.type === 'supervisor' ? (editingItem.data.username || '') : ''}
-                                            onChange={e => {
-                                                if (editingItem.type === 'supervisor') {
-                                                    setEditingItem({ ...editingItem, data: { ...editingItem.data, username: e.target.value } });
+                                                if (editingItem.data.id === 'NEW') {
+                                                    setEditingItem({ ...editingItem, data: { ...editingItem.data, id_entered: e.target.value } });
                                                 }
                                             }}
                                             readOnly={editingItem.data.id !== 'NEW'}
-                                            className={editingItem.data.id !== 'NEW' ? "bg-gray-50" : ""}
+                                            placeholder="الرقم في نظام البلدية"
+                                            className={editingItem.data.id !== 'NEW' ? "bg-gray-100 font-mono" : "font-mono border-purple-200 focus:border-purple-500"}
                                             required
                                         />
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-bold text-gray-500">الدور الوظيفي</label>
-                                        <Select
-                                            value={editingItem.data.role || 'SUPERVISOR'}
-                                            onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value as UserRole } })}
-                                            required
-                                        >
-                                            <option value="SUPERVISOR">مراقب ميداني</option>
-                                            <option value="GENERAL_SUPERVISOR">مراقب عام</option>
-                                            <option value="HEALTH_DIRECTOR">مدير الدائرة الصحية</option>
-                                            <option value="HR">الموارد البشرية</option>
-                                            <option value="FINANCE">المالية</option>
-                                            <option value="MAYOR">رئيس البلدية</option>
-                                        </Select>
-                                    </div>
-                                    {editingItem.data.id === 'NEW' && (
+                                )}
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-gray-500">الاسم</label>
+                                    <Input
+                                        value={editingItem.data.name}
+                                        onChange={e => {
+                                            if (editingItem.type === 'worker') {
+                                                setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } });
+                                            } else if (editingItem.type === 'supervisor') {
+                                                setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } });
+                                            }
+                                        }}
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-gray-500">المنطقة / القطاع</label>
+                                    <Select
+                                        value={editingItem.data.areaId || ''}
+                                        onChange={e => {
+                                            if (editingItem.type === 'worker') {
+                                                setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } });
+                                            } else if (editingItem.type === 'supervisor') {
+                                                setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } });
+                                            }
+                                        }}
+                                        required
+                                    >
+                                        <option value="">اختر المنطقة...</option>
+                                        {areas.map(a => (
+                                            <option key={a.id} value={a.id}>{a.name}</option>
+                                        ))}
+                                        {editingItem.type === 'supervisor' && <option value="ALL">كل المناطق (ADMIN)</option>}
+                                    </Select>
+                                </div>
+                                {editingItem.type === 'worker' && (
+                                    <>
                                         <div className="space-y-1">
-                                            <label className="text-xs font-bold text-gray-500">كلمة المرور</label>
+                                            <label className="text-xs font-bold text-gray-500">الأجر اليومي (د.أ)</label>
                                             <Input
-                                                type="password"
-                                                value={editingItem.type === 'supervisor' ? (editingItem.data.password || '') : ''}
+                                                type="number"
+                                                step="0.01"
+                                                value={editingItem.type === 'worker' ? editingItem.data.dayValue : 0}
                                                 onChange={e => {
-                                                    if (editingItem.type === 'supervisor') {
-                                                        setEditingItem({ ...editingItem, data: { ...editingItem.data, password: e.target.value } });
+                                                    if (editingItem.type === 'worker') {
+                                                        setEditingItem({ ...editingItem, data: { ...editingItem.data, dayValue: parseFloat(e.target.value) } });
                                                     }
                                                 }}
                                                 required
                                             />
                                         </div>
-                                    )}
-                                    <div className="col-span-full space-y-2 border-t pt-4 mt-2">
-                                        <label className="text-sm font-bold text-gray-700 block">تخصيص مناطق إضافية (اختياري)</label>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-lg border">
-                                            {areas.map(area => (
-                                                <label key={area.id} className="flex items-center gap-2 text-sm p-1 hover:bg-gray-100 rounded cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedAreaIds.includes(area.id)}
-                                                        onChange={e => {
-                                                            if (e.target.checked) {
-                                                                setSelectedAreaIds(prev => [...prev, area.id]);
-                                                            } else {
-                                                                setSelectedAreaIds(prev => prev.filter(id => id !== area.id));
-                                                            }
-                                                        }}
-                                                        className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-600"
-                                                    />
-                                                    {area.name}
-                                                </label>
-                                            ))}
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-bold text-gray-500">الراتب الأساسي</label>
+                                            <Input
+                                                type="number"
+                                                step="0.01"
+                                                value={editingItem.type === 'worker' ? editingItem.data.baseSalary : 0}
+                                                onChange={e => {
+                                                    if (editingItem.type === 'worker') {
+                                                        setEditingItem({ ...editingItem, data: { ...editingItem.data, baseSalary: parseFloat(e.target.value) } });
+                                                    }
+                                                }}
+                                                required
+                                            />
                                         </div>
-                                    </div>
-                                </>
-                            )}
-                            <div className="col-span-full flex justify-end gap-2 mt-2">
-                                <Button type="button" variant="outline" onClick={() => setEditingItem(null)}>إلغاء</Button>
-                                <Button type="submit" className="bg-purple-600 hover:bg-purple-700" disabled={isSaving}>
-                                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin ml-2" /> : <Save className="h-4 w-4 ml-2" />}
-                                    حفظ التغييرات
-                                </Button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
-            )}
-
-
-            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200 print:contents">
-                {activeTab === 'reports' && (
-                    <AttendanceReports
-                        workers={workers}
-                        areas={areas}
-                        month={month}
-                        year={year}
-                        reportSearchTerm={reportSearchTerm}
-                        reportAreaFilter={reportAreaFilter}
-                        reportStatusFilter={reportStatusFilter}
-                        getWorkerAttendance={getWorkerAttendance}
-                        approveAttendance={async (id, status) => {
-                            await approveAttendance(id, status);
-                            showToast('تم اعتماد السجل بنجاح');
-                        }}
-                        onReject={async (id) => {
-                            if (!confirm('هل أنت متأكد من رفض السجل وإعادته للمراقب العام؟')) return;
-                            try {
-                                await rejectAttendance(id, 'PENDING_GS');
-                                showToast('تم رفض السجل وإعادته للمراقب العام');
-                            } catch (err) {
-                                console.error(err);
-                                showToast('فشل في رفض السجل', '', 'error');
-                            }
-                        }}
-                        onMonthChange={(m, y) => { setMonth(m); setYear(y); }}
-                        onSearchChange={setReportSearchTerm}
-                        onAreaFilterChange={setReportAreaFilter}
-                        onStatusFilterChange={setReportStatusFilter}
-                        onExportCSV={handleExportCSV}
-                        onBulkApprove={handleBulkApprove}
-                    />
+                                    </>
+                                )}
+                                {editingItem.type === 'supervisor' && (
+                                    <>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-bold text-gray-500">اسم المستخدم (للتسجيل)</label>
+                                            <Input
+                                                value={editingItem.type === 'supervisor' ? (editingItem.data.username || '') : ''}
+                                                onChange={e => {
+                                                    if (editingItem.type === 'supervisor') {
+                                                        setEditingItem({ ...editingItem, data: { ...editingItem.data, username: e.target.value } });
+                                                    }
+                                                }}
+                                                readOnly={editingItem.data.id !== 'NEW'}
+                                                className={editingItem.data.id !== 'NEW' ? "bg-gray-50" : ""}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-bold text-gray-500">الدور الوظيفي</label>
+                                            <Select
+                                                value={editingItem.data.role || 'SUPERVISOR'}
+                                                onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value as UserRole } })}
+                                                required
+                                            >
+                                                <option value="SUPERVISOR">مراقب ميداني</option>
+                                                <option value="GENERAL_SUPERVISOR">مراقب عام</option>
+                                                <option value="HEALTH_DIRECTOR">مدير الدائرة الصحية</option>
+                                                <option value="HR">الموارد البشرية</option>
+                                                <option value="FINANCE">المالية</option>
+                                                <option value="MAYOR">رئيس البلدية</option>
+                                            </Select>
+                                        </div>
+                                        {editingItem.data.id === 'NEW' && (
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-bold text-gray-500">كلمة المرور</label>
+                                                <Input
+                                                    type="password"
+                                                    value={editingItem.type === 'supervisor' ? (editingItem.data.password || '') : ''}
+                                                    onChange={e => {
+                                                        if (editingItem.type === 'supervisor') {
+                                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, password: e.target.value } });
+                                                        }
+                                                    }}
+                                                    required
+                                                />
+                                            </div>
+                                        )}
+                                        <div className="col-span-full space-y-2 border-t pt-4 mt-2">
+                                            <label className="text-sm font-bold text-gray-700 block">تخصيص مناطق إضافية (اختياري)</label>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-lg border">
+                                                {areas.map(area => (
+                                                    <label key={area.id} className="flex items-center gap-2 text-sm p-1 hover:bg-gray-100 rounded cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedAreaIds.includes(area.id)}
+                                                            onChange={e => {
+                                                                if (e.target.checked) {
+                                                                    setSelectedAreaIds(prev => [...prev, area.id]);
+                                                                } else {
+                                                                    setSelectedAreaIds(prev => prev.filter(id => id !== area.id));
+                                                                }
+                                                            }}
+                                                            className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-600"
+                                                        />
+                                                        {area.name}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                                <div className="col-span-full flex justify-end gap-2 mt-2">
+                                    <Button type="button" variant="outline" onClick={() => setEditingItem(null)}>إلغاء</Button>
+                                    <Button type="submit" className="bg-purple-600 hover:bg-purple-700" disabled={isSaving}>
+                                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin ml-2" /> : <Save className="h-4 w-4 ml-2" />}
+                                        حفظ التغييرات
+                                    </Button>
+                                </div>
+                            </form>
+                        </CardContent>
+                    </Card>
                 )}
-            </div>
 
-            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200 print:hidden">
-                {activeTab === 'supervisors' && (
-                    <SupervisorSection
-                        supervisors={filteredUsers}
-                        areas={areas}
-                        searchTerm={searchTerm}
-                        onEdit={(s) => {
-                            setEditingItem({ type: 'supervisor', data: s });
-                            setSelectedAreaIds(s.areas?.map(a => a.id) || []);
-                        }}
-                        onDelete={handleDeleteSupervisor}
-                        onActivate={async (id: string) => {
-                            try {
-                                await updateUser(id, { isActive: true });
-                                showToast('تم تفعيل الحساب بنجاح');
-                            } catch (err) {
-                                console.error(err);
-                                showToast('فشل تفعيل الحساب', '', 'error');
-                            }
-                        }}
-                        onAdd={() => setEditingItem({ type: 'supervisor', data: { id: 'NEW', name: '', username: '', password: '', role: 'SUPERVISOR', areaId: '' } })}
-                    />
-                )}
-            </div>
 
-            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200 print:hidden">
-                {activeTab === 'workers' && (
-                    <WorkerSection
-                        workers={workers}
-                        areas={areas}
-                        searchTerm={searchTerm}
-                        onEdit={(w) => setEditingItem({ type: 'worker', data: w })}
-                        onDelete={handleDeleteWorker}
-                    />
-                )}
-            </div>
-
-            <div className="animate-in fade-in zoom-in-95 duration-500 delay-200 print:hidden">
-                {activeTab === 'areas' && (
-                    <AreaSection
-                        areas={areas}
-                        workers={workers}
-                        searchTerm={searchTerm}
-                        isSaving={isSaving}
-                        areaForm={areaForm}
-                        onFormChange={setAreaForm}
-                        onSave={async (e) => {
-                            e.preventDefault();
-                            setIsSaving(true);
-                            try {
-                                const trimmedName = areaForm.name.trim();
-
-                                const isDuplicate = areas.some(a =>
-                                    a.name.trim().toLowerCase() === trimmedName.toLowerCase() && a.id !== areaForm.id
-                                );
-
-                                if (isDuplicate) {
-                                    showToast('تنبيه', 'هذا الاسم موجود بالفعل! يرجى اختيار اسم فريد.', 'warning');
-                                    setIsSaving(false);
-                                    return;
-                                }
-
-                                if (areaForm.id) {
-                                    await updateArea(areaForm.id, trimmedName);
-                                    showToast('تم تحديث المنطقة بنجاح');
-                                } else {
-                                    await addArea(trimmedName);
-                                    showToast('تم إضافة المنطقة بنجاح');
-                                }
-                                setAreaForm({ name: '' });
-                            } catch (err) {
-                                console.error(err);
-                                showToast('فشل حفظ المنطقة', '', 'error');
-                            } finally {
-                                setIsSaving(false);
-                            }
-                        }}
-                        onDelete={async (id, count) => {
-                            if (count > 0) {
-                                showToast('لا يمكن حذف المنطقة', 'تحتوي على عمال. يرجى نقلهم أولاً.', 'error');
-                                return;
-                            }
-                            if (window.confirm('هل أنت متأكد من حذف هذه المنطقة؟')) {
+                <div className="animate-in fade-in zoom-in-95 duration-500 delay-200 print:contents">
+                    {activeTab === 'reports' && (
+                        <AttendanceReports
+                            workers={workers}
+                            areas={areas}
+                            month={month}
+                            year={year}
+                            reportSearchTerm={reportSearchTerm}
+                            reportAreaFilter={reportAreaFilter}
+                            reportStatusFilter={reportStatusFilter}
+                            getWorkerAttendance={getWorkerAttendance}
+                            approveAttendance={async (id, status) => {
+                                await approveAttendance(id, status);
+                                showToast('تم اعتماد السجل بنجاح');
+                            }}
+                            onReject={async (id) => {
+                                if (!confirm('هل أنت متأكد من رفض السجل وإعادته للمراقب العام؟')) return;
                                 try {
-                                    await deleteArea(id);
-                                    showToast('تم حذف المنطقة بنجاح');
+                                    await rejectAttendance(id, 'PENDING_GS');
+                                    showToast('تم رفض السجل وإعادته للمراقب العام');
                                 } catch (err) {
                                     console.error(err);
-                                    showToast('فشل حذف المنطقة', '', 'error');
+                                    showToast('فشل في رفض السجل', '', 'error');
                                 }
-                            }
-                        }}
-                    />
-                )}
+                            }}
+                            onMonthChange={(m, y) => { setMonth(m); setYear(y); }}
+                            onSearchChange={setReportSearchTerm}
+                            onAreaFilterChange={setReportAreaFilter}
+                            onStatusFilterChange={setReportStatusFilter}
+                            onExportCSV={handleExportCSV}
+                            onBulkApprove={handleBulkApprove}
+                        />
+                    )}
+                </div>
+
+                <div className="animate-in fade-in zoom-in-95 duration-500 delay-200 print:hidden">
+                    {activeTab === 'supervisors' && (
+                        <SupervisorSection
+                            supervisors={filteredUsers}
+                            areas={areas}
+                            searchTerm={searchTerm}
+                            onEdit={(s) => {
+                                setEditingItem({ type: 'supervisor', data: s });
+                                setSelectedAreaIds(s.areas?.map(a => a.id) || []);
+                            }}
+                            onDelete={handleDeleteSupervisor}
+                            onActivate={async (id: string) => {
+                                try {
+                                    await updateUser(id, { isActive: true });
+                                    showToast('تم تفعيل الحساب بنجاح');
+                                } catch (err) {
+                                    console.error(err);
+                                    showToast('فشل تفعيل الحساب', '', 'error');
+                                }
+                            }}
+                            onAdd={() => setEditingItem({ type: 'supervisor', data: { id: 'NEW', name: '', username: '', password: '', role: 'SUPERVISOR', areaId: '' } })}
+                        />
+                    )}
+                </div>
+
+                <div className="animate-in fade-in zoom-in-95 duration-500 delay-200 print:hidden">
+                    {activeTab === 'workers' && (
+                        <WorkerSection
+                            workers={workers}
+                            areas={areas}
+                            searchTerm={searchTerm}
+                            onEdit={(w) => setEditingItem({ type: 'worker', data: w })}
+                            onDelete={handleDeleteWorker}
+                        />
+                    )}
+                </div>
+
+                <div className="animate-in fade-in zoom-in-95 duration-500 delay-200 print:hidden">
+                    {activeTab === 'areas' && (
+                        <AreaSection
+                            areas={areas}
+                            workers={workers}
+                            searchTerm={searchTerm}
+                            isSaving={isSaving}
+                            areaForm={areaForm}
+                            onFormChange={setAreaForm}
+                            onSave={async (e) => {
+                                e.preventDefault();
+                                setIsSaving(true);
+                                try {
+                                    const trimmedName = areaForm.name.trim();
+
+                                    const isDuplicate = areas.some(a =>
+                                        a.name.trim().toLowerCase() === trimmedName.toLowerCase() && a.id !== areaForm.id
+                                    );
+
+                                    if (isDuplicate) {
+                                        showToast('تنبيه', 'هذا الاسم موجود بالفعل! يرجى اختيار اسم فريد.', 'warning');
+                                        setIsSaving(false);
+                                        return;
+                                    }
+
+                                    if (areaForm.id) {
+                                        await updateArea(areaForm.id, trimmedName);
+                                        showToast('تم تحديث المنطقة بنجاح');
+                                    } else {
+                                        await addArea(trimmedName);
+                                        showToast('تم إضافة المنطقة بنجاح');
+                                    }
+                                    setAreaForm({ name: '' });
+                                } catch (err) {
+                                    console.error(err);
+                                    showToast('فشل حفظ المنطقة', '', 'error');
+                                } finally {
+                                    setIsSaving(false);
+                                }
+                            }}
+                            onDelete={async (id, count) => {
+                                if (count > 0) {
+                                    showToast('لا يمكن حذف المنطقة', 'تحتوي على عمال. يرجى نقلهم أولاً.', 'error');
+                                    return;
+                                }
+                                if (window.confirm('هل أنت متأكد من حذف هذه المنطقة؟')) {
+                                    try {
+                                        await deleteArea(id);
+                                        showToast('تم حذف المنطقة بنجاح');
+                                    } catch (err) {
+                                        console.error(err);
+                                        showToast('فشل حذف المنطقة', '', 'error');
+                                    }
+                                }
+                            }}
+                        />
+                    )}
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

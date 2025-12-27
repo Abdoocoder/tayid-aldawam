@@ -6,6 +6,7 @@ import { MonthYearPicker } from "../ui/month-year-picker";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
+import { MobileNav } from "../ui/mobile-nav";
 import {
     Activity,
     Search,
@@ -20,7 +21,8 @@ import {
     History,
     Printer,
     ShieldCheck,
-    Loader2
+    Loader2,
+    Menu
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
@@ -32,6 +34,16 @@ export function HealthDirectorView() {
     const [activeTab, setActiveTab] = useState<TabType>('pending');
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
+    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+    const navItems = [
+        { id: 'pending', label: 'بانتظار اعتمادك', icon: Activity },
+        { id: 'hr_forwarded', label: 'تم التحويل للموارد', icon: CheckCircle2 },
+        { id: 'gs_stage', label: 'مرحلة المراقب العام', icon: ShieldCheck },
+        { id: 'cost_analysis', label: 'تحليل التكاليف', icon: Coins },
+        { id: 'anomalies', label: 'التنبيهات', icon: AlertTriangle },
+        { id: 'print', label: 'طباعة التقرير', icon: Printer },
+    ];
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedAreaId, setSelectedAreaId] = useState<string>("ALL");
     const [selectedSupervisorId, setSelectedSupervisorId] = useState<string>("ALL");
@@ -184,44 +196,58 @@ export function HealthDirectorView() {
 
     return (
         <>
+            <MobileNav
+                isOpen={isMobileNavOpen}
+                onClose={() => setIsMobileNavOpen(false)}
+                items={navItems}
+                activeTab={activeTab}
+                onTabChange={(id) => id === 'print' ? window.print() : setActiveTab(id as TabType)}
+                user={{ name: currentUser?.name || "مدير الصحة", role: "مديرية الشؤون الصحية" }}
+            />
+
             <div className="space-y-8 pb-12 animate-in fade-in duration-700 print:hidden">
                 {/* Header Section with Glassmorphism */}
-                {/* Header Section with Glassmorphism */}
                 <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="max-w-7xl mx-auto flex flex-col gap-3">
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-gradient-to-br from-emerald-600 to-teal-600 p-2.5 rounded-2xl text-white shadow-lg shadow-emerald-500/20">
-                                    <Activity className="h-5 w-5" />
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-black text-slate-900 tracking-tight">مديرية الشؤون الصحية</h2>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">اعتماد ومتابعة مسار الدوام</p>
-                                </div>
+                    <div className="max-w-7xl mx-auto flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-gradient-to-br from-emerald-600 to-teal-600 p-2.5 rounded-2xl text-white shadow-lg shadow-emerald-500/20">
+                                <Activity className="h-5 w-5" />
                             </div>
+                            <div>
+                                <h2 className="text-xl font-black text-slate-900 tracking-tight">مديرية الشؤون الصحية</h2>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">اعتماد ومتابعة مسار الدوام</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => window.print()}
-                                className="hidden sm:flex gap-2 text-emerald-600 hover:bg-emerald-50 rounded-xl"
+                                className="hidden md:flex gap-2 text-emerald-600 hover:bg-emerald-50 rounded-xl font-black border border-emerald-100"
                             >
                                 <Printer className="h-4 w-4" />
-                                <span className="text-xs font-bold">طباعة التقرير</span>
+                                <span className="text-xs">تقرير إحصائي</span>
                             </Button>
-                        </div>
 
-                        <div className="flex items-center gap-2">
-                            <div className="flex-1">
+                            <div className="hidden md:block">
                                 <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                             </div>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => window.print()}
-                                className="sm:hidden p-2 rounded-xl border-slate-200"
+
+                            {/* Mobile Menu Trigger */}
+                            <button
+                                onClick={() => setIsMobileNavOpen(true)}
+                                className="md:hidden p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
                             >
-                                <Printer className="h-4 w-4 text-slate-600" />
-                            </Button>
+                                <Menu className="h-6 w-6" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Mobile Date Picker Bar */}
+                    <div className="md:hidden mt-3 px-1">
+                        <div className="bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner w-full">
+                            <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                         </div>
                     </div>
                 </div>
@@ -274,8 +300,8 @@ export function HealthDirectorView() {
                     ))}
                 </div>
 
-                {/* Tab Navigation - Refined Pill Style */}
-                <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm overflow-x-auto no-scrollbar">
+                {/* Tab Navigation - Desktop */}
+                <div className="hidden md:flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm overflow-x-auto no-scrollbar">
                     {[
                         { id: 'pending' as TabType, label: 'بانتظار اعتمادك', icon: Activity, count: analytics.health, color: 'emerald' },
                         { id: 'hr_forwarded' as TabType, label: 'تم التحويل للموارد', icon: CheckCircle2, count: analytics.hrForwarded, color: 'indigo' },
@@ -506,7 +532,7 @@ export function HealthDirectorView() {
                                                                     </span>
                                                                     <span className="text-[9px] font-bold text-slate-500 flex items-center gap-1">
                                                                         <UserIcon className="h-3 w-3" />
-                                                                        المراقب: {users.find(u => u.role === 'SUPERVISOR' && (u.areaId === worker?.areaId || u.areas?.some(a => a.id === worker?.areaId)))?.name || 'غير محدد'}
+                                                                        المراقب: {supervisors.find(u => u.role === 'SUPERVISOR' && (u.areaId === worker?.areaId || u.areas?.some(a => a.id === worker?.areaId)))?.name || 'غير محدد'}
                                                                     </span>
                                                                 </div>
                                                             </div>

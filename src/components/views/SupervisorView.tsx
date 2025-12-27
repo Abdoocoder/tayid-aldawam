@@ -5,7 +5,8 @@ import { useAttendance } from "@/context/AttendanceContext";
 import { MonthYearPicker } from "../ui/month-year-picker";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { User, ClipboardList, CheckCircle, Loader2, AlertCircle, Users, Clock, Target, Search, MapPin, Printer } from "lucide-react";
+import { MobileNav } from "../ui/mobile-nav";
+import { User, ClipboardList, CheckCircle, Loader2, AlertCircle, Users, Clock, Target, Search, MapPin, Printer, Menu } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Input } from "../ui/input";
@@ -15,6 +16,12 @@ export function SupervisorView() {
     const { currentUser, workers, getWorkerAttendance, isLoading, error, areas } = useAttendance();
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
+    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+    const navItems = [
+        { id: 'overview', label: 'كشف الحضور', icon: ClipboardList },
+        { id: 'print', label: 'طباعة كشف', icon: Printer },
+    ];
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedAreaId, setSelectedAreaId] = useState<string>("ALL");
 
@@ -89,12 +96,20 @@ export function SupervisorView() {
 
     return (
         <>
-            {/* Screen Content - Hidden on Print */}
+            <MobileNav
+                isOpen={isMobileNavOpen}
+                onClose={() => setIsMobileNavOpen(false)}
+                items={navItems}
+                activeTab="overview"
+                onTabChange={(id) => id === 'print' ? window.print() : null}
+                user={{ name: currentUser?.name || "مراقب الميدان", role: "مراقب قطاع" }}
+            />
+
             <div className="space-y-6 pb-24 print:hidden">
                 {/* Header & Month Picker - Sticky and Glassmorphic */}
                 <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
-                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="max-w-7xl mx-auto flex justify-between items-center">
+                        <div className="flex items-center gap-3">
                             <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-2.5 rounded-2xl text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/30">
                                 <ClipboardList className="h-5 w-5" />
                             </div>
@@ -104,19 +119,35 @@ export function SupervisorView() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <div className="flex-1">
-                                <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
-                            </div>
+                        <div className="flex items-center gap-2">
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => window.print()}
-                                className="p-2 sm:px-3 rounded-xl border border-slate-200 sm:border-transparent text-blue-600 hover:bg-blue-50"
+                                className="hidden md:flex gap-2 text-blue-600 hover:bg-blue-50 px-3 rounded-xl border border-transparent font-black"
                             >
                                 <Printer className="h-4 w-4" />
-                                <span className="hidden sm:inline text-xs font-black mr-1">طباعة</span>
+                                <span className="text-xs">طباعة</span>
                             </Button>
+
+                            <div className="hidden md:block">
+                                <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
+                            </div>
+
+                            {/* Mobile Menu Trigger */}
+                            <button
+                                onClick={() => setIsMobileNavOpen(true)}
+                                className="md:hidden p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
+                            >
+                                <Menu className="h-6 w-6" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Mobile Date Picker Bar */}
+                    <div className="md:hidden mt-3 px-1">
+                        <div className="bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner w-full">
+                            <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                         </div>
                     </div>
                 </div>
@@ -339,7 +370,7 @@ export function SupervisorView() {
 
                 <div className="mt-32 pt-8 border-t border-slate-200 text-center">
                     <p className="text-[10px] text-slate-400 font-mono tracking-widest">
-                        نظام تأييد الدوام الذكي - التاريخ: {printMetadata.date} - الرقم المرجعي: {printMetadata.ref}
+                        {`نظام تأييد الدوام الذكي - التاريخ: ${printMetadata.date} - الرقم المرجعي: ${printMetadata.ref}`}
                     </p>
                 </div>
             </div>

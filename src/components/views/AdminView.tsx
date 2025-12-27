@@ -11,9 +11,10 @@ import {
     FileText,
     HardHat,
     LayoutDashboard,
-    ShieldCheck,
     Loader2,
-    Save
+    Save,
+    Menu,
+    Shield
 } from 'lucide-react';
 import { Badge } from '../ui/badge';
 
@@ -25,6 +26,7 @@ import { LogsTab } from './admin/LogsTab';
 import { Input } from '../ui/input';
 import { MonthYearPicker } from "../ui/month-year-picker";
 import { Search, MapPin } from "lucide-react";
+import { MobileNav, NavItem } from "../ui/mobile-nav";
 
 interface WorkerEditingData extends Partial<Worker> {
     id: string;
@@ -52,6 +54,7 @@ export const AdminView = () => {
     const [logSearchTerm, setLogSearchTerm] = useState("");
     const [logTableFilter, setLogTableFilter] = useState("ALL");
     const [logActionFilter, setLogActionFilter] = useState("ALL");
+    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
     // Clear search term when switching tabs
     useEffect(() => {
@@ -164,53 +167,70 @@ export const AdminView = () => {
     };
 
 
+    const navItems: NavItem<'overview' | 'users' | 'workers' | 'logs' | 'attendance'>[] = [
+        { id: 'overview', label: 'نظرة عامة', icon: LayoutDashboard },
+        { id: 'users', label: 'المستخدمين', icon: Users },
+        { id: 'workers', label: 'العمال', icon: HardHat },
+        { id: 'attendance', label: 'الحسابات', icon: FileText },
+        { id: 'logs', label: 'السجلات', icon: History },
+    ];
+
     if (isLoading) {
         return <div className="flex justify-center p-20">جاري تحميل لوحة التحكم...</div>;
     }
 
     return (
         <>
+            <MobileNav<'overview' | 'users' | 'workers' | 'logs' | 'attendance'>
+                isOpen={isMobileNavOpen}
+                onClose={() => setIsMobileNavOpen(false)}
+                items={navItems}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                user={{ name: appUser?.name || "مدير النظام", role: "الإدارة المركزية (Root)" }}
+            />
+
             <div className="space-y-8 pb-24 animate-in fade-in duration-700 print:hidden">
                 {/* Header section - Sticky & Premium Glass */}
                 <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500 print:hidden">
-                    <div className="max-w-7xl mx-auto flex flex-col gap-3">
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-2.5 rounded-2xl text-white shadow-lg shadow-indigo-500/20">
-                                    <ShieldCheck className="h-5 w-5" />
+                    <div className="max-w-7xl mx-auto flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-2.5 rounded-2xl text-white shadow-lg shadow-indigo-500/20">
+                                <Shield className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h2 className="text-xl font-black text-slate-900 tracking-tight">الإدارة المركزية</h2>
+                                    <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100/50 text-[10px] font-black uppercase tracking-widest px-2 py-0">Root</Badge>
                                 </div>
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <h2 className="text-xl font-black text-slate-900 tracking-tight">الإدارة المركزية</h2>
-                                        <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100/50 text-[10px] font-black uppercase tracking-widest px-2 py-0">Root</Badge>
-                                    </div>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">System Governance & Control</p>
-                                </div>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">System Governance & Control</p>
                             </div>
                         </div>
 
-                        {/* Navigation Tabs - Scrollable on mobile */}
-                        <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm overflow-x-auto no-scrollbar">
-                            {[
-                                { id: 'overview', label: 'نظرة عامة', icon: LayoutDashboard },
-                                { id: 'users', label: 'المستخدمين', icon: Users },
-                                { id: 'workers', label: 'العمال', icon: HardHat },
-                                { id: 'attendance', label: 'الحسابات', icon: FileText },
-                                { id: 'logs', label: 'السجلات', icon: History },
-                            ].map((tab) => (
+                        {/* Navigation Tabs - Desktop */}
+                        <div className="hidden md:flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner">
+                            {navItems.map((tab) => (
                                 <button
                                     key={tab.id}
-                                    onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                                    className={`flex-1 px-3 py-2 rounded-xl text-[11px] md:text-xs font-black transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap min-w-fit ${activeTab === tab.id
-                                        ? 'bg-white text-indigo-700 shadow-md shadow-indigo-900/5'
-                                        : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+                                    onClick={() => setActiveTab(tab.id as 'overview' | 'users' | 'workers' | 'logs' | 'attendance')}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === tab.id
+                                        ? "bg-white text-indigo-700 shadow-sm ring-1 ring-slate-200/50"
+                                        : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
                                         }`}
                                 >
-                                    <tab.icon className={`h-3.5 w-3.5 ${activeTab === tab.id ? 'scale-110' : ''}`} />
-                                    <span className="hidden xs:inline">{tab.label}</span>
+                                    <tab.icon className="h-4 w-4" />
+                                    {tab.label}
                                 </button>
                             ))}
                         </div>
+
+                        {/* Mobile Menu Trigger */}
+                        <button
+                            onClick={() => setIsMobileNavOpen(true)}
+                            className="md:hidden p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
+                        >
+                            <Menu className="h-6 w-6" />
+                        </button>
                     </div>
                 </div>
 
