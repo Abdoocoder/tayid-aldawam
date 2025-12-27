@@ -14,7 +14,8 @@ import {
     Loader2,
     Save,
     Menu,
-    Shield
+    Shield,
+    Eye
 } from 'lucide-react';
 import { Badge } from '../ui/badge';
 
@@ -34,7 +35,7 @@ interface WorkerEditingData extends Partial<Worker> {
 }
 
 export const AdminView = () => {
-    const { workers, attendanceRecords, users, auditLogs, areas, isLoading, addWorker, updateWorker, deleteWorker, updateUser, deleteUser, rejectAttendance, getWorkerAttendance } = useAttendance();
+    const { workers, attendanceRecords, users, auditLogs, areas, isLoading, addWorker, updateWorker, deleteWorker, updateUser, deleteUser, getWorkerAttendance } = useAttendance();
     const { appUser } = useAuth();
     const { showToast } = useToast();
     const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'workers' | 'logs' | 'attendance'>('overview');
@@ -192,33 +193,39 @@ export const AdminView = () => {
 
             <div className="space-y-8 pb-24 animate-in fade-in duration-700 print:hidden">
                 {/* Header section - Sticky & Premium Glass */}
-                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500 print:hidden">
+                <div className="sticky top-0 z-30 -mx-4 px-4 py-4 bg-white/40 backdrop-blur-2xl border-b border-white/20 shadow-sm animate-in fade-in slide-in-from-top-4 duration-700 print:hidden">
                     <div className="max-w-7xl mx-auto flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-2.5 rounded-2xl text-white shadow-lg shadow-indigo-500/20">
-                                <Shield className="h-5 w-5" />
+                        <div className="flex items-center gap-4">
+                            <div className="relative group">
+                                <div className="absolute -inset-1 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                                <div className="relative bg-gradient-to-br from-indigo-600 to-violet-700 p-3 rounded-2xl text-white shadow-xl">
+                                    <Shield className="h-6 w-6" />
+                                </div>
                             </div>
                             <div>
-                                <div className="flex items-center gap-2">
-                                    <h2 className="text-xl font-black text-slate-900 tracking-tight">الإدارة المركزية</h2>
-                                    <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100/50 text-[10px] font-black uppercase tracking-widest px-2 py-0">Root</Badge>
+                                <div className="flex items-center gap-3">
+                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-none">الإدارة المركزية</h2>
+                                    <div className="flex items-center bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full scale-90">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse mr-1.5" />
+                                        <span className="text-[10px] font-black text-indigo-700 uppercase tracking-widest">Root</span>
+                                    </div>
                                 </div>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">System Governance & Control</p>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mt-1.5">System Governance & Control</p>
                             </div>
                         </div>
 
                         {/* Navigation Tabs - Desktop */}
-                        <div className="hidden md:flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner">
+                        <div className="hidden md:flex bg-slate-100/40 p-1.5 rounded-[1.5rem] border border-slate-200/40 backdrop-blur-md shadow-inner">
                             {navItems.map((tab) => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id as 'overview' | 'users' | 'workers' | 'logs' | 'attendance')}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === tab.id
-                                        ? "bg-white text-indigo-700 shadow-sm ring-1 ring-slate-200/50"
-                                        : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
+                                    className={`flex items-center gap-2.5 px-5 py-2.5 rounded-2xl text-xs font-black transition-all duration-500 relative ${activeTab === tab.id
+                                        ? "bg-white text-indigo-700 shadow-lg shadow-indigo-100 ring-1 ring-slate-100"
+                                        : "text-slate-500 hover:text-slate-800 hover:bg-white/50"
                                         }`}
                                 >
-                                    <tab.icon className="h-4 w-4" />
+                                    <tab.icon className={`h-4 w-4 transition-transform duration-500 ${activeTab === tab.id ? 'scale-110' : 'group-hover:scale-110'}`} />
                                     {tab.label}
                                 </button>
                             ))}
@@ -227,7 +234,7 @@ export const AdminView = () => {
                         {/* Mobile Menu Trigger */}
                         <button
                             onClick={() => setIsMobileNavOpen(true)}
-                            className="md:hidden p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
+                            className="md:hidden p-3 bg-white/80 border border-slate-200 rounded-2xl text-slate-600 shadow-xl active:scale-95 transition-all"
                         >
                             <Menu className="h-6 w-6" />
                         </button>
@@ -307,71 +314,94 @@ export const AdminView = () => {
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                 {/* Recent Users Card */}
-                                <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-5 border border-white/60 shadow-sm">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div>
-                                            <h3 className="text-lg font-black text-slate-900 tracking-tight">أحدث المستخدمين</h3>
-                                        </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-8 rounded-lg text-indigo-600 hover:bg-indigo-50 font-bold text-xs"
-                                            onClick={() => setActiveTab('users')}
-                                        >
-                                            عرض الكل
-                                        </Button>
-                                    </div>
-                                    <div className="space-y-3">
-                                        {users.slice(0, 5).map((u) => (
-                                            <div key={u.id} className="flex items-center justify-between p-3 rounded-xl bg-white/50 hover:bg-white transition-all duration-300 border border-transparent hover:border-slate-100 group shadow-sm hover:shadow-md">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200/50 flex items-center justify-center font-black text-slate-600 group-hover:from-indigo-50 group-hover:to-indigo-100 group-hover:text-indigo-600 transition-all">
-                                                        {u.name.charAt(0)}
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-bold text-slate-800 text-xs">{u.name}</p>
-                                                        <p className="text-[9px] text-slate-400 font-black uppercase">{u.role}</p>
-                                                    </div>
-                                                </div>
-                                                <Badge variant="secondary" className="bg-slate-100 text-slate-500 text-[9px]">
-                                                    {u.role}
-                                                </Badge>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {/* Recent Users Card */}
+                                    <div className="bg-white/40 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-white/20 shadow-2xl shadow-indigo-500/5 relative overflow-hidden group">
+                                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
 
-                                {/* Recent Activity Card */}
-                                <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-5 border border-white/60 shadow-sm">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div>
-                                            <h3 className="text-lg font-black text-slate-900 tracking-tight">آخر التحريرات</h3>
-                                        </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-8 rounded-lg text-indigo-600 hover:bg-indigo-50 font-bold text-xs"
-                                            onClick={() => setActiveTab('logs')}
-                                        >
-                                            السجل الكامل
-                                        </Button>
-                                    </div>
-                                    <div className="space-y-3">
-                                        {auditLogs.slice(0, 5).map((log) => (
-                                            <div key={log.id} className="relative p-3 rounded-xl bg-white/50 hover:bg-white transition-all duration-300 border-r-2 border-indigo-500 shadow-sm hover:shadow-md">
-                                                <div className="flex justify-between items-start mb-1">
-                                                    <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider">
-                                                        {log.action}
-                                                    </span>
-                                                    <span className="text-[9px] text-slate-400 font-bold font-mono">
-                                                        {new Date(log.changed_at).toLocaleTimeString('ar-JO')}
-                                                    </span>
+                                        <div className="flex items-center justify-between mb-8">
+                                            <div className="flex items-center gap-3">
+                                                <div className="bg-indigo-100 text-indigo-600 p-2 rounded-xl">
+                                                    <Users className="h-5 w-5" />
                                                 </div>
-                                                <p className="text-xs font-bold text-slate-700">
-                                                    تعديل في {log.table_name}
-                                                </p>
+                                                <h3 className="text-xl font-black text-slate-900 tracking-tight">أحدث المستخدمين</h3>
                                             </div>
-                                        ))}
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-9 px-4 rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-xs transition-all"
+                                                onClick={() => setActiveTab('users')}
+                                            >
+                                                إدارة الجميع
+                                            </Button>
+                                        </div>
+                                        <div className="space-y-3">
+                                            {users.slice(0, 5).map((u) => (
+                                                <div key={u.id} className="flex items-center justify-between p-4 rounded-2xl bg-white/40 hover:bg-white transition-all duration-500 border border-white/20 hover:border-indigo-100 group/item shadow-sm hover:shadow-xl hover:shadow-indigo-500/5">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200/50 flex items-center justify-center font-black text-slate-600 group-hover/item:from-indigo-600 group-hover/item:to-violet-600 group-hover/item:text-white transition-all duration-500 shadow-sm">
+                                                            {u.name.charAt(0)}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-black text-slate-800 text-sm group-hover/item:text-indigo-900 transition-colors">{u.name}</p>
+                                                            <div className="flex items-center gap-2 mt-0.5">
+                                                                <div className={`w-1.5 h-1.5 rounded-full ${u.isActive ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{u.username}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <Badge variant="secondary" className="bg-slate-100 text-slate-500 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg group-hover/item:bg-indigo-50 group-hover/item:text-indigo-600 transition-colors">
+                                                        {u.role}
+                                                    </Badge>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Recent Activity Card */}
+                                    <div className="bg-white/40 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-white/20 shadow-2xl shadow-indigo-500/5 relative overflow-hidden group">
+                                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-violet-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+
+                                        <div className="flex items-center justify-between mb-8">
+                                            <div className="flex items-center gap-3">
+                                                <div className="bg-violet-100 text-violet-600 p-2 rounded-xl">
+                                                    <History className="h-5 w-5" />
+                                                </div>
+                                                <h3 className="text-xl font-black text-slate-900 tracking-tight">آخر التحريرات</h3>
+                                            </div>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-9 px-4 rounded-xl text-violet-600 hover:bg-violet-50 font-black text-xs transition-all"
+                                                onClick={() => setActiveTab('logs')}
+                                            >
+                                                السجل الكامل
+                                            </Button>
+                                        </div>
+                                        <div className="space-y-4">
+                                            {auditLogs.slice(0, 5).map((log) => (
+                                                <div key={log.id} className="relative pr-6 py-1 group/log">
+                                                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-slate-100 rounded-full group-hover/log:bg-indigo-500 transition-colors duration-500" />
+                                                    <div className="flex justify-between items-start mb-1.5">
+                                                        <Badge className={`text-[9px] font-black border-none ring-1 px-2 py-0.5 rounded-lg ${log.action === 'INSERT' ? 'bg-emerald-50 text-emerald-600 ring-emerald-100' :
+                                                            log.action === 'UPDATE' ? 'bg-indigo-50 text-indigo-600 ring-indigo-100' :
+                                                                'bg-rose-50 text-rose-600 ring-rose-100'
+                                                            }`}>
+                                                            {log.action}
+                                                        </Badge>
+                                                        <span className="text-[10px] text-slate-400 font-black font-mono tracking-widest bg-slate-50 px-2 py-0.5 rounded-md">
+                                                            {new Date(log.changed_at).toLocaleTimeString('ar-JO', { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm font-bold text-slate-700 leading-none">
+                                                        تعديل في <span className="text-indigo-600 uppercase font-black">{log.table_name}</span>
+                                                    </p>
+                                                    <p className="text-[10px] text-slate-400 font-bold mt-1.5 flex items-center gap-2">
+                                                        بواسطة <span className="text-slate-600 font-black underline decoration-slate-200 underline-offset-2">{log.changed_by || 'نظام تلقائي'}</span>
+                                                    </p>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -455,28 +485,34 @@ export const AdminView = () => {
                 </div>
 
                 {activeTab === 'attendance' && (
-                    <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40 overflow-hidden animate-in slide-in-from-bottom-8 duration-1000">
-                        <div className="p-8 border-b border-slate-100/50 flex flex-col lg:flex-row justify-between items-center gap-6 bg-gradient-to-r from-emerald-50/30 to-transparent">
-                            <div className="flex items-center gap-6">
-                                <div className="bg-gradient-to-br from-emerald-100 to-teal-100 p-4 rounded-2xl text-emerald-600 shadow-inner">
-                                    <FileText className="h-7 w-7" />
+                    <div className="bg-white/40 backdrop-blur-2xl rounded-[3rem] border border-white/20 shadow-2xl shadow-indigo-500/10 overflow-hidden animate-in slide-in-from-bottom-12 duration-1000">
+                        <div className="p-10 border-b border-white/10 flex flex-col lg:flex-row justify-between items-center gap-8 bg-gradient-to-br from-emerald-600/10 via-transparent to-transparent relative">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full -mr-32 -mt-32 blur-3xl" />
+
+                            <div className="relative z-10 flex items-center gap-8">
+                                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-5 rounded-[2rem] text-white shadow-xl shadow-emerald-500/20 rotate-3 group-hover:rotate-0 transition-transform duration-700">
+                                    <FileText className="h-8 w-8" />
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">سجلات الحضور المركزية</h3>
-                                    <p className="text-xs text-slate-500 font-black uppercase tracking-widest mt-1">Audit & Final Payroll Approval Center</p>
+                                    <h3 className="text-3xl font-black text-slate-900 tracking-tight leading-none">سجلات الحضور المركزية</h3>
+                                    <div className="flex items-center gap-2 mt-3">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                        <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.2em]">Audit & Final Payroll Approval Center</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
-                                <div className="relative w-full sm:w-72 group">
-                                    <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400 group-focus-within:text-emerald-600 transition-colors" />
+                            <div className="flex flex-col sm:flex-row items-center gap-6 w-full lg:w-auto relative z-10">
+                                <div className="relative w-full sm:w-80 group">
+                                    <div className="absolute inset-0 bg-white/50 blur-xl rounded-2xl group-focus-within:bg-emerald-500/10 transition-colors" />
+                                    <Search className="absolute right-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-emerald-600 transition-all duration-500" />
                                     <Input
                                         placeholder="بحث باسم العامل..."
-                                        className="pr-12 h-12 bg-white/60 border-slate-200 focus:border-emerald-500 rounded-2xl shadow-sm text-sm font-bold"
+                                        className="relative pr-14 h-14 bg-white/40 border-white/20 focus:border-emerald-500 shadow-xl rounded-[1.25rem] text-sm font-black transition-all duration-500 backdrop-blur-md"
                                         value={attendanceSearchTerm}
                                         onChange={e => setAttendanceSearchTerm(e.target.value)}
                                     />
                                 </div>
-                                <div className="bg-white/80 p-1.5 rounded-2xl border border-slate-200 shadow-sm">
+                                <div className="bg-white/40 p-2 rounded-[1.5rem] border border-white/20 shadow-xl backdrop-blur-md">
                                     <MonthYearPicker month={attendanceMonth} year={attendanceYear} onChange={(m, y) => { setAttendanceMonth(m); setAttendanceYear(y); }} />
                                 </div>
                             </div>
@@ -485,16 +521,16 @@ export const AdminView = () => {
                         <div className="overflow-x-auto">
                             <table className="w-full text-right">
                                 <thead>
-                                    <tr className="bg-slate-50/50 border-b border-slate-100/50">
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الموظف / العامل</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">القطاع البنيوي</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">أيام العمل</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">الإضافي التراكمي</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">مرحلة الاعتماد</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">الإدارة</th>
+                                    <tr className="bg-slate-50/30 border-b border-white/10">
+                                        <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">الموظف / العامل</th>
+                                        <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">القطاع البنيوي</th>
+                                        <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">أيام العمل</th>
+                                        <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">الإضافي التراكمي</th>
+                                        <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">مرحلة الاعتماد</th>
+                                        <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">الإدارة</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-50">
+                                <tbody className="divide-y divide-white/10">
                                     {workers.filter(w =>
                                         w.name.toLowerCase().includes(attendanceSearchTerm.toLowerCase()) ||
                                         w.id.includes(attendanceSearchTerm)
@@ -503,71 +539,67 @@ export const AdminView = () => {
                                         const areaName = areas.find(a => a.id === worker.areaId)?.name || 'غير محدد';
 
                                         return (
-                                            <tr key={worker.id} className="hover:bg-emerald-50/20 transition-all duration-500 group border-b border-slate-50 last:border-0 font-bold">
-                                                <td className="px-8 py-6">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center font-black text-slate-500 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-all duration-500 shadow-sm">
+                                            <tr key={worker.id} className="hover:bg-emerald-50/20 transition-all duration-700 group border-b border-white/5 last:border-0 font-bold">
+                                                <td className="px-10 py-8">
+                                                    <div className="flex items-center gap-6">
+                                                        <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center font-black text-slate-500 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-700 shadow-xl border border-white/20 text-lg">
                                                             {worker.name.charAt(0)}
                                                         </div>
                                                         <div>
-                                                            <div className="font-black text-slate-900 group-hover:text-emerald-800 transition-colors text-sm">{worker.name}</div>
-                                                            <div className="text-[10px] text-slate-400 font-black font-mono tracking-tighter">#{worker.id}</div>
+                                                            <div className="font-black text-slate-900 group-hover:text-emerald-900 transition-colors text-base leading-tight">{worker.name}</div>
+                                                            <div className="text-[10px] text-slate-400 font-black font-mono tracking-widest mt-1.5 uppercase">ID: {worker.id}</div>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-8 py-6">
-                                                    <Badge variant="secondary" className="bg-white text-slate-600 border border-slate-100/50 font-black text-[10px] px-2.5 shadow-sm group-hover:shadow-md transition-all">
-                                                        <MapPin className="h-3.5 w-3.5 ml-1.5 text-emerald-400 group-hover:text-emerald-600 transition-colors" />
+                                                <td className="px-10 py-8 text-right">
+                                                    <Badge variant="secondary" className="bg-white/80 text-slate-600 border border-white ring-1 ring-slate-100 font-black text-[10px] px-3 py-1.5 shadow-sm group-hover:shadow-xl group-hover:shadow-emerald-500/10 group-hover:ring-emerald-100 transition-all duration-500">
+                                                        <MapPin className="h-4 w-4 ml-2 text-emerald-400 transition-colors" />
                                                         {areaName}
                                                     </Badge>
                                                 </td>
-                                                <td className="px-8 py-6 text-center">
-                                                    <div className="text-sm font-black text-slate-900 group-hover:text-emerald-700 transition-colors">{record ? record.normalDays : '-'}</div>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    {record ? (
-                                                        <div className="flex flex-wrap gap-1.5 justify-center">
-                                                            <span className="text-[9px] font-black bg-amber-50 text-amber-600 px-2.5 py-1 rounded-lg border border-amber-100 shadow-sm">ع {record.overtimeNormalDays}</span>
-                                                            <span className="text-[9px] font-black bg-rose-50 text-rose-600 px-2.5 py-1 rounded-lg border border-rose-100 shadow-sm">ط {record.overtimeHolidayDays}</span>
-                                                            <span className="text-[9px] font-black bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-lg border border-emerald-100 shadow-sm">أ {record.overtimeEidDays || 0}</span>
-                                                        </div>
-                                                    ) : <div className="text-center text-slate-300">-</div>}
-                                                </td>
-                                                <td className="px-8 py-6 text-center">
-                                                    {record ? (
-                                                        <Badge className={`rounded-xl text-[9px] font-black uppercase tracking-widest shadow-sm ring-1 px-3 py-1 ${record.status === 'APPROVED' ? "bg-emerald-600 text-white ring-emerald-500" : "bg-slate-100 text-slate-600 ring-slate-200"} `}>
-                                                            {record.status === 'APPROVED' ? 'معتمد نهائياً' :
-                                                                record.status === 'PENDING_FINANCE' ? 'بانتظار الرواتب' :
-                                                                    record.status === 'PENDING_HR' ? 'بانتظار الموارد' :
-                                                                        record.status === 'PENDING_GS' ? 'بانتظار المراقب العام' :
-                                                                            record.status === 'PENDING_SUPERVISOR' ? 'معاد للتصحيح' : 'غير معروف'}
-                                                        </Badge>
-                                                    ) : <span className="text-slate-300 font-black font-mono text-[10px] tracking-widest opacity-40">NO_DATA</span>}
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <div className="flex justify-center">
-                                                        {record && record.status === 'APPROVED' && (
-                                                            <Button
-                                                                variant="destructive"
-                                                                className="text-[10px] h-9 px-5 rounded-xl font-black bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-100/50 transition-all shadow-sm hover:shadow-rose-200"
-                                                                onClick={async () => {
-                                                                    if (confirm('هل أنت متأكد من إلغاء الاعتماد النهائي لهذا السجل وإعادته لقسم الرواتب؟')) {
-                                                                        try {
-                                                                            await rejectAttendance(record.id, 'PENDING_FINANCE');
-                                                                            showToast('تم إلغاء الاعتماد بنجاح');
-                                                                        } catch {
-                                                                            showToast('فشل العملية', 'حدث خطأ أثناء إلغاء الاعتماد', 'error');
-                                                                        }
-                                                                    }
-                                                                }}
-                                                            >
-                                                                إلغاء الاعتماد نهائياً
-                                                            </Button>
-                                                        )}
+                                                <td className="px-10 py-8 text-center">
+                                                    <div className="text-xl font-black text-slate-900 group-hover:text-emerald-800 transition-colors">
+                                                        {record?.normalDays || 0}
+                                                        <span className="text-[10px] text-slate-400 mr-2 opacity-60">يوم</span>
                                                     </div>
                                                 </td>
+                                                <td className="px-10 py-8 text-center">
+                                                    <div className="text-xl font-black text-slate-900 group-hover:text-emerald-800 transition-colors">
+                                                        {(record?.overtimeNormalDays || 0) + (record?.overtimeHolidayDays || 0) + (record?.overtimeEidDays || 0)}
+                                                        <span className="text-[10px] text-slate-400 mr-2 opacity-60">يوم</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-10 py-8 text-center">
+                                                    {!record ? (
+                                                        <Badge variant="outline" className="bg-slate-50 text-slate-400 border-dashed border-slate-200 text-[10px] font-black px-4 py-1.5 rounded-xl">لم يتم الرفع</Badge>
+                                                    ) : (
+                                                        <div className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl text-[10px] font-black tracking-widest shadow-inner ${record.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' :
+                                                            record.status === 'PENDING_SUPERVISOR' ? 'bg-rose-50 text-rose-700 ring-1 ring-rose-100' :
+                                                                'bg-amber-50 text-amber-700 ring-1 ring-amber-100'
+                                                            }`}>
+                                                            <div className={`w-2 h-2 rounded-full ${record.status === 'APPROVED' ? 'bg-emerald-500 animate-pulse' :
+                                                                record.status === 'PENDING_SUPERVISOR' ? 'bg-rose-500' :
+                                                                    'bg-amber-500'
+                                                                }`} />
+                                                            {record.status === 'APPROVED' ? 'معتمد نهائياً' :
+                                                                record.status === 'PENDING_SUPERVISOR' ? 'معاد للتصحيح' :
+                                                                    'قيد المراجعة'}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="px-10 py-8 text-center flex items-center justify-center gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        disabled={!record}
+                                                        className="h-12 px-6 rounded-2xl text-emerald-600 hover:bg-white hover:shadow-xl hover:shadow-emerald-500/10 border border-transparent hover:border-white/40 transition-all duration-500 font-black text-xs gap-3 group/btn"
+                                                    >
+                                                        <Eye className="h-4.5 w-4.5 group-hover/btn:scale-110 transition-transform" />
+                                                        التدقيق
+                                                    </Button>
+                                                </td>
                                             </tr>
-                                        )
+                                        );
                                     })}
                                     {workers.filter(w =>
                                         w.name.toLowerCase().includes(attendanceSearchTerm.toLowerCase()) ||
@@ -588,205 +620,209 @@ export const AdminView = () => {
 
             {/* Modals - Kept in parent to share state easily for now, or could be extracted too */}
             {/* Worker Modal - Modern & Responsive */}
-            {(editingItem?.type === 'worker') && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white/95 backdrop-blur-xl rounded-2xl w-full max-w-lg shadow-2xl border border-white/50 animate-in zoom-in-95 duration-300 overflow-hidden">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                            <div className="text-right">
-                                <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                                    {editingItem.data.id === 'NEW' ? 'إضافة عامل جديد' : 'تعديل بيانات العامل'}
-                                </h3>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">سجل القوى العاملة</p>
+            {
+                (editingItem?.type === 'worker' && editingItem.data) && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                        <div className="bg-white/95 backdrop-blur-xl rounded-2xl w-full max-w-lg shadow-2xl border border-white/50 animate-in zoom-in-95 duration-300 overflow-hidden">
+                            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                <div className="text-right">
+                                    <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                                        {editingItem?.data?.id === 'NEW' ? 'إضافة عامل جديد' : 'تعديل بيانات العامل'}
+                                    </h3>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">سجل القوى العاملة</p>
+                                </div>
+                                <button onClick={() => setEditingItem(null)} className="p-2 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-colors">
+                                    <span className="text-lg font-bold">✕</span>
+                                </button>
                             </div>
-                            <button onClick={() => setEditingItem(null)} className="p-2 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-colors">
-                                <span className="text-lg font-bold">✕</span>
-                            </button>
-                        </div>
-                        <form onSubmit={handleSaveWorker} className="p-6 space-y-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الرقم الوظيفي</label>
-                                    <Input
-                                        required
-                                        disabled={editingItem.data.id !== 'NEW'}
-                                        value={editingItem.data.id === 'NEW' ? editingItem.data.id_entered || '' : editingItem.data.id}
-                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, id_entered: e.target.value } })}
-                                        className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-left font-mono"
-                                        placeholder="مثال: 1024"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الاسم الكامل</label>
-                                    <Input
-                                        required
-                                        value={editingItem.data.name}
-                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
-                                        className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-right font-bold"
-                                        placeholder="أدخل اسم العامل..."
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">القطاع / الحي</label>
-                                    <select
-                                        className="w-full h-12 rounded-xl border border-slate-100 px-3 bg-slate-50/50 text-sm font-bold text-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
-                                        value={editingItem.data.areaId}
-                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } })}
-                                    >
-                                        <option value="">اختر القطاع...</option>
-                                        {areas.map(a => (
-                                            <option key={a.id} value={a.id}>{a.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">قيمة اليومية (دينار)</label>
-                                    <div className="relative">
+                            <form onSubmit={handleSaveWorker} className="p-6 space-y-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الرقم الوظيفي</label>
                                         <Input
-                                            type="number"
-                                            step="0.5"
-                                            min="0"
                                             required
-                                            value={editingItem.data.dayValue}
-                                            onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, dayValue: parseFloat(e.target.value) } })}
-                                            className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-left font-mono pl-12"
+                                            disabled={editingItem?.data?.id !== 'NEW'}
+                                            value={editingItem?.data?.id === 'NEW' ? editingItem?.data?.id_entered || '' : editingItem?.data?.id || ''}
+                                            onChange={e => editingItem && setEditingItem({ ...editingItem, data: { ...editingItem.data, id_entered: e.target.value } })}
+                                            className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-left font-mono"
+                                            placeholder="مثال: 1024"
                                         />
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400 uppercase">JOD</span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الاسم الكامل</label>
+                                        <Input
+                                            required
+                                            value={editingItem?.data?.name || ''}
+                                            onChange={e => editingItem && setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
+                                            className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-right font-bold"
+                                            placeholder="أدخل اسم العامل..."
+                                        />
                                     </div>
                                 </div>
-                            </div>
-                            <div className="pt-4 flex gap-3">
-                                <Button type="submit" disabled={isSaving} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white h-12 rounded-xl font-black shadow-lg shadow-indigo-200 transition-all active:scale-[0.98]">
-                                    {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Save className="ml-2 h-4 w-4" /> حفظ البيانات</>}
-                                </Button>
-                                <Button type="button" variant="outline" onClick={() => setEditingItem(null)} className="h-12 px-6 rounded-xl font-black border-slate-200 text-slate-600 hover:bg-slate-50">إلغاء</Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* User Modal - Modern & Responsive */}
-            {(editingItem?.type === 'user') && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white/95 backdrop-blur-xl rounded-2xl w-full max-w-[500px] shadow-2xl border border-white/50 animate-in zoom-in-95 duration-300 overflow-hidden">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                            <div className="text-right">
-                                <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                                    {editingItem.data.id === 'NEW' ? 'إضافة مستخدم جديد' : 'تعديل بيانات مستخدم'}
-                                </h3>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">إدارة صلاحيات النظام</p>
-                            </div>
-                            <button onClick={() => setEditingItem(null)} className="p-2 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-colors">
-                                <span className="text-lg font-bold">✕</span>
-                            </button>
-                        </div>
-                        <form onSubmit={handleSaveUser} className="p-6 space-y-5">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">اسم الدخول (بـ الإنجليزية)</label>
-                                    <Input
-                                        required
-                                        disabled={editingItem.data.id !== 'NEW'}
-                                        value={editingItem.data.username}
-                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, username: e.target.value } })}
-                                        className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-left font-mono"
-                                        placeholder="username"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الاسم الظاهر</label>
-                                    <Input
-                                        required
-                                        value={editingItem.data.name}
-                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
-                                        className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-right font-bold"
-                                        placeholder="الاسم الكامل..."
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الدور الوظيفي / الصلاحية</label>
-                                <select
-                                    className="w-full h-12 rounded-xl border border-slate-100 px-3 bg-slate-50/50 text-sm font-bold text-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
-                                    value={editingItem.data.role}
-                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value as UserRole } })}
-                                >
-                                    <optgroup label="الطاقم الميداني">
-                                        <option value="SUPERVISOR">مراقب ميداني</option>
-                                        <option value="GENERAL_SUPERVISOR">مراقب عام قطاعات</option>
-                                    </optgroup>
-                                    <optgroup label="الإدارة العليا">
-                                        <option value="HEALTH_DIRECTOR">مدير الدائرة الصحية</option>
-                                        <option value="HR">قسم الموارد البشرية</option>
-                                        <option value="FINANCE">قسم الرواتب والمالية</option>
-                                        <option value="MAYOR">عطوفة رئيس البلدية</option>
-                                    </optgroup>
-                                    <optgroup label="التقنيين">
-                                        <option value="ADMIN">مدير النظام الرقمي</option>
-                                    </optgroup>
-                                </select>
-                            </div>
-
-                            <div className="space-y-3">
-                                <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">نطاق الإشراف (القطاعات المتاحة)</label>
-                                <div className="border border-slate-100 rounded-xl p-4 max-h-[160px] overflow-y-auto bg-slate-50/50 shadow-inner">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="flex items-center gap-3 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-slate-100 group">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedAreaIds.length === areas.length}
-                                                onChange={(e) => {
-                                                    if (e.target.checked) {
-                                                        setSelectedAreaIds(areas.map(a => a.id));
-                                                        setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: areas.map(a => a.id).join(',') } });
-                                                    } else {
-                                                        setSelectedAreaIds([]);
-                                                        setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: '' } });
-                                                    }
-                                                }}
-                                                className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500"
-                                            />
-                                            <span className="text-[11px] font-black text-indigo-600 uppercase tracking-tighter">تحديد جميع القطاعات</span>
-                                        </label>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {areas.map(area => (
-                                                <label key={area.id} className="flex items-center gap-2 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-slate-100">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedAreaIds.includes(area.id)}
-                                                        onChange={(e) => {
-                                                            let newIds;
-                                                            if (e.target.checked) {
-                                                                newIds = [...selectedAreaIds, area.id];
-                                                            } else {
-                                                                newIds = selectedAreaIds.filter(id => id !== area.id);
-                                                            }
-                                                            setSelectedAreaIds(newIds);
-                                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: newIds.join(',') } });
-                                                        }}
-                                                        className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500"
-                                                    />
-                                                    <span className="text-[11px] font-bold text-slate-600 truncate">{area.name}</span>
-                                                </label>
+                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">القطاع / الحي</label>
+                                        <select
+                                            className="w-full h-12 rounded-xl border border-slate-100 px-3 bg-slate-50/50 text-sm font-bold text-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                                            value={editingItem?.data?.areaId || ''}
+                                            onChange={e => editingItem && setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } })}
+                                        >
+                                            <option value="">اختر القطاع...</option>
+                                            {areas.map(a => (
+                                                <option key={a.id} value={a.id}>{a.name}</option>
                                             ))}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">قيمة اليومية (دينار)</label>
+                                        <div className="relative">
+                                            <Input
+                                                type="number"
+                                                step="0.5"
+                                                min="0"
+                                                required
+                                                value={editingItem?.data?.dayValue || 0}
+                                                onChange={e => editingItem && setEditingItem({ ...editingItem, data: { ...editingItem.data, dayValue: parseFloat(e.target.value) } })}
+                                                className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-left font-mono pl-12"
+                                            />
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400 uppercase">JOD</span>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div className="pt-4 flex gap-3">
-                                <Button type="submit" disabled={isSaving} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white h-12 rounded-xl font-black shadow-lg shadow-indigo-200 transition-all active:scale-[0.98]">
-                                    {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Save className="ml-2 h-4 w-4" /> اعتماد المستخدم</>}
-                                </Button>
-                                <Button type="button" variant="outline" onClick={() => setEditingItem(null)} className="h-12 px-6 rounded-xl font-black border-slate-200 text-slate-600 hover:bg-slate-50">إلغاء</Button>
-                            </div>
-                        </form>
+                                <div className="pt-4 flex gap-3">
+                                    <Button type="submit" disabled={isSaving} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white h-12 rounded-xl font-black shadow-lg shadow-indigo-200 transition-all active:scale-[0.98]">
+                                        {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Save className="ml-2 h-4 w-4" /> حفظ البيانات</>}
+                                    </Button>
+                                    <Button type="button" variant="outline" onClick={() => setEditingItem(null)} className="h-12 px-6 rounded-xl font-black border-slate-200 text-slate-600 hover:bg-slate-50">إلغاء</Button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
+
+            {/* User Modal - Modern & Responsive */}
+            {
+                (editingItem?.type === 'user' && editingItem.data) && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                        <div className="bg-white/95 backdrop-blur-xl rounded-2xl w-full max-w-[500px] shadow-2xl border border-white/50 animate-in zoom-in-95 duration-300 overflow-hidden">
+                            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                <div className="text-right">
+                                    <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                                        {editingItem?.data?.id === 'NEW' ? 'إضافة مستخدم جديد' : 'تعديل بيانات مستخدم'}
+                                    </h3>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">إدارة صلاحيات النظام</p>
+                                </div>
+                                <button onClick={() => setEditingItem(null)} className="p-2 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-colors">
+                                    <span className="text-lg font-bold">✕</span>
+                                </button>
+                            </div>
+                            <form onSubmit={handleSaveUser} className="p-6 space-y-5">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">اسم الدخول (بـ الإنجليزية)</label>
+                                        <Input
+                                            required
+                                            disabled={editingItem?.data?.id !== 'NEW'}
+                                            value={editingItem?.data?.username || ''}
+                                            onChange={e => editingItem && setEditingItem({ ...editingItem, data: { ...editingItem.data, username: e.target.value } })}
+                                            className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-left font-mono"
+                                            placeholder="username"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الاسم الظاهر</label>
+                                        <Input
+                                            required
+                                            value={editingItem?.data?.name || ''}
+                                            onChange={e => editingItem && setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
+                                            className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-right font-bold"
+                                            placeholder="الاسم الكامل..."
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الدور الوظيفي / الصلاحية</label>
+                                    <select
+                                        className="w-full h-12 rounded-xl border border-slate-100 px-3 bg-slate-50/50 text-sm font-bold text-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                                        value={editingItem?.data?.role || 'SUPERVISOR'}
+                                        onChange={e => editingItem && setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value as UserRole } })}
+                                    >
+                                        <optgroup label="الطاقم الميداني">
+                                            <option value="SUPERVISOR">مراقب ميداني</option>
+                                            <option value="GENERAL_SUPERVISOR">مراقب عام قطاعات</option>
+                                        </optgroup>
+                                        <optgroup label="الإدارة العليا">
+                                            <option value="HEALTH_DIRECTOR">مدير الدائرة الصحية</option>
+                                            <option value="HR">قسم الموارد البشرية</option>
+                                            <option value="FINANCE">قسم الرواتب والمالية</option>
+                                            <option value="MAYOR">عطوفة رئيس البلدية</option>
+                                        </optgroup>
+                                        <optgroup label="التقنيين">
+                                            <option value="ADMIN">مدير النظام الرقمي</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">نطاق الإشراف (القطاعات المتاحة)</label>
+                                    <div className="border border-slate-100 rounded-xl p-4 max-h-[160px] overflow-y-auto bg-slate-50/50 shadow-inner">
+                                        <div className="space-y-2">
+                                            <label className="flex items-center gap-3 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-slate-100 group">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedAreaIds.length === areas.length}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setSelectedAreaIds(areas.map(a => a.id));
+                                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: areas.map(a => a.id).join(',') } });
+                                                        } else {
+                                                            setSelectedAreaIds([]);
+                                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: '' } });
+                                                        }
+                                                    }}
+                                                    className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500"
+                                                />
+                                                <span className="text-[11px] font-black text-indigo-600 uppercase tracking-tighter">تحديد جميع القطاعات</span>
+                                            </label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {areas.map(area => (
+                                                    <label key={area.id} className="flex items-center gap-2 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-slate-100">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedAreaIds.includes(area.id)}
+                                                            onChange={(e) => {
+                                                                let newIds;
+                                                                if (e.target.checked) {
+                                                                    newIds = [...selectedAreaIds, area.id];
+                                                                } else {
+                                                                    newIds = selectedAreaIds.filter(id => id !== area.id);
+                                                                }
+                                                                setSelectedAreaIds(newIds);
+                                                                setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: newIds.join(',') } });
+                                                            }}
+                                                            className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500"
+                                                        />
+                                                        <span className="text-[11px] font-bold text-slate-600 truncate">{area.name}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 flex gap-3">
+                                    <Button type="submit" disabled={isSaving} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white h-12 rounded-xl font-black shadow-lg shadow-indigo-200 transition-all active:scale-[0.98]">
+                                        {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Save className="ml-2 h-4 w-4" /> اعتماد المستخدم</>}
+                                    </Button>
+                                    <Button type="button" variant="outline" onClick={() => setEditingItem(null)} className="h-12 px-6 rounded-xl font-black border-slate-200 text-slate-600 hover:bg-slate-50">إلغاء</Button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
         </>
     );
 };

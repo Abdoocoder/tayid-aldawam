@@ -14,31 +14,37 @@ interface WorkersTabProps {
 
 export function WorkersTab({ workers, areas, searchTerm, onEditWorker, onDeleteWorker, onAddWorker }: WorkersTabProps) {
     return (
-        <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40 overflow-hidden animate-in slide-in-from-bottom-8 duration-1000">
-            <div className="p-8 border-b border-slate-100/50 flex flex-col md:flex-row justify-between items-center gap-6 bg-gradient-to-r from-blue-50/30 to-transparent">
-                <div className="flex items-center gap-6">
-                    <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-4 rounded-2xl text-blue-600 shadow-inner">
-                        <HardHat className="h-7 w-7" />
+        <div className="bg-white/40 backdrop-blur-2xl rounded-[3rem] border border-white/20 shadow-2xl shadow-blue-500/10 overflow-hidden animate-in slide-in-from-bottom-12 duration-1000">
+            <div className="p-10 border-b border-white/10 flex flex-col md:flex-row justify-between items-center gap-8 bg-gradient-to-br from-blue-600/10 via-transparent to-transparent relative">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full -mr-32 -mt-32 blur-3xl" />
+
+                <div className="relative z-10 flex items-center gap-8">
+                    <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-5 rounded-[2rem] text-white shadow-xl shadow-blue-500/20 rotate-3 group-hover:rotate-0 transition-transform duration-700">
+                        <HardHat className="h-8 w-8" />
                     </div>
                     <div>
-                        <h3 className="text-2xl font-black text-slate-900 tracking-tight">الكوادر العمالية</h3>
-                        <p className="text-xs text-slate-500 font-black uppercase tracking-widest mt-1">Workforce Management & Area Assignment</p>
+                        <h3 className="text-3xl font-black text-slate-900 tracking-tight leading-none">الكوادر العمالية</h3>
+                        <div className="flex items-center gap-2 mt-3">
+                            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                            <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.2em]">Workforce Management & Area Assignment</p>
+                        </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4 relative z-10">
                     <Button
                         variant="outline"
-                        className="h-12 px-6 rounded-2xl border-slate-200 text-slate-600 hover:bg-slate-50 font-black text-xs gap-2.5 transition-all"
+                        className="h-14 px-8 rounded-2xl border-white/40 bg-white/40 backdrop-blur-md text-slate-600 hover:bg-white hover:text-blue-600 font-black text-xs gap-3 transition-all duration-500 hover:shadow-xl shadow-blue-500/5 group"
                         onClick={() => window.print()}
                     >
-                        <Printer className="h-4 w-4" />
+                        <Printer className="h-5 w-5 group-hover:scale-110 transition-transform" />
                         نسخة ورقية
                     </Button>
                     <Button
-                        className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-200 h-12 px-8 rounded-2xl font-black text-sm gap-3 group transition-all duration-500 hover:-translate-y-0.5"
+                        className="bg-blue-600 hover:bg-blue-700 text-white shadow-2xl shadow-blue-500/30 h-16 px-10 rounded-[1.5rem] font-black text-sm gap-5 group transition-all duration-500 hover:-translate-y-1 hover:scale-105 active:scale-95"
                         onClick={onAddWorker}
                     >
-                        <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-white/20 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Plus className="h-6 w-6 group-hover:rotate-180 transition-transform duration-700" />
                         إضافة عامل جديد
                     </Button>
                 </div>
@@ -47,15 +53,15 @@ export function WorkersTab({ workers, areas, searchTerm, onEditWorker, onDeleteW
             <div className="overflow-x-auto">
                 <table className="w-full text-right">
                     <thead>
-                        <tr className="bg-slate-50/50 border-b border-slate-100/50">
-                            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">المعرف (ID)</th>
-                            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">الاسم الكامل</th>
-                            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">القطاع / الحي</th>
-                            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">الأجر اليومي</th>
-                            <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">التحكم</th>
+                        <tr className="bg-slate-50/30 border-b border-white/10">
+                            <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">المعرف (ID)</th>
+                            <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">الاسم الكامل</th>
+                            <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">القطاع / الحي</th>
+                            <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">الأجر اليومي</th>
+                            <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">التحكم</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-50">
+                    <tbody className="divide-y divide-white/10">
                         {workers.filter(w => {
                             const areaName = areas.find(a => a.id === w.areaId)?.name || "";
                             return w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -64,41 +70,45 @@ export function WorkersTab({ workers, areas, searchTerm, onEditWorker, onDeleteW
                         }).map((w) => {
                             const areaName = areas.find(a => a.id === w.areaId)?.name || "غير محدد";
                             return (
-                                <tr key={w.id} className="hover:bg-blue-50/30 transition-all duration-500 group border-b border-slate-50 last:border-0 font-bold">
-                                    <td className="px-8 py-6">
-                                        <span className="bg-slate-100 text-slate-500 px-3.5 py-1 rounded-xl font-mono text-[10px] font-black group-hover:bg-blue-100 group-hover:text-blue-600 transition-all duration-500">
+                                <tr key={w.id} className="hover:bg-blue-50/20 transition-all duration-700 group border-b border-white/5 last:border-0 font-bold">
+                                    <td className="px-10 py-8">
+                                        <span className="bg-white/60 text-slate-500 px-4 py-1.5 rounded-xl font-mono text-[11px] font-black group-hover:bg-blue-600 group-hover:text-white transition-all duration-700 shadow-sm border border-white/20 group-hover:shadow-blue-500/20">
                                             #{w.id}
                                         </span>
                                     </td>
-                                    <td className="px-8 py-6">
-                                        <div className="font-black text-slate-900 group-hover:text-blue-800 transition-colors text-sm">{w.name}</div>
+                                    <td className="px-10 py-8">
+                                        <div className="font-black text-slate-900 group-hover:text-blue-900 transition-colors text-base leading-tight">{w.name}</div>
+                                        <div className="text-[10px] text-slate-400 font-bold mt-1 bg-slate-100/50 px-2 py-0.5 rounded-md inline-block">عامل ميداني</div>
                                     </td>
-                                    <td className="px-8 py-6">
-                                        <Badge variant="secondary" className="bg-white text-slate-600 border border-slate-100/50 font-black text-[10px] px-2.5 shadow-sm group-hover:shadow-md transition-all">
-                                            <MapPin className="h-3.5 w-3.5 ml-1.5 text-blue-400 group-hover:text-blue-600 transition-colors" />
+                                    <td className="px-10 py-8 text-right">
+                                        <Badge variant="secondary" className="bg-white/80 text-slate-600 border border-white ring-1 ring-slate-100 font-black text-[10px] px-3 py-1.5 shadow-sm group-hover:shadow-xl group-hover:shadow-blue-500/10 group-hover:ring-blue-100 transition-all duration-500">
+                                            <MapPin className="h-4 w-4 ml-2 text-blue-400 group-hover:text-blue-600 transition-colors" />
                                             {areaName}
                                         </Badge>
                                     </td>
-                                    <td className="px-8 py-6 text-center">
-                                        <div className="text-sm font-black text-slate-900 group-hover:text-blue-700 transition-colors">{w.dayValue} <span className="text-[10px] text-slate-400">د.أ</span></div>
+                                    <td className="px-10 py-8 text-center">
+                                        <div className="text-lg font-black text-slate-900 group-hover:text-blue-800 transition-colors flex items-center justify-center gap-2">
+                                            <span>{w.dayValue}</span>
+                                            <span className="text-[11px] text-slate-400 opacity-60">JOD / DAY</span>
+                                        </div>
                                     </td>
-                                    <td className="px-8 py-6">
-                                        <div className="flex justify-center items-center gap-2">
+                                    <td className="px-10 py-8">
+                                        <div className="flex justify-center items-center gap-3">
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-10 w-10 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm transition-all duration-300"
+                                                className="h-12 w-12 rounded-2xl text-slate-400 hover:text-blue-600 hover:bg-white hover:shadow-xl hover:shadow-blue-500/10 border border-transparent hover:border-white/40 transition-all duration-500"
                                                 onClick={() => onEditWorker(w)}
                                             >
-                                                <Edit2 className="h-4 w-4" />
+                                                <Edit2 className="h-4.5 w-4.5" />
                                             </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-10 w-10 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all duration-300"
+                                                className="h-12 w-12 rounded-2xl text-slate-400 hover:text-rose-600 hover:bg-white hover:shadow-xl hover:shadow-rose-500/10 border border-transparent hover:border-white/40 transition-all duration-500"
                                                 onClick={() => onDeleteWorker(w.id)}
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <Trash2 className="h-4.5 w-4.5" />
                                             </Button>
                                         </div>
                                     </td>
