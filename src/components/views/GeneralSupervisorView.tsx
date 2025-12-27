@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useAttendance } from "@/context/AttendanceContext";
+import React, { useState, useMemo, useCallback } from "react";
+import { useAttendance, type Worker, type User, type AttendanceRecord } from "@/context/AttendanceContext";
 import { MonthYearPicker } from "../ui/month-year-picker";
 import { Button } from "../ui/button";
 import { MobileNav } from "../ui/mobile-nav";
@@ -11,20 +11,30 @@ import {
     ShieldCheck,
     Loader2,
     CheckCircle,
-    Menu
+    Menu,
+    Clock,
+    History,
+    LayoutGrid,
+    Activity,
+    Users,
+    Shield,
+    MapPin
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 import Image from "next/image";
 
+type ViewTab = 'requests' | 'history' | 'areas' | 'workers' | 'supervisors';
+
 export function GeneralSupervisorView() {
-    const { currentUser, workers, attendanceRecords, areas, approveAttendance, rejectAttendance, isLoading } = useAttendance();
+    const { currentUser, workers, users, attendanceRecords, areas, approveAttendance, rejectAttendance, isLoading } = useAttendance();
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<ViewTab>('requests');
 
     const navItems = [
-        { id: 'overview', label: 'اعتمادات المراقبين', icon: ShieldCheck },
+        { id: 'overview', label: 'الرئيسية', icon: LayoutGrid },
         { id: 'print', label: 'طباعة كشف', icon: Printer },
     ];
     const [searchTerm, setSearchTerm] = useState("");
@@ -32,32 +42,100 @@ export function GeneralSupervisorView() {
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
 
-    const supervisorAreas = areas.filter(a =>
+    const isResponsibleForArea = useCallback((areaId: string) =>
         currentUser?.role === 'ADMIN' ||
         currentUser?.areaId === 'ALL' ||
-        currentUser?.areas?.some(ca => ca.id === a.id)
-    );
+        currentUser?.areas?.some(a => a.id === areaId), [currentUser]);
 
-    const filteredRecords = attendanceRecords.filter(r => {
-        const worker = workers.find(w => w.id === r.workerId);
-        if (!worker) return false;
+    const supervisorAreas = useMemo(() => areas.filter(a => isResponsibleForArea(a.id)), [areas, isResponsibleForArea]);
 
-        const isCorrectPeriod = r.month === month && r.year === year;
-        const isPendingGS = r.status === 'PENDING_GS';
-        const matchesArea = selectedAreaId === 'ALL' || worker.areaId === selectedAreaId;
-        const matchesSearch = worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            worker.id.includes(searchTerm);
+    // Derived Data
+    const { pendingRecords, historyRecords, areaProgress, responsibleSupervisors, responsibleWorkers } = useMemo(() => {
+        const periodRecords = attendanceRecords.filter(r => r.month === month && r.year === year);
 
-        // Only show records in areas this GS is responsible for
-        const isResponsibleArea =
-            currentUser?.role === 'ADMIN' ||
-            currentUser?.areaId === 'ALL' ||
-            currentUser?.areas?.some(a => a.id === worker.areaId);
+        const pending = periodRecords.filter(r => {
+            const worker = workers.find(w => w.id === r.workerId);
+            if (!worker || !isResponsibleForArea(worker.areaId)) return false;
+            return r.status === 'PENDING_GS';
+        });
 
-        return isCorrectPeriod && isPendingGS && matchesArea && matchesSearch && isResponsibleArea;
-    });
+        const history = periodRecords.filter(r => {
+            const worker = workers.find(w => w.id === r.workerId);
+            if (!worker || !isResponsibleForArea(worker.areaId)) return false;
+            return r.status !== 'PENDING_SUPERVISOR' && r.status !== 'PENDING_GS';
+        });
 
-    // Stable print metadata - generated on mount to fix purity lint errors
+        // Workers assigned to these areas
+        const resWorkers = workers.filter(w => isResponsibleForArea(w.areaId));
+
+        // Supervisors assigned to these areas
+        const resSupervisors = users.filter(u =>
+            u.role === 'SUPERVISOR' &&
+            (u.areaId && isResponsibleForArea(u.areaId) || u.areas?.some(a => isResponsibleForArea(a.id)))
+        );
+
+        // Area Progress
+        const areaStats = supervisorAreas.map(area => {
+            const areaWorkers = workers.filter(w => w.areaId === area.id);
+            const areaRecords = periodRecords.filter(r => areaWorkers.some(w => w.id === r.workerId));
+            const approvedCount = areaRecords.filter(r => r.status !== 'PENDING_SUPERVISOR' && r.status !== 'PENDING_GS').length;
+            const pendingGSCount = areaRecords.filter(r => r.status === 'PENDING_GS').length;
+            const pendingSupCount = areaRecords.filter(r => r.status === 'PENDING_SUPERVISOR').length;
+
+            const areaSupervisor = users.find(u =>
+                u.role === 'SUPERVISOR' &&
+                (u.areaId === area.id || u.areas?.some(a => a.id === area.id))
+            );
+
+            return {
+                ...area,
+                totalWorkersCount: areaWorkers.length,
+                submittedCount: areaRecords.length,
+                approvedCount: approvedCount,
+                pendingGSCount: pendingGSCount,
+                pendingSupCount: pendingSupCount,
+                supervisorName: areaSupervisor?.name || 'غير معين',
+                status: areaWorkers.length === 0 ? 'NOT_STARTED' :
+                    (approvedCount === areaWorkers.length ? 'COMPLETED' : 'IN_PROGRESS')
+            };
+        });
+
+        return {
+            pendingRecords: pending,
+            historyRecords: history,
+            areaProgress: areaStats,
+            responsibleSupervisors: resSupervisors,
+            responsibleWorkers: resWorkers
+        };
+    }, [attendanceRecords, workers, users, month, year, supervisorAreas, isResponsibleForArea]);
+
+    const filteredRecords = useMemo(() => {
+        if (activeTab === 'workers') {
+            return responsibleWorkers.filter(w =>
+                (selectedAreaId === 'ALL' || w.areaId === selectedAreaId) &&
+                (w.name.toLowerCase().includes(searchTerm.toLowerCase()) || w.id.includes(searchTerm))
+            );
+        }
+        if (activeTab === 'supervisors') {
+            return responsibleSupervisors.filter(u =>
+                (selectedAreaId === 'ALL' || u.areaId === selectedAreaId || u.areas?.some(a => a.id === selectedAreaId)) &&
+                (u.name.toLowerCase().includes(searchTerm.toLowerCase()) || u.username.toLowerCase().includes(searchTerm.toLowerCase()))
+            );
+        }
+
+        const base = activeTab === 'requests' ? pendingRecords : historyRecords;
+        return base.filter(r => {
+            const worker = workers.find(w => w.id === r.workerId);
+            if (!worker) return false;
+
+            const matchesArea = selectedAreaId === 'ALL' || worker.areaId === selectedAreaId;
+            const matchesSearch = worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                worker.id.includes(searchTerm);
+
+            return matchesArea && matchesSearch;
+        });
+    }, [activeTab, pendingRecords, historyRecords, responsibleWorkers, responsibleSupervisors, workers, selectedAreaId, searchTerm]);
+
     const [printMetadata] = useState(() => ({
         date: new Date().toLocaleDateString('ar-JO'),
         ref: `GS-${Math.random().toString(36).substring(7).toUpperCase()}`
@@ -78,6 +156,16 @@ export function GeneralSupervisorView() {
         }
     };
 
+    const handleBulkApprove = async () => {
+        const ids = pendingRecords.map(r => r.id);
+        const confirmBulk = confirm(`هل أنت متأكد من اعتماد ${ids.length} سجلات دفعة واحدة؟`);
+        if (!confirmBulk) return;
+
+        for (const id of ids) {
+            await handleApprove(id);
+        }
+    };
+
     const handleReject = async (recordId: string) => {
         if (!confirm("هل أنت متأكد من رفض هذا السجل وإعادته للمراقب؟")) return;
         setRejectingIds(prev => new Set(prev).add(recordId));
@@ -91,16 +179,6 @@ export function GeneralSupervisorView() {
                 next.delete(recordId);
                 return next;
             });
-        }
-    };
-
-    const handleBulkApprove = async () => {
-        const ids = filteredRecords.map(r => r.id);
-        const confirmBulk = confirm(`هل أنت متأكد من اعتماد ${ids.length} سجلات دفعة واحدة؟`);
-        if (!confirmBulk) return;
-
-        for (const id of ids) {
-            await handleApprove(id);
         }
     };
 
@@ -124,8 +202,7 @@ export function GeneralSupervisorView() {
             />
 
             <div className="space-y-6 pb-24 print:hidden">
-                {/* Header & Month Picker - Sticky and Glassmorphic */}
-                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/70 backdrop-blur-xl border-b border-white/40 shadow-sm">
                     <div className="max-w-7xl mx-auto flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <div className="bg-gradient-to-br from-indigo-600 to-violet-600 p-2.5 rounded-2xl text-white shadow-lg shadow-indigo-500/20 ring-1 ring-white/30">
@@ -145,14 +222,13 @@ export function GeneralSupervisorView() {
                                 className="hidden md:flex gap-2 text-indigo-600 hover:bg-indigo-50 px-3 rounded-xl border border-transparent font-black"
                             >
                                 <Printer className="h-4 w-4" />
-                                <span className="text-xs">طباعة الشعار</span>
+                                <span className="text-xs">طباعة</span>
                             </Button>
 
                             <div className="hidden md:block">
                                 <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                             </div>
 
-                            {/* Mobile Menu Trigger */}
                             <button
                                 onClick={() => setIsMobileNavOpen(true)}
                                 className="md:hidden p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
@@ -161,167 +237,296 @@ export function GeneralSupervisorView() {
                             </button>
                         </div>
                     </div>
-
-                    {/* Mobile Date Picker Bar */}
-                    <div className="md:hidden mt-3 px-1">
-                        <div className="bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner w-full">
-                            <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
-                        </div>
-                    </div>
                 </div>
 
-                {/* Quick Stats Grid - Mobile Optimized */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 px-1 fill-mode-both animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
-                    <div className="relative col-span-2 md:col-span-1 border-none shadow-sm bg-gradient-to-br from-indigo-50 to-indigo-100/30 ring-1 ring-indigo-100 rounded-2xl overflow-hidden group p-5 flex items-center gap-5 transition-all duration-300 hover:shadow-md">
-                        {/* Background Watermark Icon */}
-                        <CheckCircle className="absolute -bottom-2 -right-2 h-20 w-20 opacity-[0.08] text-indigo-600 rotate-12 group-hover:scale-110 transition-transform duration-500" />
-
-                        <div className="relative z-10 bg-white/80 backdrop-blur-sm p-4 rounded-xl text-indigo-600 shadow-sm border border-indigo-50 group-hover:scale-110 transition-transform">
-                            <CheckCircle className="h-6 w-6" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-1">
+                    <div className="relative border-none shadow-sm bg-gradient-to-br from-rose-50 to-rose-100/30 ring-1 ring-rose-100 rounded-2xl overflow-hidden p-5 flex items-center gap-5">
+                        <div className="relative z-10 bg-white/80 backdrop-blur-sm p-4 rounded-xl text-rose-600 shadow-sm border border-rose-50">
+                            <Clock className="h-6 w-6" />
                         </div>
                         <div className="relative z-10">
-                            <p className="text-[10px] text-indigo-600 font-black uppercase tracking-widest mb-1">بانتظار اعتمادك</p>
+                            <p className="text-[10px] text-rose-600 font-black uppercase tracking-widest mb-1">بانتظار الاعتماد</p>
                             <div className="flex items-baseline gap-2">
-                                <p className="text-3xl font-black text-indigo-900 leading-none">{filteredRecords.length}</p>
-                                <p className="text-xs text-indigo-400 font-bold uppercase">كشف متبقي</p>
+                                <p className="text-3xl font-black text-rose-900 leading-none">{pendingRecords.length}</p>
+                                <p className="text-xs text-rose-400 font-bold uppercase">كشف معلق</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="relative border-none shadow-sm bg-gradient-to-br from-indigo-50 to-indigo-100/30 ring-1 ring-indigo-100 rounded-2xl overflow-hidden p-5 flex items-center gap-5">
+                        <div className="relative z-10 bg-white/80 backdrop-blur-sm p-4 rounded-xl text-indigo-600 shadow-sm border border-indigo-50">
+                            <Activity className="h-6 w-6" />
+                        </div>
+                        <div className="relative z-10">
+                            <p className="text-[10px] text-indigo-600 font-black uppercase tracking-widest mb-1">إنجاز الشهر</p>
+                            <div className="flex items-baseline gap-2">
+                                <p className="text-3xl font-black text-indigo-900 leading-none">
+                                    {Math.round((historyRecords.length / (pendingRecords.length + historyRecords.length || 1)) * 100)}%
+                                </p>
+                                <p className="text-xs text-indigo-400 font-bold uppercase">تم تدقيقه</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="relative border-none shadow-sm bg-gradient-to-br from-emerald-50 to-emerald-100/30 ring-1 ring-emerald-100 rounded-2xl overflow-hidden p-5 flex items-center gap-5">
+                        <div className="relative z-10 bg-white/80 backdrop-blur-sm p-4 rounded-xl text-emerald-600 shadow-sm border border-emerald-50">
+                            <LayoutGrid className="h-6 w-6" />
+                        </div>
+                        <div className="relative z-10">
+                            <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mb-1">تغطية القطاعات</p>
+                            <div className="flex items-baseline gap-2">
+                                <p className="text-3xl font-black text-emerald-900 leading-none">
+                                    {areaProgress.filter(a => a.status === 'COMPLETED').length} / {areaProgress.length}
+                                </p>
+                                <p className="text-xs text-emerald-400 font-bold uppercase">قطاع مكتمل</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Filters & Actions - Mobile Optimized */}
-                <div className="flex flex-col gap-4 px-1 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <div className="relative flex-1 group">
-                            <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
-                            <Input
-                                placeholder="بحث عن عامل أو رقم..."
-                                className="pr-12 h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-indigo-500 rounded-2xl shadow-sm shadow-indigo-900/5 text-base"
-                                value={searchTerm}
-                                onChange={e => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <Select
-                            className="h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-indigo-500 rounded-2xl shadow-sm shadow-indigo-900/5 font-bold text-slate-700 min-w-[200px]"
-                            value={selectedAreaId}
-                            onChange={e => setSelectedAreaId(e.target.value)}
-                        >
-                            <option value="ALL">جميع قطاعاتي</option>
-                            {supervisorAreas.map(area => (
-                                <option key={area.id} value={area.id}>{area.name}</option>
-                            ))}
-                        </Select>
+                <div className="overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+                    <div className="flex p-1 bg-slate-100/80 backdrop-blur-md rounded-2xl border border-slate-200/50 min-w-max md:min-w-0 md:w-full gap-1">
+                        {[
+                            { id: 'requests', label: 'الطلبات', icon: Clock },
+                            { id: 'history', label: 'السجل', icon: History },
+                            { id: 'areas', label: 'المناطق', icon: MapPin },
+                            { id: 'workers', label: 'العمال', icon: Users },
+                            { id: 'supervisors', label: 'المراقبين', icon: Shield },
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id as ViewTab)}
+                                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 font-black text-sm whitespace-nowrap ${activeTab === tab.id
+                                    ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200'
+                                    : 'text-slate-500 hover:text-slate-700'
+                                    }`}
+                            >
+                                <tab.icon className="h-4 w-4" />
+                                {tab.label}
+                            </button>
+                        ))}
                     </div>
-
-                    {filteredRecords.length > 0 && (
-                        <Button
-                            onClick={handleBulkApprove}
-                            className="h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                        >
-                            <ShieldCheck className="h-5 w-5" />
-                            اعتماد الكل ({filteredRecords.length})
-                        </Button>
-                    )}
                 </div>
 
-                {/* Records Table - Premium Design */}
-                <div className="bg-white/40 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/50 border border-white/60 overflow-hidden mx-1 animate-in fade-in duration-1000 fill-mode-both">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-right border-collapse">
-                            <thead>
-                                <tr className="bg-slate-50/50 text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
-                                    <th className="p-5">العامل</th>
-                                    <th className="p-5">المنطقة</th>
-                                    <th className="p-5 text-center">أيام الدوام</th>
-                                    <th className="p-5 text-center">الإضافي (ع/هـ/ع)</th>
-                                    <th className="p-5 text-center font-black">الإجمالي</th>
-                                    <th className="p-5 text-center">الاعتماد</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {filteredRecords.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={6} className="p-20 text-center">
-                                            <div className="max-w-xs mx-auto space-y-4 opacity-30 select-none">
-                                                <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
-                                                    <Search className="h-10 w-10 text-slate-400" />
-                                                </div>
-                                                <p className="font-black text-xl italic tracking-tight text-slate-900 uppercase">لا توجد سجلات</p>
-                                                <p className="text-sm font-bold text-slate-500">تم اعتماد جميع الكشوفات المعلقة لهذا الشهر.</p>
+                {activeTab !== 'areas' && (
+                    <div className="flex flex-col gap-4 px-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <div className="relative flex-1 group">
+                                <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                                <Input
+                                    placeholder="بحث..."
+                                    className="pr-12 h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-indigo-500 rounded-2xl shadow-sm text-base"
+                                    value={searchTerm}
+                                    onChange={e => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <Select
+                                className="h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-indigo-500 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[200px]"
+                                value={selectedAreaId}
+                                onChange={e => setSelectedAreaId(e.target.value)}
+                            >
+                                <option value="ALL">جميع مناطق إشرافي</option>
+                                {supervisorAreas.map(area => (
+                                    <option key={area.id} value={area.id}>{area.name}</option>
+                                ))}
+                            </Select>
+                        </div>
+
+                        {activeTab === 'requests' && pendingRecords.length > 0 && (
+                            <Button
+                                onClick={handleBulkApprove}
+                                className="h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            >
+                                <ShieldCheck className="h-5 w-5" />
+                                اعتماد الكل ({pendingRecords.length})
+                            </Button>
+                        )}
+                    </div>
+                )}
+
+                <div className="px-1 animate-in fade-in duration-700">
+                    {activeTab === 'areas' ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {areaProgress.map(area => (
+                                <div key={area.id} className="bg-white/80 backdrop-blur-md p-5 rounded-2xl border border-white shadow-sm hover:shadow-md transition-all group">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h3 className="font-black text-slate-900 group-hover:text-indigo-600 transition-colors">{area.name}</h3>
+                                            <div className="flex items-center gap-1.5 mt-1">
+                                                <Shield className="h-3 w-3 text-slate-400" />
+                                                <p className="text-[10px] text-slate-500 font-bold uppercase">{area.supervisorName}</p>
                                             </div>
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    filteredRecords.map(record => {
-                                        const worker = workers.find(w => w.id === record.workerId);
-                                        const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
-                                        return (
-                                            <tr key={record.id} className="hover:bg-indigo-50/30 transition-all duration-300 group">
-                                                <td className="p-5">
-                                                    <div className="flex flex-col text-right">
-                                                        <span className="font-black text-slate-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{worker?.name}</span>
-                                                        <span className="text-[10px] text-slate-400 font-mono tracking-tighter">ID: {worker?.id}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="p-5">
-                                                    <div className="inline-flex items-center px-3 py-1 bg-white/60 text-slate-600 rounded-full text-[10px] font-black border border-slate-100 uppercase tracking-tighter">
-                                                        {areaName}
-                                                    </div>
-                                                </td>
-                                                <td className="p-5 text-center font-black text-slate-700">{record.normalDays}</td>
-                                                <td className="p-5 text-center">
-                                                    <div className="flex justify-center items-center gap-1.5">
-                                                        <span className="text-[11px] font-black text-indigo-600 bg-white/80 px-2 py-0.5 rounded-lg border border-indigo-50 ring-1 ring-indigo-50/50">
-                                                            {record.overtimeNormalDays} / {record.overtimeHolidayDays} / {record.overtimeEidDays}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="p-5 text-center">
-                                                    <div className="inline-flex items-center justify-center min-w-[3rem] h-10 px-3 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 text-indigo-700 font-black text-lg shadow-inner border border-indigo-100/30">
-                                                        {record.totalCalculatedDays}
-                                                    </div>
-                                                </td>
-                                                <td className="p-5">
-                                                    <div className="flex items-center justify-center gap-2">
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() => handleApprove(record.id)}
-                                                            disabled={approvingIds.has(record.id)}
-                                                            className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl shadow-lg shadow-emerald-200 transition-all active:scale-95"
-                                                        >
-                                                            {approvingIds.has(record.id) ? (
-                                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                                            ) : (
-                                                                "اعتماد"
-                                                            )}
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            onClick={() => handleReject(record.id)}
-                                                            disabled={rejectingIds.has(record.id) || approvingIds.has(record.id)}
-                                                            className="h-9 px-3 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-bold rounded-xl"
-                                                        >
-                                                            {rejectingIds.has(record.id) ? (
-                                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                                            ) : (
-                                                                "رفض"
-                                                            )}
-                                                        </Button>
-                                                    </div>
+                                        </div>
+                                        <div className={`px-3 py-1 rounded-full text-[10px] font-black ${area.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+                                            area.status === 'IN_PROGRESS' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                                                'bg-slate-50 text-slate-400 border border-slate-100'
+                                            }`}>
+                                            {area.status === 'COMPLETED' ? 'مكتمل' :
+                                                area.status === 'IN_PROGRESS' ? 'قيد العمل' : 'لم يبدأ'}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between text-xs font-bold">
+                                            <span className="text-slate-500">نسبة الإنجاز</span>
+                                            <span className="text-indigo-600">{Math.round((area.approvedCount / (area.totalWorkersCount || 1)) * 100)}%</span>
+                                        </div>
+                                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-indigo-500 transition-all duration-500"
+                                                style={{ width: `${(area.approvedCount / (area.totalWorkersCount || 1)) * 100}%` }}
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 mt-4">
+                                            <div className="p-2 bg-indigo-50/50 rounded-xl border border-indigo-100/50 text-center">
+                                                <p className="text-[10px] text-indigo-400 font-bold uppercase">عندك</p>
+                                                <p className="text-lg font-black text-indigo-700">{area.pendingGSCount}</p>
+                                            </div>
+                                            <div className="p-2 bg-amber-50/50 rounded-xl border border-amber-100/50 text-center">
+                                                <p className="text-[10px] text-amber-400 font-bold uppercase">عند المراقب</p>
+                                                <p className="text-lg font-black text-amber-700">{area.pendingSupCount}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (activeTab === 'workers' || activeTab === 'requests' || activeTab === 'history') ? (
+                        <div className="bg-white/40 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/50 border border-white/60 overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-right border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50/50 text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
+                                            <th className="p-5">العامل</th>
+                                            <th className="p-5">المنطقة</th>
+                                            <th className="p-5 text-center">عادية</th>
+                                            <th className="p-5 text-center">إضافي (ع)</th>
+                                            <th className="p-5 text-center">إضافي (ع/ج)</th>
+                                            <th className="p-5 text-center">أعياد</th>
+                                            {activeTab !== 'workers' && <th className="p-5 text-center">الإجمالي</th>}
+                                            {activeTab !== 'workers' && <th className="p-5 text-center">{activeTab === 'requests' ? 'الاعتماد' : 'الحالة'}</th>}
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {filteredRecords.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={activeTab === 'workers' ? 6 : 8} className="p-20 text-center text-slate-400 font-bold">
+                                                    لا توجد بيانات مطابقة للبحث
                                                 </td>
                                             </tr>
-                                        );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                        ) : (
+                                            (filteredRecords as (Worker | AttendanceRecord)[]).map((item) => {
+                                                const worker = activeTab === 'workers' ? (item as Worker) : workers.find(w => w.id === (item as AttendanceRecord).workerId);
+                                                const record = activeTab === 'workers' ? attendanceRecords.find(r => r.workerId === (item as Worker).id && r.month === month && r.year === year) : (item as AttendanceRecord);
+                                                const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
 
+                                                return (
+                                                    <tr key={item.id} className="hover:bg-indigo-50/30 transition-all group">
+                                                        <td className="p-5">
+                                                            <div className="flex flex-col">
+                                                                <span className="font-black text-slate-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{worker?.name}</span>
+                                                                <span className="text-[10px] text-slate-400 font-mono">ID: {worker?.id}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-5">
+                                                            <span className="text-xs font-bold text-slate-600">{areaName}</span>
+                                                        </td>
+                                                        <td className="p-5 text-center font-black text-slate-700">{record?.normalDays || 0}</td>
+                                                        <td className="p-5 text-center font-black text-indigo-600">{record?.overtimeNormalDays || 0}</td>
+                                                        <td className="p-5 text-center font-black text-amber-600">{record?.overtimeHolidayDays || 0}</td>
+                                                        <td className="p-5 text-center font-black text-rose-600">{record?.overtimeEidDays || 0}</td>
+                                                        {activeTab !== 'workers' && (
+                                                            <td className="p-5 text-center">
+                                                                <div className="inline-flex items-center justify-center min-w-[3rem] h-10 px-3 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 text-indigo-700 font-black text-lg border border-indigo-100/30">
+                                                                    {record?.totalCalculatedDays || 0}
+                                                                </div>
+                                                            </td>
+                                                        )}
+                                                        {activeTab !== 'workers' && (
+                                                            <td className="p-5">
+                                                                <div className="flex items-center justify-center gap-2">
+                                                                    {activeTab === 'requests' ? (
+                                                                        <>
+                                                                            <Button
+                                                                                size="sm"
+                                                                                onClick={() => handleApprove(record!.id)}
+                                                                                disabled={approvingIds.has(record!.id)}
+                                                                                className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl shadow-lg shadow-emerald-200 transition-all active:scale-95"
+                                                                            >
+                                                                                {approvingIds.has(record!.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : "اعتماد"}
+                                                                            </Button>
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="ghost"
+                                                                                onClick={() => handleReject(record!.id)}
+                                                                                disabled={rejectingIds.has(record!.id) || approvingIds.has(record!.id)}
+                                                                                className="h-9 px-3 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-bold rounded-xl"
+                                                                            >
+                                                                                {rejectingIds.has(record!.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : "رفض"}
+                                                                            </Button>
+                                                                        </>
+                                                                    ) : (
+                                                                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-black text-[10px] ${record!.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                                            record!.status.startsWith('PENDING') ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                                                'bg-slate-50 text-slate-500 border-slate-100'
+                                                                            }`}>
+                                                                            {record!.status === 'APPROVED' ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                                                                            {record!.status === 'APPROVED' ? 'تم الاعتماد النهائي' :
+                                                                                record!.status === 'PENDING_HEALTH' ? 'عند مدير الصحة' :
+                                                                                    record!.status === 'PENDING_HR' ? 'عند شؤون الموظفين' :
+                                                                                        record!.status === 'PENDING_FINANCE' ? 'عند المالية' : 'قيد المعالجة'}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        )}
+                                                    </tr>
+                                                );
+                                            })
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ) : activeTab === 'supervisors' ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {(filteredRecords as User[]).map((sup) => {
+                                const supAreas = areas.filter(a => a.id === sup.areaId || sup.areas?.some((ca) => ca.id === a.id));
+                                return (
+                                    <div key={sup.id} className="bg-white/80 backdrop-blur-md p-5 rounded-2xl border border-white shadow-sm hover:shadow-md transition-all">
+                                        <div className="flex items-center gap-4 mb-4">
+                                            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-lg ring-4 ring-indigo-50">
+                                                <Shield className="h-6 w-6" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-black text-slate-900 leading-none">{sup.name}</h3>
+                                                <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-tighter">@{sup.username}</p>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">المناطق المسؤولة</p>
+                                            <div className="flex flex-wrap gap-1">
+                                                {supAreas.map(a => (
+                                                    <span key={a.id} className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black border border-indigo-100">
+                                                        {a.name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="mt-4 pt-4 border-t border-slate-50 flex justify-between items-center">
+                                            <span className={`flex items-center gap-1.5 text-[10px] font-black ${sup.isActive ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                                <span className={`h-1.5 w-1.5 rounded-full ${sup.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                                                {sup.isActive ? 'نشط' : 'غير نشط'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : null}
+                </div>
             </div>
 
-            {/* Printable Area - Standardized Official Layout */}
             <div className="hidden print:block font-sans">
                 <div className="text-center mb-10 border-b-[6px] border-emerald-700 pb-8">
                     <div className="flex justify-between items-center mb-6">
@@ -336,44 +541,40 @@ export function GeneralSupervisorView() {
                             <p>الرقم: AD/{printMetadata.ref}</p>
                         </div>
                     </div>
-                    <h1 className="text-4xl font-black text-slate-900 mb-2">تقرير تدقيق ومراجعة المراقب العام</h1>
-                    <div className="flex justify-center gap-12 mt-4 text-slate-600 font-black">
-                        <p>الشهر: <span className="text-emerald-700">{month}</span></p>
-                        <p>السنة: <span className="text-emerald-700">{year}</span></p>
-                        <p>المراقب العام: <span className="text-emerald-700">{currentUser?.name}</span></p>
-                    </div>
                 </div>
 
-                <table className="w-full border-collapse text-sm mb-12">
+                <table className="w-full border-collapse text-[10px] mb-12">
                     <thead>
                         <tr className="bg-slate-100 font-black border-2 border-slate-900">
-                            <th className="border-2 border-slate-900 p-3 text-right">م</th>
-                            <th className="border-2 border-slate-900 p-3 text-right">اسم العامل</th>
-                            <th className="border-2 border-slate-900 p-3 text-right">المنطقة</th>
-                            <th className="border-2 border-slate-900 p-3 text-center">أيام عادية</th>
-                            <th className="border-2 border-slate-900 p-3 text-center text-[10px]">إضافي عادي (0.5)</th>
-                            <th className="border-2 border-slate-900 p-3 text-center text-[10px]">إضافي عطل (1.0)</th>
-                            <th className="border-2 border-slate-900 p-3 text-center text-[10px]">أيام أعياد (1.0)</th>
-                            <th className="border-2 border-slate-900 p-3 text-center font-black bg-slate-50">إجمالي الأيام</th>
+                            <th className="border-2 border-slate-900 p-2 text-right">م</th>
+                            <th className="border-2 border-slate-900 p-2 text-right">اسم العامل</th>
+                            <th className="border-2 border-slate-900 p-2 text-right">المنطقة</th>
+                            <th className="border-2 border-slate-900 p-2 text-center">أيام عادية</th>
+                            <th className="border-2 border-slate-900 p-2 text-center">إضافي (0.5)</th>
+                            <th className="border-2 border-slate-900 p-2 text-center">إضافي (1.0)</th>
+                            <th className="border-2 border-slate-900 p-2 text-center">أعياد (1.0)</th>
+                            <th className="border-2 border-slate-900 p-2 text-center font-black bg-slate-50">إجمالي الأيام</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredRecords.map((record, index) => {
-                            const worker = workers.find(w => w.id === record.workerId);
-                            const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
-                            return (
-                                <tr key={record.id} className="border-b-2 border-slate-400">
-                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{index + 1}</td>
-                                    <td className="border-2 border-slate-900 p-3 font-black">{worker?.name}</td>
-                                    <td className="border-2 border-slate-900 p-3">{areaName}</td>
-                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{record.normalDays}</td>
-                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{record.overtimeNormalDays}</td>
-                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{record.overtimeHolidayDays}</td>
-                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{record.overtimeEidDays || 0}</td>
-                                    <td className="border-2 border-slate-900 p-3 text-center font-black bg-slate-50">{record.totalCalculatedDays}</td>
-                                </tr>
-                            );
-                        })}
+                        {(activeTab === 'requests' ? pendingRecords :
+                            activeTab === 'history' ? historyRecords : (filteredRecords as (AttendanceRecord | Worker)[])).map((item, index: number) => {
+                                const worker = activeTab === 'workers' ? (item as Worker) : workers.find(w => w.id === (item as AttendanceRecord).workerId);
+                                const record = activeTab === 'workers' ? attendanceRecords.find(r => r.workerId === (item as Worker).id && r.month === month && r.year === year) : (item as AttendanceRecord);
+                                const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
+                                return (
+                                    <tr key={'id' in item ? item.id : index} className="border-b-2 border-slate-400">
+                                        <td className="border-2 border-slate-900 p-2 text-center font-bold">{index + 1}</td>
+                                        <td className="border-2 border-slate-900 p-2 font-black">{worker?.name}</td>
+                                        <td className="border-2 border-slate-900 p-2">{areaName}</td>
+                                        <td className="border-2 border-slate-900 p-2 text-center font-bold">{record?.normalDays || 0}</td>
+                                        <td className="border-2 border-slate-900 p-2 text-center font-bold">{record?.overtimeNormalDays || 0}</td>
+                                        <td className="border-2 border-slate-900 p-2 text-center font-bold">{record?.overtimeHolidayDays || 0}</td>
+                                        <td className="border-2 border-slate-900 p-2 text-center font-bold">{record?.overtimeEidDays || 0}</td>
+                                        <td className="border-2 border-slate-900 p-2 text-center font-black bg-slate-50">{record?.totalCalculatedDays || 0}</td>
+                                    </tr>
+                                );
+                            })}
                     </tbody>
                 </table>
 
@@ -381,24 +582,18 @@ export function GeneralSupervisorView() {
                     <div className="space-y-16 text-center">
                         <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">توقيع المراقب العام</p>
                         <div className="h-20" />
-                        <p className="font-bold text-slate-400 text-xs">الاسم والتوقيع</p>
+                        <p className="font-bold text-slate-400 text-xs text-center">الاسم والتوقيع</p>
                     </div>
                     <div className="space-y-16 text-center">
                         <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">تدقيق الدائرة الصحية</p>
                         <div className="h-20" />
-                        <p className="font-bold text-slate-400 text-xs">الاسم والتوقيع</p>
+                        <p className="font-bold text-slate-400 text-xs text-center">الاسم والتوقيع</p>
                     </div>
                     <div className="space-y-16 text-center">
                         <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">اعتماد عطوفة العمدة</p>
                         <div className="h-20" />
                         <p className="font-bold text-slate-400 text-[10px] border-2 border-dashed border-slate-200 rounded-full w-24 h-24 flex items-center justify-center mx-auto">ختم رئاسة البلدية</p>
                     </div>
-                </div>
-
-                <div className="mt-32 pt-8 border-t border-slate-200 text-center">
-                    <p className="text-[10px] text-slate-400 font-mono tracking-widest">
-                        نظام تأييد الدوام الذكي - التاريخ: {printMetadata.date} - الرقم المرجعي: {printMetadata.ref}
-                    </p>
                 </div>
             </div>
         </>
