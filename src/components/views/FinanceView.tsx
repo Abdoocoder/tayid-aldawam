@@ -199,33 +199,38 @@ export function FinanceView() {
                 </div>
 
                 {/* Quick Stats Grid - New Pattern */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
                     {[
-                        { label: 'إجمالي المستحقات', value: stats.totalAmount.toLocaleString(), unit: 'د.أ', icon: DollarSign, color: 'amber', trend: 'المعتمدة حالياً' },
-                        { label: 'العمال المكتملين', value: stats.workersCount, unit: 'عامل', icon: Users, color: 'emerald', trend: 'جاهز للصرف' },
-                        { label: 'صافي أيام العمل', value: stats.totalDays, unit: 'يوم', icon: Calendar, color: 'blue', trend: 'مجموع الساعات' },
-                        { label: 'متوسط الأجور', value: stats.avgSalary.toFixed(1), unit: 'د.أ', icon: TrendingUp, color: 'indigo', trend: 'لكل عامل' }
+                        { label: 'إجمالي المستحقات', value: stats.totalAmount.toLocaleString(), unit: 'د.أ', icon: DollarSign, color: 'amber', trend: 'المعتمدة حالياً', gradient: 'from-amber-500/10 to-amber-600/5' },
+                        { label: 'العمال المكتملين', value: stats.workersCount, unit: 'عامل', icon: Users, color: 'emerald', trend: 'جاهز للصرف', gradient: 'from-emerald-500/10 to-emerald-600/5' },
+                        { label: 'صافي أيام العمل', value: stats.totalDays, unit: 'يوم', icon: Calendar, color: 'blue', trend: 'مجموع الساعات', gradient: 'from-blue-500/10 to-blue-600/5' },
+                        { label: 'متوسط الأجور', value: stats.avgSalary.toFixed(1), unit: 'د.أ', icon: TrendingUp, color: 'indigo', trend: 'لكل عامل', gradient: 'from-indigo-500/10 to-indigo-600/5' }
                     ].map((stat, i) => (
-                        <div key={i} className="relative group overflow-hidden">
-                            <div className="relative z-10 bg-white/60 backdrop-blur-xl p-5 rounded-2xl border border-white/40 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 hover:-translate-y-1">
+                        <div key={i} className="relative group/card overflow-hidden">
+                            <div className={`relative z-10 bg-white/60 backdrop-blur-xl p-5 rounded-2xl border border-white/40 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-${stat.color}-200/50 transition-all duration-500 hover:-translate-y-1`}>
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className={`p - 3 rounded - 2xl bg - gradient - to - br from - ${stat.color} -50 to - ${stat.color} -100 / 50 text - ${stat.color} -600 ring - 1 ring - ${stat.color} -100 shadow - inner group - hover: scale - 110 transition - transform duration - 500`}>
-                                        <stat.icon className="h-6 w-6" />
+                                    <div className={`p-3 rounded-xl bg-white/80 backdrop-blur-sm shadow-sm ring-1 ring-${stat.color}-100/50 group-hover/card:scale-110 transition-transform duration-500`}>
+                                        <stat.icon className={`h-6 w-6 text-${stat.color}-600`} />
                                     </div>
-                                    <div className={`text - [10px] font - black px - 2.5 py - 1 rounded - full bg - ${stat.color} -50 text - ${stat.color} -700 uppercase tracking - tighter shadow - sm`}>
+                                    <div className={`text-[10px] font-black px-2.5 py-1 rounded-full bg-${stat.color}-50 text-${stat.color}-700 uppercase tracking-tighter shadow-sm border border-${stat.color}-100/50`}>
                                         {stat.trend}
                                     </div>
                                 </div>
-                                <div>
+                                <div className="relative z-10">
                                     <h3 className="text-slate-500 text-[11px] font-black uppercase tracking-widest mb-1">{stat.label}</h3>
-                                    <div className="flex items-baseline gap-1.2">
+                                    <div className="flex items-baseline gap-1.5">
                                         <span className="text-3xl font-black text-slate-900 tracking-tighter">{stat.value}</span>
                                         <span className="text-xs font-bold text-slate-400 uppercase">{stat.unit}</span>
                                     </div>
                                 </div>
 
-                                {/* Decorative background shape */}
-                                <div className={`absolute - right - 4 - bottom - 4 w - 24 h - 24 bg - ${stat.color} -50 rounded - full opacity - 0 group - hover: opacity - 40 transition - opacity duration - 700 blur - 2xl`}></div>
+                                {/* Large Watermark Icon */}
+                                <div className={`absolute -left-2 -bottom-4 opacity-[0.08] group-hover/card:opacity-[0.12] transition-opacity duration-500`}>
+                                    <stat.icon size={96} strokeWidth={2.5} className={`text-${stat.color}-600 rotate-12`} />
+                                </div>
+
+                                {/* Gradient Overlay */}
+                                <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover/card:opacity-100 transition-opacity duration-500`}></div>
                             </div>
                         </div>
                     ))}
@@ -237,69 +242,69 @@ export function FinanceView() {
                         <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-amber-600 transition-colors" />
                         <Input
                             placeholder="بحث بالاسم أو الرقم أو القطاع..."
-                            className="pr-12 h-12 bg-white/60 backdrop-blur-md border border-white/40 focus:border-amber-500 rounded-2xl shadow-sm text-base transition-all"
+                            className="pr-12 h-12 bg-white/80 backdrop-blur-md border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 rounded-2xl shadow-sm text-base transition-all"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap lg:flex-nowrap items-center gap-2">
                         <select
-                            className="h-12 bg-white/60 backdrop-blur-md border border-white/40 focus:border-amber-500 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[200px] outline-none px-4 transition-all"
+                            className="h-12 bg-white/80 backdrop-blur-md border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[200px] outline-none px-4 transition-all"
                             value={statusFilter}
                             onChange={e => setStatusFilter(e.target.value as 'PENDING_FINANCE' | 'APPROVED')}
                         >
-                            <option value="PENDING_FINANCE">بانتظار الاعتماد المالي</option>
-                            <option value="APPROVED">الكشوف المعتمدة</option>
+                            <option value="PENDING_FINANCE">📊 بانتظار الاعتماد المالي</option>
+                            <option value="APPROVED">✅ الكشوف المعتمدة</option>
                         </select>
 
                         <select
-                            className="h-12 bg-white/60 backdrop-blur-md border border-white/40 focus:border-amber-500 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[160px] outline-none px-4 transition-all"
+                            className="h-12 bg-white/80 backdrop-blur-md border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[160px] outline-none px-4 transition-all"
                             value={areaFilter}
                             onChange={e => setAreaFilter(e.target.value)}
                         >
-                            <option value="ALL">جميع القطاعات</option>
+                            <option value="ALL">🏢 جميع القطاعات</option>
                             {areas.map(a => (
                                 <option key={a.id} value={a.id}>{a.name}</option>
                             ))}
                         </select>
 
-                        <div className="flex items-center gap-2 ml-auto">
+                        <div className="flex items-center gap-2 mr-auto lg:mr-0 lg:mr-auto">
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => window.print()}
-                                className="h-12 px-4 text-blue-600 hover:bg-blue-50 rounded-xl font-bold gap-2 border border-blue-100/50"
+                                className="h-12 px-6 text-blue-600 hover:bg-blue-50/80 rounded-2xl font-black gap-2 border border-blue-200 shadow-sm transition-all active:scale-95"
                             >
                                 <Printer className="h-4 w-4" />
-                                نسخة ورقية
+                                <span className="hidden sm:inline">نسخة ورقية</span>
                             </Button>
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={handleExportCSV}
-                                className="h-12 px-4 text-emerald-600 hover:bg-emerald-50 rounded-xl font-bold gap-2 border border-emerald-100/50"
+                                className="h-12 px-6 text-emerald-600 hover:bg-emerald-50/80 rounded-2xl font-black gap-2 border border-emerald-200 shadow-sm transition-all active:scale-95"
                             >
                                 <Download className="h-4 w-4" />
-                                تصدير Excel
+                                <span className="hidden sm:inline">تصدير Excel</span>
                             </Button>
                         </div>
                     </div>
                 </div>
 
                 {/* Payroll Table - Commercial Banking Aesthetic */}
-                <div className="bg-white/40 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/50 border border-white/60 overflow-hidden mx-1 animate-in fade-in duration-1000">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-right border-collapse">
+                <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-white overflow-hidden mx-1 animate-in fade-in duration-1000">
+                    <div className="overflow-x-auto relative scrollbar-hide">
+                        <table className="w-full text-right border-collapse min-w-[1000px]">
                             <thead>
-                                <tr className="bg-slate-50/50 text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
-                                    <th className="p-5">الموظف المنتج</th>
-                                    <th className="p-5 text-center">القطاع</th>
-                                    <th className="p-5 text-center">الأيام</th>
-                                    <th className="p-5 text-center">سعر اليوم</th>
-                                    <th className="p-5 text-center bg-amber-50/30 text-amber-700 font-black">صافي المستحق</th>
-                                    <th className="p-5 text-center">الحالة</th>
-                                    <th className="p-5 text-center">الإجراء</th>
+                                <tr className="bg-slate-900/5 text-slate-500 text-[11px] font-black uppercase tracking-[0.15em] border-b border-slate-100">
+                                    <th className="p-6 sticky right-0 bg-slate-50/95 backdrop-blur-md z-20 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)]">📝 الموظف المنتج</th>
+                                    <th className="p-6 text-center">🏢 القطاع</th>
+                                    <th className="p-6 text-center">📅 الأيام</th>
+                                    <th className="p-6 text-center">💰 سعر اليوم</th>
+                                    <th className="p-6 text-center bg-amber-500/10 text-amber-900 font-extrabold">💵 صافي المستحق</th>
+                                    <th className="p-6 text-center">🔔 الحالة</th>
+                                    <th className="p-6 text-center">⚡ الإجراء</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -312,7 +317,7 @@ export function FinanceView() {
                                 ) : (
                                     approvedPayrolls.map((p) => (
                                         <tr key={p.worker.id} className="hover:bg-amber-50/20 transition-all duration-300 group">
-                                            <td className="p-5">
+                                            <td className="p-5 sticky right-0 bg-inherit z-10 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)]">
                                                 <div className="font-black text-slate-800 group-hover:text-amber-700 transition-colors uppercase tracking-tight">{p.worker.name}</div>
                                                 <div className="text-[10px] text-slate-400 font-mono mt-0.5 tracking-tighter uppercase font-bold opacity-60">ID: {p.worker.id}</div>
                                             </td>
