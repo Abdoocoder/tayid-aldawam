@@ -207,7 +207,7 @@ export function FinanceView() {
                         { label: 'متوسط الأجور', value: stats.avgSalary.toFixed(1), unit: 'د.أ', icon: TrendingUp, color: 'indigo', trend: 'لكل عامل' }
                     ].map((stat, i) => (
                         <div key={i} className="relative group overflow-hidden">
-                            <div className="relative z-10 bg-white/60 backdrop-blur-xl p-5 rounded-[2.5rem] border border-white/40 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 hover:-translate-y-1">
+                            <div className="relative z-10 bg-white/60 backdrop-blur-xl p-5 rounded-2xl border border-white/40 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 hover:-translate-y-1">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className={`p - 3 rounded - 2xl bg - gradient - to - br from - ${stat.color} -50 to - ${stat.color} -100 / 50 text - ${stat.color} -600 ring - 1 ring - ${stat.color} -100 shadow - inner group - hover: scale - 110 transition - transform duration - 500`}>
                                         <stat.icon className="h-6 w-6" />
@@ -288,7 +288,7 @@ export function FinanceView() {
                 </div>
 
                 {/* Payroll Table - Commercial Banking Aesthetic */}
-                <div className="bg-white/40 backdrop-blur-md rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white/60 overflow-hidden mx-1 animate-in fade-in duration-1000">
+                <div className="bg-white/40 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/50 border border-white/60 overflow-hidden mx-1 animate-in fade-in duration-1000">
                     <div className="overflow-x-auto">
                         <table className="w-full text-right border-collapse">
                             <thead>

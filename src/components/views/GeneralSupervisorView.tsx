@@ -150,7 +150,7 @@ export function GeneralSupervisorView() {
 
                 {/* Quick Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-1 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
-                    <Card className="border-none shadow-sm bg-gradient-to-br from-indigo-50 to-indigo-100/30 ring-1 ring-indigo-100 rounded-[1.5rem] overflow-hidden">
+                    <Card className="border-none shadow-sm bg-gradient-to-br from-indigo-50 to-indigo-100/30 ring-1 ring-indigo-100 rounded-2xl overflow-hidden">
                         <CardContent className="p-5 flex items-center gap-5">
                             <div className="bg-white p-4 rounded-2xl text-indigo-600 shadow-sm ring-1 ring-indigo-50">
                                 <Clock className="h-6 w-6" />
@@ -202,7 +202,7 @@ export function GeneralSupervisorView() {
                 </div>
 
                 {/* Records Table - Premium Design */}
-                <div className="bg-white/40 backdrop-blur-md rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white/60 overflow-hidden mx-1 animate-in fade-in duration-1000">
+                <div className="bg-white/40 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/50 border border-white/60 overflow-hidden mx-1 animate-in fade-in duration-1000">
                     <div className="overflow-x-auto">
                         <table className="w-full text-right border-collapse">
                             <thead>

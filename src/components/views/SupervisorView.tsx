@@ -200,7 +200,7 @@ export function SupervisorView() {
                 {/* Workers Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-in fade-in zoom-in-95 duration-500 delay-200">
                     {filteredWorkers.length === 0 ? (
-                        <div className="col-span-full bg-white rounded-3xl border border-dashed border-gray-300 py-16 text-center">
+                        <div className="col-span-full bg-white rounded-2xl border border-dashed border-gray-300 py-16 text-center">
                             <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
                                 <Search className="h-10 w-10 text-gray-400" />
                             </div>
@@ -219,7 +219,7 @@ export function SupervisorView() {
                             const areaName = areas.find(a => a.id === worker.areaId)?.name || "غير محدد";
 
                             return (
-                                <Card key={worker.id} className={`group hover:shadow-2xl transition-all duration-300 relative overflow-hidden border-none rounded-3xl ${isFilled ? 'bg-gradient-to-br from-white to-emerald-50/30' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
+                                <Card key={worker.id} className={`group hover:shadow-2xl transition-all duration-300 relative overflow-hidden border-none rounded-2xl ${isFilled ? 'bg-gradient-to-br from-white to-emerald-50/30' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
                                     <CardContent className="p-0">
                                         <div className="p-5 flex items-center justify-between">
                                             <div className="flex items-center gap-3">

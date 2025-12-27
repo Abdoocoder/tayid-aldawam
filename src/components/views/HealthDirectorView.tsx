@@ -187,37 +187,42 @@ export function HealthDirectorView() {
         <>
             <div className="space-y-8 pb-12 animate-in fade-in duration-700 print:hidden">
                 {/* Header Section with Glassmorphism */}
-                <div className="relative overflow-hidden bg-white/60 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl shadow-emerald-900/10 border border-white/40">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-100/30 rounded-full blur-3xl -mr-20 -mt-20 shrink-0" />
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-100/20 rounded-full blur-2xl -ml-10 -mb-10 shrink-0" />
-
-                    <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-                        <div className="flex items-center gap-6">
-                            <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 p-5 rounded-3xl text-white shadow-xl shadow-emerald-200 ring-4 ring-emerald-50 animate-in zoom-in-50 duration-500">
-                                <Activity className="h-8 w-8" />
+                {/* Header Section with Glassmorphism */}
+                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="max-w-7xl mx-auto flex flex-col gap-3">
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-gradient-to-br from-emerald-600 to-teal-600 p-2.5 rounded-2xl text-white shadow-lg shadow-emerald-500/20">
+                                    <Activity className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-black text-slate-900 tracking-tight">مديرية الشؤون الصحية</h2>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">اعتماد ومتابعة مسار الدوام</p>
+                                </div>
                             </div>
-                            <div>
-                                <h2 className="text-4xl font-black text-slate-900 tracking-tight">لوحة مدير الدائرة الصحية</h2>
-                                <p className="text-emerald-600 font-bold flex items-center gap-2 mt-1">
-                                    <TrendingUp className="h-5 w-5" />
-                                    <span className="text-lg">اعتماد ومتابعة مسار الدوام الصحي</span>
-                                </p>
-                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => window.print()}
+                                className="hidden sm:flex gap-2 text-emerald-600 hover:bg-emerald-50 rounded-xl"
+                            >
+                                <Printer className="h-4 w-4" />
+                                <span className="text-xs font-bold">طباعة التقرير</span>
+                            </Button>
                         </div>
-                        <div className="flex flex-wrap gap-4 w-full lg:w-auto">
+
+                        <div className="flex items-center gap-2">
+                            <div className="flex-1">
+                                <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
+                            </div>
                             <Button
                                 variant="outline"
+                                size="sm"
                                 onClick={() => window.print()}
-                                className="gap-2 border-emerald-100 text-emerald-700 hover:bg-emerald-50/50 rounded-2xl h-14 px-6 font-bold shadow-sm transition-all hover:scale-[1.02]"
+                                className="sm:hidden p-2 rounded-xl border-slate-200"
                             >
-                                <Printer className="h-5 w-5" />
-                                تقرير الحضور
+                                <Printer className="h-4 w-4 text-slate-600" />
                             </Button>
-                            <MonthYearPicker
-                                month={month}
-                                year={year}
-                                onChange={(m, y) => { setMonth(m); setYear(y); }}
-                            />
                         </div>
                     </div>
                 </div>
@@ -248,7 +253,7 @@ export function HealthDirectorView() {
                             desc: 'سجلات تتطلب مراجعة دقيقة'
                         }
                     ].map((stat, i) => (
-                        <Card key={i} className={`group relative border-none shadow-xl shadow-slate-200/40 bg-white hover:bg-${stat.color}-50/30 transition-all duration-300 rounded-[2rem] overflow-hidden`}>
+                        <Card key={i} className={`group relative border-none shadow-xl shadow-slate-200/40 bg-white hover:bg-${stat.color}-50/30 transition-all duration-300 rounded-2xl overflow-hidden`}>
                             <div className={`absolute top-0 right-0 w-1.5 h-full bg-${stat.color}-500/50`} />
                             <CardContent className="p-6 flex flex-col justify-between h-full">
                                 <div className="flex items-center justify-between mb-4">
@@ -267,7 +272,7 @@ export function HealthDirectorView() {
                 </div>
 
                 {/* Tab Navigation - Violet & Slate Theme */}
-                <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] shadow-xl shadow-slate-200/40 border border-white/40 p-3">
+                <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/40 border border-white/40 p-3">
                     <div className="flex flex-wrap gap-2">
                         {[
                             { id: 'pending' as TabType, label: 'بانتظار اعتمادك', icon: Activity, count: analytics.health, color: 'emerald' },
@@ -301,7 +306,7 @@ export function HealthDirectorView() {
                 </div>
 
                 {/* Main Action Area */}
-                <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden transition-all duration-500">
+                <div className="bg-white rounded-2xl shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden transition-all duration-500">
                     <div className="p-8 border-b border-slate-50 flex flex-col xl:flex-row justify-between items-center gap-6 bg-slate-50/30">
                         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full xl:w-auto">
                             <div className="relative group flex-1 md:w-[320px]">
@@ -468,7 +473,7 @@ export function HealthDirectorView() {
                                         <tr>
                                             <td colSpan={7} className="p-32 text-center">
                                                 <div className="flex flex-col items-center gap-6 group">
-                                                    <div className="bg-slate-50 p-8 rounded-[2.5rem] group-hover:scale-110 transition-transform duration-500">
+                                                    <div className="bg-slate-50 p-8 rounded-2xl group-hover:scale-110 transition-transform duration-500">
                                                         <ShieldCheck className="h-20 w-20 text-slate-200" />
                                                     </div>
                                                     <div className="space-y-2">
