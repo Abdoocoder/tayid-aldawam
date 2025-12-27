@@ -227,37 +227,66 @@ export function FinanceView() {
                 {/* Quick Stats Grid - New Pattern */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
                     {[
-                        { label: 'إجمالي المستحقات', value: stats.totalAmount.toLocaleString(), unit: 'د.أ', icon: DollarSign, color: 'amber', trend: 'المعتمدة حالياً', gradient: 'from-amber-500/10 to-amber-600/5' },
-                        { label: 'العمال المكتملين', value: stats.workersCount, unit: 'عامل', icon: Users, color: 'emerald', trend: 'جاهز للصرف', gradient: 'from-emerald-500/10 to-emerald-600/5' },
-                        { label: 'صافي أيام العمل', value: stats.totalDays, unit: 'يوم', icon: Calendar, color: 'blue', trend: 'مجموع الساعات', gradient: 'from-blue-500/10 to-blue-600/5' },
-                        { label: 'متوسط الأجور', value: stats.avgSalary.toFixed(1), unit: 'د.أ', icon: TrendingUp, color: 'indigo', trend: 'لكل عامل', gradient: 'from-indigo-500/10 to-indigo-600/5' }
-                    ].map((stat, i) => (
-                        <div key={i} className="relative group/card overflow-hidden">
-                            <div className={`relative z-10 bg-white/60 backdrop-blur-xl p-5 rounded-2xl border border-white/40 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-${stat.color}-200/50 transition-all duration-500 hover:-translate-y-1`}>
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className={`p-3 rounded-xl bg-white/80 backdrop-blur-sm shadow-sm ring-1 ring-${stat.color}-100/50 group-hover/card:scale-110 transition-transform duration-500`}>
-                                        <stat.icon className={`h-6 w-6 text-${stat.color}-600`} />
+                        {
+                            label: 'إجمالي المستحقات',
+                            value: stats.totalAmount.toLocaleString(),
+                            unit: 'د.أ',
+                            icon: DollarSign,
+                            gradient: 'from-amber-600 to-amber-700',
+                            desc: 'المعتمدة حالياً'
+                        },
+                        {
+                            label: 'العمال المكتملين',
+                            value: stats.workersCount,
+                            unit: 'عامل',
+                            icon: Users,
+                            gradient: 'from-emerald-600 to-emerald-700',
+                            desc: 'جاهز للصرف'
+                        },
+                        {
+                            label: 'صافي أيام العمل',
+                            value: stats.totalDays,
+                            unit: 'يوم',
+                            icon: Calendar,
+                            gradient: 'from-blue-600 to-blue-700',
+                            desc: 'مجموع الساعات'
+                        },
+                        {
+                            label: 'متوسط الأجور',
+                            value: stats.avgSalary.toFixed(1),
+                            unit: 'د.أ',
+                            icon: TrendingUp,
+                            gradient: 'from-indigo-600 to-indigo-700',
+                            desc: 'لكل عامل'
+                        }
+                    ].map((kpi, i) => (
+                        <div key={i} className={`relative group overflow-hidden bg-gradient-to-br ${kpi.gradient} rounded-[2rem] p-5 text-white shadow-lg transition-all duration-500 hover:shadow-xl hover:scale-[1.02]`}>
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl" />
+
+                            <div className="relative z-10 flex flex-col gap-3">
+                                <div className="flex justify-between items-start">
+                                    <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl ring-1 ring-white/30 group-hover:scale-110 transition-transform duration-500">
+                                        <kpi.icon className="h-5 w-5 text-white" />
                                     </div>
-                                    <div className={`text-[10px] font-black px-2.5 py-1 rounded-full bg-${stat.color}-50 text-${stat.color}-700 uppercase tracking-tighter shadow-sm border border-${stat.color}-100/50`}>
-                                        {stat.trend}
+                                    <div className="text-[8px] font-black px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 uppercase tracking-widest">
+                                        Active
                                     </div>
                                 </div>
-                                <div className="relative z-10">
-                                    <h3 className="text-slate-500 text-[11px] font-black uppercase tracking-widest mb-1">{stat.label}</h3>
+
+                                <div>
+                                    <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-0.5">{kpi.label}</p>
                                     <div className="flex items-baseline gap-1.5">
-                                        <span className="text-3xl font-black text-slate-900 tracking-tighter">{stat.value}</span>
-                                        <span className="text-xs font-bold text-slate-400 uppercase">{stat.unit}</span>
+                                        <span className="text-2xl font-black tracking-tighter">{kpi.value}</span>
+                                        <span className="text-[9px] font-bold text-white/60 uppercase">{kpi.unit}</span>
                                     </div>
+                                    <p className="text-white/60 text-[9px] font-bold mt-1.5 flex items-center gap-1.5">
+                                        <span className="w-1 h-1 rounded-full bg-white/40 animate-pulse" />
+                                        {kpi.desc}
+                                    </p>
                                 </div>
-
-                                {/* Large Watermark Icon */}
-                                <div className={`absolute -left-2 -bottom-4 opacity-[0.08] group-hover/card:opacity-[0.12] transition-opacity duration-500`}>
-                                    <stat.icon size={96} strokeWidth={2.5} className={`text-${stat.color}-600 rotate-12`} />
-                                </div>
-
-                                {/* Gradient Overlay */}
-                                <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover/card:opacity-100 transition-opacity duration-500`}></div>
                             </div>
+
+                            <kpi.icon className="absolute -bottom-4 -right-4 h-20 w-20 text-white/10 -rotate-12 transition-transform group-hover:scale-110 group-hover:rotate-0 duration-700" />
                         </div>
                     ))}
                 </div>

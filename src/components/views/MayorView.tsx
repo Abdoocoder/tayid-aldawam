@@ -178,25 +178,66 @@ export function MayorView() {
                 {/* Strategic Overview Grid - Mobile Optimized (grid-cols-2) */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-1">
                     {[
-                        { label: "القوة العاملة", value: stats.totalWorkers, unit: "عامل", icon: Users, color: "blue", gradient: 'from-blue-50 to-blue-100/30', text: 'blue', border: 'blue', trend: "إجمالي السجلات" },
-                        { label: "قيد المراجعة", value: stats.totalPending, unit: "مهمة", icon: Clock, color: "amber", gradient: 'from-amber-50 to-amber-100/30', text: 'amber', border: 'amber', trend: "بانتظار التدقيق" },
-                        { label: "نسبة الإنجاز", value: stats.completionRate, unit: "%", icon: Target, color: "emerald", gradient: 'from-emerald-50 to-emerald-100/30', text: 'emerald', border: 'emerald', trend: "الكفاءة الكلية" },
-                        { label: "الميزانية المعتمدة", value: stats.approvedAmount.toLocaleString(), unit: "د.أ", icon: TrendingUp, color: "fuchsia", gradient: 'from-fuchsia-50 to-fuchsia-100/30', text: 'fuchsia', border: 'fuchsia', trend: "المستحقات الحالية" }
+                        {
+                            label: "القوة العاملة",
+                            value: stats.totalWorkers,
+                            unit: "عامل",
+                            icon: Users,
+                            gradient: 'from-blue-600 to-blue-700',
+                            desc: "إجمالي السجلات"
+                        },
+                        {
+                            label: "قيد المراجعة",
+                            value: stats.totalPending,
+                            unit: "مهمة",
+                            icon: Clock,
+                            gradient: 'from-amber-600 to-amber-700',
+                            desc: "بانتظار التدقيق"
+                        },
+                        {
+                            label: "نسبة الإنجاز",
+                            value: stats.completionRate,
+                            unit: "%",
+                            icon: Target,
+                            gradient: 'from-emerald-600 to-emerald-700',
+                            desc: "الكفاءة الكلية"
+                        },
+                        {
+                            label: "الميزانية المعتمدة",
+                            value: stats.approvedAmount.toLocaleString(),
+                            unit: "د.أ",
+                            icon: TrendingUp,
+                            gradient: 'from-fuchsia-600 to-fuchsia-700',
+                            desc: "المستحقات الحالية"
+                        }
                     ].map((kpi, i) => (
-                        <div key={i} className={`relative border-none shadow-sm bg-gradient-to-br ${kpi.gradient} ring-1 ring-${kpi.border}-100 rounded-2xl overflow-hidden group p-4 flex flex-col items-center text-center gap-2 min-h-[140px] justify-center transition-all duration-300 hover:shadow-md`}>
-                            {/* Background Watermark Icon */}
-                            <kpi.icon className={`absolute -bottom-2 -right-2 h-16 w-16 opacity-[0.08] text-${kpi.text}-600 rotate-12 group-hover:scale-110 transition-transform duration-500`} />
+                        <div key={i} className={`relative group overflow-hidden bg-gradient-to-br ${kpi.gradient} rounded-[2rem] p-5 text-white shadow-lg transition-all duration-500 hover:shadow-xl hover:scale-[1.02]`}>
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl" />
 
-                            <div className={`relative z-10 bg-white/80 backdrop-blur-sm p-3 rounded-xl text-${kpi.text}-600 shadow-sm border border-${kpi.border}-50 group-hover:scale-110 transition-transform`}>
-                                <kpi.icon className="h-6 w-6" />
-                            </div>
-                            <div className="relative z-10">
-                                <p className={`text-[10px] text-${kpi.text}-600 font-black uppercase tracking-tight`}>{kpi.label}</p>
-                                <p className={`text-xl font-black text-${kpi.text}-900 leading-tight`}>{kpi.value} <span className="text-[10px] font-bold opacity-60 uppercase">{kpi.unit}</span></p>
-                                <div className={`text-[9px] font-black px-2 py-0.5 rounded-full bg-${kpi.text}-50 text-${kpi.text}-700 uppercase tracking-tighter mt-1 inline-block`}>
-                                    {kpi.trend}
+                            <div className="relative z-10 flex flex-col gap-3">
+                                <div className="flex justify-between items-start">
+                                    <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl ring-1 ring-white/30 group-hover:scale-110 transition-transform duration-500">
+                                        <kpi.icon className="h-5 w-5 text-white" />
+                                    </div>
+                                    <div className="text-[8px] font-black px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 uppercase tracking-widest">
+                                        Active
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-0.5">{kpi.label}</p>
+                                    <div className="flex items-baseline gap-1.5">
+                                        <span className="text-2xl font-black tracking-tighter">{kpi.value}</span>
+                                        <span className="text-[9px] font-bold text-white/60 uppercase">{kpi.unit}</span>
+                                    </div>
+                                    <p className="text-white/60 text-[9px] font-bold mt-1.5 flex items-center gap-1.5">
+                                        <span className="w-1 h-1 rounded-full bg-white/40 animate-pulse" />
+                                        {kpi.desc}
+                                    </p>
                                 </div>
                             </div>
+
+                            <kpi.icon className="absolute -bottom-4 -right-4 h-20 w-20 text-white/10 -rotate-12 transition-transform group-hover:scale-110 group-hover:rotate-0 duration-700" />
                         </div>
                     ))}
                 </div>

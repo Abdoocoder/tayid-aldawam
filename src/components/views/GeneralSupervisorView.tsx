@@ -239,49 +239,68 @@ export function GeneralSupervisorView() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-1">
-                    <div className="relative border-none shadow-sm bg-gradient-to-br from-rose-50 to-rose-100/30 ring-1 ring-rose-100 rounded-2xl overflow-hidden p-5 flex items-center gap-5">
-                        <div className="relative z-10 bg-white/80 backdrop-blur-sm p-4 rounded-xl text-rose-600 shadow-sm border border-rose-50">
-                            <Clock className="h-6 w-6" />
-                        </div>
-                        <div className="relative z-10">
-                            <p className="text-[10px] text-rose-600 font-black uppercase tracking-widest mb-1">بانتظار الاعتماد</p>
-                            <div className="flex items-baseline gap-2">
-                                <p className="text-3xl font-black text-rose-900 leading-none">{pendingRecords.length}</p>
-                                <p className="text-xs text-rose-400 font-bold uppercase">كشف معلق</p>
-                            </div>
-                        </div>
-                    </div>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 px-1">
+                    {[
+                        {
+                            label: 'بانتظار الاعتماد',
+                            value: pendingRecords.length,
+                            unit: 'كشف معلق',
+                            icon: Clock,
+                            color: 'rose',
+                            gradient: 'from-rose-600 to-rose-700',
+                            desc: 'تحتاج مراجعة فورية'
+                        },
+                        {
+                            label: 'إنجاز الشهر',
+                            value: Math.round((historyRecords.length / (pendingRecords.length + historyRecords.length || 1)) * 100),
+                            unit: '%',
+                            icon: Activity,
+                            color: 'indigo',
+                            gradient: 'from-indigo-600 to-indigo-700',
+                            desc: 'نسبة التدقيق الكلية'
+                        },
+                        {
+                            label: 'تغطية القطاعات',
+                            value: `${areaProgress.filter(a => a.status === 'COMPLETED').length} / ${areaProgress.length}`,
+                            unit: 'قطاع مكتمل',
+                            icon: LayoutGrid,
+                            color: 'emerald',
+                            gradient: 'from-emerald-600 to-emerald-700',
+                            desc: 'حالة المناطق المسؤولة'
+                        }
+                    ].map((kpi, i) => (
+                        <div key={i} className={`relative group overflow-hidden bg-gradient-to-br ${kpi.gradient} rounded-[2rem] p-6 text-white shadow-lg transition-all duration-500 hover:shadow-xl hover:scale-[1.02]`}>
+                            {/* Decorative elements */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl transition-transform group-hover:scale-110" />
+                            <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-12 -mb-12 blur-xl" />
 
-                    <div className="relative border-none shadow-sm bg-gradient-to-br from-indigo-50 to-indigo-100/30 ring-1 ring-indigo-100 rounded-2xl overflow-hidden p-5 flex items-center gap-5">
-                        <div className="relative z-10 bg-white/80 backdrop-blur-sm p-4 rounded-xl text-indigo-600 shadow-sm border border-indigo-50">
-                            <Activity className="h-6 w-6" />
-                        </div>
-                        <div className="relative z-10">
-                            <p className="text-[10px] text-indigo-600 font-black uppercase tracking-widest mb-1">إنجاز الشهر</p>
-                            <div className="flex items-baseline gap-2">
-                                <p className="text-3xl font-black text-indigo-900 leading-none">
-                                    {Math.round((historyRecords.length / (pendingRecords.length + historyRecords.length || 1)) * 100)}%
-                                </p>
-                                <p className="text-xs text-indigo-400 font-bold uppercase">تم تدقيقه</p>
-                            </div>
-                        </div>
-                    </div>
+                            <div className="relative z-10 flex flex-col h-full justify-between gap-4">
+                                <div className="flex justify-between items-start">
+                                    <div className="p-3 bg-white/20 backdrop-blur-md rounded-2xl ring-1 ring-white/30 group-hover:scale-110 transition-transform duration-500">
+                                        <kpi.icon className="h-6 w-6 text-white" />
+                                    </div>
+                                    <div className="text-[10px] font-black px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 uppercase tracking-widest">
+                                        Active
+                                    </div>
+                                </div>
 
-                    <div className="relative border-none shadow-sm bg-gradient-to-br from-emerald-50 to-emerald-100/30 ring-1 ring-emerald-100 rounded-2xl overflow-hidden p-5 flex items-center gap-5">
-                        <div className="relative z-10 bg-white/80 backdrop-blur-sm p-4 rounded-xl text-emerald-600 shadow-sm border border-emerald-50">
-                            <LayoutGrid className="h-6 w-6" />
-                        </div>
-                        <div className="relative z-10">
-                            <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mb-1">تغطية القطاعات</p>
-                            <div className="flex items-baseline gap-2">
-                                <p className="text-3xl font-black text-emerald-900 leading-none">
-                                    {areaProgress.filter(a => a.status === 'COMPLETED').length} / {areaProgress.length}
-                                </p>
-                                <p className="text-xs text-emerald-400 font-bold uppercase">قطاع مكتمل</p>
+                                <div>
+                                    <p className="text-white/80 text-xs font-black uppercase tracking-widest mb-1">{kpi.label}</p>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-4xl font-black tracking-tighter">{kpi.value}</span>
+                                        <span className="text-[10px] font-bold text-white/60 uppercase">{kpi.unit}</span>
+                                    </div>
+                                    <p className="text-white/60 text-[10px] font-bold mt-2 flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
+                                        {kpi.desc}
+                                    </p>
+                                </div>
                             </div>
+
+                            {/* Background Icon */}
+                            <kpi.icon className="absolute -bottom-6 -right-6 h-32 w-32 text-white/10 -rotate-12 transition-transform group-hover:scale-110 group-hover:rotate-0 duration-700" />
                         </div>
-                    </div>
+                    ))}
                 </div>
 
                 <div className="overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">

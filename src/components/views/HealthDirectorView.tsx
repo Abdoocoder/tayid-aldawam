@@ -138,6 +138,13 @@ export function HealthDirectorView() {
         });
     }, [attendanceRecords, workers, month, year, activeTab, selectedAreaId, selectedSupervisorId, searchTerm, showAnomaliesOnly, supervisors]);
 
+    const recentlyApproved = useMemo(() => {
+        return attendanceRecords
+            .filter(r => r.status === 'PENDING_HR') // Status after Health Director approval
+            .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+            .slice(0, 5);
+    }, [attendanceRecords]);
+
     const handleApprove = async (recordId: string) => {
         setApprovingIds(prev => new Set(prev).add(recordId));
         try {
@@ -202,7 +209,7 @@ export function HealthDirectorView() {
                 items={navItems}
                 activeTab={activeTab}
                 onTabChange={(id) => id === 'print' ? window.print() : setActiveTab(id as TabType)}
-                user={{ name: currentUser?.name || "مدير الصحة", role: "مديرية الشؤون الصحية" }}
+                user={{ name: currentUser?.name || "مدير الصحة", role: "مديرية الشؤون الصحية والبيئة" }}
             />
 
             <div className="space-y-8 pb-12 animate-in fade-in duration-700 print:hidden">
@@ -210,12 +217,15 @@ export function HealthDirectorView() {
                 <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
                     <div className="max-w-7xl mx-auto flex justify-between items-center">
                         <div className="flex items-center gap-3">
-                            <div className="bg-gradient-to-br from-emerald-600 to-teal-600 p-2.5 rounded-2xl text-white shadow-lg shadow-emerald-500/20">
+                            <div className="bg-gradient-to-br from-emerald-600 to-teal-600 p-2.5 rounded-2xl text-white shadow-lg shadow-emerald-500/20 ring-4 ring-emerald-50">
                                 <Activity className="h-5 w-5" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-black text-slate-900 tracking-tight">مديرية الشؤون الصحية</h2>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">اعتماد ومتابعة مسار الدوام</p>
+                                <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none">مديرية الشؤون الصحية والبيئة</h1>
+                                <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mt-1 flex items-center gap-1">
+                                    <ShieldCheck className="h-3 w-3" />
+                                    نظام الرقابة الصحية والبيئية المتكامل
+                                </p>
                             </div>
                         </div>
 
@@ -274,31 +284,59 @@ export function HealthDirectorView() {
                             ) : 'لا يوجد بيانات'
                         },
                         {
-                            label: 'تنبيهات الحضور',
-                            value: analytics.anomalies,
-                            color: analytics.anomalies > 0 ? 'rose' : 'slate',
+                            label: 'الرقابة البيئية',
+                            value: analytics.anomalies === 0 ? 'مستقر' : 'تنبيهات',
+                            color: analytics.anomalies > 0 ? 'rose' : 'emerald',
                             icon: AlertTriangle,
-                            gradient: analytics.anomalies > 0 ? 'from-rose-50 to-rose-100/30' : 'from-slate-50 to-slate-100/30',
-                            text: analytics.anomalies > 0 ? 'rose' : 'slate',
-                            border: analytics.anomalies > 0 ? 'rose' : 'slate',
-                            desc: 'سجلات هامة'
+                            gradient: analytics.anomalies > 0 ? 'from-rose-50 to-rose-100/30' : 'from-emerald-50 to-emerald-100/30',
+                            text: analytics.anomalies > 0 ? 'rose' : 'emerald',
+                            border: analytics.anomalies > 0 ? 'rose' : 'emerald',
+                            desc: 'مؤشر السلامة العامة'
                         }
                     ].map((stat, i) => (
-                        <div key={i} className={`relative border-none shadow-sm bg-gradient-to-br ${stat.gradient} ring-1 ring-${stat.border}-100 rounded-2xl overflow-hidden group p-4 flex flex-col items-center text-center gap-2 min-h-[120px] justify-center transition-all duration-300 hover:shadow-md`}>
+                        <div key={i} className={`relative border-none shadow-md bg-gradient-to-br ${stat.gradient.replace('50', '600').replace('100/30', '700')} ring-1 ring-white/20 rounded-2xl overflow-hidden group p-4 flex flex-col items-center text-center gap-2 min-h-[140px] justify-center transition-all duration-300 hover:shadow-xl hover:scale-[1.02]`}>
                             {/* Background Watermark Icon */}
-                            <stat.icon className={`absolute -bottom-2 -right-2 h-16 w-16 opacity-[0.08] text-${stat.text}-600 rotate-12 group-hover:scale-110 transition-transform duration-500`} />
+                            <stat.icon className="absolute -bottom-2 -right-2 h-20 w-20 opacity-[0.15] text-white rotate-12 group-hover:scale-110 transition-transform duration-500" />
 
-                            <div className={`relative z-10 bg-white/80 backdrop-blur-sm p-2.5 rounded-xl text-${stat.text}-600 shadow-sm border border-${stat.border}-50 group-hover:scale-110 transition-transform`}>
+                            <div className="relative z-10 bg-white/20 backdrop-blur-md p-3 rounded-xl text-white shadow-sm border border-white/20 group-hover:scale-110 transition-transform">
                                 <stat.icon className="h-6 w-6" />
                             </div>
-                            <div className="relative z-10">
-                                <p className={`text-[10px] text-${stat.text}-600 font-black uppercase tracking-tight`}>{stat.label}</p>
-                                <p className={`text-xl font-black text-${stat.text}-900 leading-tight`}>{stat.value}</p>
-                                <div className="text-[9px] text-slate-400 font-bold mt-0.5">{stat.desc}</div>
+                            <div className="relative z-10 space-y-1">
+                                <p className="text-xs text-white/80 font-black uppercase tracking-widest">{stat.label}</p>
+                                <p className="text-2xl font-black text-white leading-tight drop-shadow-sm">{stat.value}</p>
+                                <div className="text-[11px] text-white font-bold mt-1 px-3 py-1 bg-black/10 rounded-full inline-block backdrop-blur-sm border border-white/10">
+                                    {stat.desc}
+                                </div>
                             </div>
                         </div>
                     ))}
                 </div>
+
+                {/* Recently Approved Mini-Feed */}
+                {recentlyApproved.length > 0 && activeTab === 'pending' && (
+                    <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 border border-slate-200/50 shadow-inner">
+                        <div className="flex items-center gap-2 mb-3 text-slate-500 font-bold text-xs uppercase tracking-widest px-1">
+                            <History className="h-3.5 w-3.5 text-emerald-500" />
+                            إجراءاتك الأخيرة
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {recentlyApproved.map(record => {
+                                const worker = workers.find(w => w.id === record.workerId);
+                                return (
+                                    <div key={record.id} className="flex items-center gap-2 bg-emerald-50/50 border border-emerald-100/50 px-3 py-1.5 rounded-xl animate-in fade-in slide-in-from-right-2">
+                                        <div className="bg-emerald-100 p-1 rounded-full">
+                                            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                                        </div>
+                                        <span className="text-[10px] font-black text-slate-700">{worker?.name}</span>
+                                        <span className="text-[9px] text-slate-400 font-bold">
+                                            {new Date(record.updatedAt).toLocaleTimeString('ar-JO', { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
 
                 {/* Tab Navigation - Desktop */}
                 <div className="hidden md:flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm overflow-x-auto no-scrollbar">
@@ -633,7 +671,7 @@ export function HealthDirectorView() {
                         <div className="text-right">
                             <h1 className="text-2xl font-bold mb-1">كشف مراقبة دوام الكوادر</h1>
                             <p className="text-gray-600">الشهر: {month} / {year} | القطاع: جميع المناطق</p>
-                            <p className="text-sm mt-1 text-blue-600 font-bold uppercase">مديرية الشؤون الصحية</p>
+                            <p className="text-sm mt-1 text-blue-600 font-bold uppercase">مديرية الشؤون الصحية والبيئة</p>
                         </div>
                         <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
                         <div className="text-left text-sm font-bold text-slate-500">
@@ -641,7 +679,7 @@ export function HealthDirectorView() {
                             <p>الرقم: AD/H-{year}-{month}</p>
                         </div>
                     </div>
-                    <h1 className="text-4xl font-black text-slate-900 mb-2">تقرير اعتماد الدائرة الصحية</h1>
+                    <h1 className="text-4xl font-black text-slate-900 mb-2">تقرير اعتماد مديرية الشؤون الصحية والبيئة</h1>
                     <div className="flex justify-center gap-12 mt-4">
                         <p className="text-slate-600 font-black">الشهر: <span className="text-emerald-700">{month}</span></p>
                         <p className="text-slate-600 font-black">السنة: <span className="text-emerald-700">{year}</span></p>
@@ -687,7 +725,7 @@ export function HealthDirectorView() {
 
                 <div className="grid grid-cols-3 gap-8 mt-20">
                     <div className="space-y-16 text-center">
-                        <p className="font-black text-lg underline underline-offset-8 decoration-2">مدير الدائرة الصحية</p>
+                        <p className="font-black text-lg underline underline-offset-8 decoration-2">مدير الشؤون الصحية والبيئة</p>
                         <div className="h-20" />
                         <p className="font-bold text-slate-400">الاسم والتوقيع</p>
                     </div>

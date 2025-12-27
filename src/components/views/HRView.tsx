@@ -399,54 +399,70 @@ export function HRView() {
                 )}
 
                 {/* Quick Stats Grid - Responsive & Premium */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 px-1 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 fill-mode-both print:hidden">
-                    <Card className="border-none shadow-sm bg-gradient-to-br from-blue-50 to-blue-100/30 ring-1 ring-blue-100 rounded-2xl overflow-hidden group">
-                        <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                            <div className="bg-white p-2.5 rounded-xl text-blue-600 shadow-sm border border-blue-50 group-hover:scale-110 transition-transform">
-                                <Users className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] text-blue-600 font-black uppercase tracking-tight">العمال</p>
-                                <p className="text-2xl font-black text-blue-900 leading-tight">{totalWorkersCount}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-1 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 fill-mode-both print:hidden">
+                    {[
+                        {
+                            label: 'إجمالي العمال',
+                            value: totalWorkersCount,
+                            unit: 'عامل',
+                            icon: Users,
+                            gradient: 'from-blue-600 to-blue-700',
+                            desc: 'قاعدة البيانات الكلية'
+                        },
+                        {
+                            label: 'المستخدمين',
+                            value: activeUsersCount,
+                            unit: 'حساب',
+                            icon: ShieldCheck,
+                            gradient: 'from-purple-600 to-purple-700',
+                            desc: 'الطاقم الإداري والرقابي'
+                        },
+                        {
+                            label: 'القطاعات',
+                            value: totalSectorsCount,
+                            unit: 'منطقة',
+                            icon: MapPin,
+                            gradient: 'from-amber-600 to-amber-700',
+                            desc: 'توزيع العمل الميداني'
+                        },
+                        {
+                            label: 'الإنجاز الشهرى',
+                            value: completionRate,
+                            unit: '%',
+                            icon: TrendingUp,
+                            gradient: 'from-emerald-600 to-emerald-700',
+                            desc: 'نسبة التغطية الحالية'
+                        }
+                    ].map((kpi, i) => (
+                        <div key={i} className={`relative group overflow-hidden bg-gradient-to-br ${kpi.gradient} rounded-[2rem] p-5 text-white shadow-lg transition-all duration-500 hover:shadow-xl hover:scale-[1.02]`}>
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl" />
 
-                    <Card className="border-none shadow-sm bg-gradient-to-br from-purple-50 to-purple-100/30 ring-1 ring-purple-100 rounded-2xl overflow-hidden group">
-                        <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                            <div className="bg-white p-2.5 rounded-xl text-purple-600 shadow-sm border border-purple-50 group-hover:scale-110 transition-transform">
-                                <ShieldCheck className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] text-purple-600 font-black uppercase tracking-tight">المستخدمين</p>
-                                <p className="text-2xl font-black text-purple-900 leading-tight">{activeUsersCount}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            <div className="relative z-10 flex flex-col gap-3">
+                                <div className="flex justify-between items-start">
+                                    <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl ring-1 ring-white/30 group-hover:scale-110 transition-transform duration-500">
+                                        <kpi.icon className="h-5 w-5 text-white" />
+                                    </div>
+                                    <div className="text-[8px] font-black px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 uppercase tracking-widest">
+                                        Active
+                                    </div>
+                                </div>
 
-                    <Card className="border-none shadow-sm bg-gradient-to-br from-amber-50 to-amber-100/30 ring-1 ring-amber-100 rounded-2xl overflow-hidden group">
-                        <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                            <div className="bg-white p-2.5 rounded-xl text-amber-600 shadow-sm border border-amber-50 group-hover:scale-110 transition-transform">
-                                <MapPin className="h-5 w-5" />
+                                <div>
+                                    <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-0.5">{kpi.label}</p>
+                                    <div className="flex items-baseline gap-1.5">
+                                        <span className="text-2xl font-black tracking-tighter">{kpi.value}</span>
+                                        <span className="text-[9px] font-bold text-white/60 uppercase">{kpi.unit}</span>
+                                    </div>
+                                    <p className="text-white/60 text-[9px] font-bold mt-1.5 flex items-center gap-1.5">
+                                        <span className="w-1 h-1 rounded-full bg-white/40 animate-pulse" />
+                                        {kpi.desc}
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-[10px] text-amber-600 font-black uppercase tracking-tight">القطاعات</p>
-                                <p className="text-2xl font-black text-amber-900 leading-tight">{totalSectorsCount}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
 
-                    <Card className="border-none shadow-sm bg-gradient-to-br from-emerald-50 to-emerald-100/30 ring-1 ring-emerald-100 rounded-2xl overflow-hidden group">
-                        <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                            <div className="bg-white p-2.5 rounded-xl text-emerald-600 shadow-sm border border-emerald-50 group-hover:scale-110 transition-transform">
-                                <TrendingUp className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] text-emerald-600 font-black uppercase tracking-tight">الإنجاز الشهرى</p>
-                                <p className="text-2xl font-black text-emerald-900 leading-tight">{completionRate}%</p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            <kpi.icon className="absolute -bottom-4 -right-4 h-20 w-20 text-white/10 -rotate-12 transition-transform group-hover:scale-110 group-hover:rotate-0 duration-700" />
+                        </div>
+                    ))}
                 </div>
 
                 {/* Editing/Adding Form Overlay (Simple inline version) */}

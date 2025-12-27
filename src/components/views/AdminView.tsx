@@ -239,24 +239,68 @@ export const AdminView = () => {
                     {activeTab === 'overview' && (
                         <div className="space-y-6">
                             {/* Stats Grid - Responsive & Premium */}
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                 {[
-                                    { label: 'إجمالي العمال', value: workers.length, unit: 'عامل', icon: HardHat, color: 'indigo', gradient: 'from-indigo-50 to-indigo-100/30', text: 'indigo', border: 'indigo' },
-                                    { label: 'المستخدمين', value: users.length, unit: 'حساب', icon: Users, color: 'violet', gradient: 'from-violet-50 to-violet-100/30', text: 'violet', border: 'violet' },
-                                    { label: 'سجلات الحضور', value: attendanceRecords.length, unit: 'سجل', icon: FileText, color: 'blue', gradient: 'from-blue-50 to-blue-100/30', text: 'blue', border: 'blue' },
-                                    { label: 'العمليات', value: auditLogs.length, unit: 'عملية', icon: History, color: 'slate', gradient: 'from-slate-50 to-slate-100/30', text: 'slate', border: 'slate' }
-                                ].map((stat, i) => (
-                                    <div key={i} className={`relative border-none shadow-sm bg-gradient-to-br ${stat.gradient} ring-1 ring-${stat.border}-100 rounded-2xl overflow-hidden group p-4 flex flex-col items-center text-center gap-2 min-h-[110px] justify-center`}>
-                                        {/* Background Watermark Icon */}
-                                        <stat.icon className={`absolute -bottom-2 -right-2 h-16 w-16 opacity-[0.08] text-${stat.text}-600 rotate-12 group-hover:scale-110 transition-transform duration-500`} />
+                                    {
+                                        label: 'إجمالي العمال',
+                                        value: workers.length,
+                                        unit: 'عامل',
+                                        icon: HardHat,
+                                        gradient: 'from-indigo-600 to-indigo-700',
+                                        desc: 'قاعدة بيانات العمال'
+                                    },
+                                    {
+                                        label: 'المستخدمين',
+                                        value: users.length,
+                                        unit: 'حساب',
+                                        icon: Users,
+                                        gradient: 'from-violet-600 to-violet-700',
+                                        desc: 'طاقم النظام'
+                                    },
+                                    {
+                                        label: 'سجلات الحضور',
+                                        value: attendanceRecords.length,
+                                        unit: 'سجل',
+                                        icon: FileText,
+                                        gradient: 'from-blue-600 to-blue-700',
+                                        desc: 'الأرشيف المركزي'
+                                    },
+                                    {
+                                        label: 'العمليات',
+                                        value: auditLogs.length,
+                                        unit: 'عملية',
+                                        icon: History,
+                                        gradient: 'from-slate-700 to-slate-800',
+                                        desc: 'نشاط النظام'
+                                    }
+                                ].map((kpi, i) => (
+                                    <div key={i} className={`relative group overflow-hidden bg-gradient-to-br ${kpi.gradient} rounded-[2rem] p-5 text-white shadow-lg transition-all duration-500 hover:shadow-xl hover:scale-[1.02]`}>
+                                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl" />
 
-                                        <div className={`relative z-10 bg-white/80 backdrop-blur-sm p-2 rounded-xl text-${stat.text}-600 shadow-sm border border-${stat.border}-50 group-hover:scale-110 transition-transform`}>
-                                            <stat.icon className="h-5 w-5" />
+                                        <div className="relative z-10 flex flex-col gap-3">
+                                            <div className="flex justify-between items-start">
+                                                <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl ring-1 ring-white/30 group-hover:scale-110 transition-transform duration-500">
+                                                    <kpi.icon className="h-5 w-5 text-white" />
+                                                </div>
+                                                <div className="text-[8px] font-black px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 uppercase tracking-widest">
+                                                    Active
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-0.5">{kpi.label}</p>
+                                                <div className="flex items-baseline gap-1.5">
+                                                    <span className="text-2xl font-black tracking-tighter">{kpi.value}</span>
+                                                    <span className="text-[9px] font-bold text-white/60 uppercase">{kpi.unit}</span>
+                                                </div>
+                                                <p className="text-white/60 text-[9px] font-bold mt-1.5 flex items-center gap-1.5">
+                                                    <span className="w-1 h-1 rounded-full bg-white/40 animate-pulse" />
+                                                    {kpi.desc}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="relative z-10">
-                                            <p className={`text-[10px] text-${stat.text}-600 font-black uppercase tracking-tight`}>{stat.label}</p>
-                                            <p className={`text-2xl font-black text-${stat.text}-900 leading-tight`}>{stat.value}</p>
-                                        </div>
+
+                                        <kpi.icon className="absolute -bottom-4 -right-4 h-20 w-20 text-white/10 -rotate-12 transition-transform group-hover:scale-110 group-hover:rotate-0 duration-700" />
                                     </div>
                                 ))}
                             </div>
