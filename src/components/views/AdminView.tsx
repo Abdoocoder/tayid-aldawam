@@ -1,33 +1,31 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAttendance, Worker, User, UserRole } from '@/context/AttendanceContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { Button } from '../ui/button';
 import {
-    Edit2,
-    Trash2,
-    UserPlus,
-    Search,
-    Printer,
     Users,
     History,
     FileText,
     HardHat,
     LayoutDashboard,
     ShieldCheck,
-    Plus,
-    Activity,
-    MapPin,
     Loader2,
-    Save
+    Save,
+    Activity
 } from 'lucide-react';
-import Image from "next/image";
-import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
+
+// Sub Components
+import { UsersTab } from './admin/UsersTab';
+import { WorkersTab } from './admin/WorkersTab';
+import { LogsTab } from './admin/LogsTab';
+
+import { Input } from '../ui/input';
 import { MonthYearPicker } from "../ui/month-year-picker";
-import { Select } from "../ui/select";
+import { Search, MapPin } from "lucide-react";
 
 interface WorkerEditingData extends Partial<Worker> {
     id: string;
@@ -40,16 +38,9 @@ export const AdminView = () => {
     const { showToast } = useToast();
     const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'workers' | 'logs' | 'attendance'>('overview');
 
-    // Stable print metadata - generated on mount to fix purity lint errors
-    const [printMetadata] = useState(() => ({
-        date: new Date().toLocaleDateString('ar-JO'),
-        ref: `ADM-${Math.random().toString(36).substring(7).toUpperCase()}`
-    }));
-
     // Attendance Management State
     const [attendanceMonth, setAttendanceMonth] = useState(new Date().getMonth() + 1);
     const [attendanceYear, setAttendanceYear] = useState(new Date().getFullYear());
-
     const [attendanceSearchTerm, setAttendanceSearchTerm] = useState("");
 
     // Management states
@@ -63,12 +54,10 @@ export const AdminView = () => {
     const [logTableFilter, setLogTableFilter] = useState("ALL");
     const [logActionFilter, setLogActionFilter] = useState("ALL");
 
-    const filteredLogs = auditLogs.filter(log => {
-        const matchesSearch = !logSearchTerm || (log.changed_by || '').toLowerCase().includes(logSearchTerm.toLowerCase());
-        const matchesTable = logTableFilter === 'ALL' || log.table_name === logTableFilter;
-        const matchesAction = logActionFilter === 'ALL' || log.action === logActionFilter;
-        return matchesSearch && matchesTable && matchesAction;
-    });
+    // Clear search term when switching tabs
+    useEffect(() => {
+        setSearchTerm("");
+    }, [activeTab]);
 
     const handleSaveWorker = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -97,14 +86,12 @@ export const AdminView = () => {
                     setIsSaving(false);
                     return;
                 }
-
                 // Check if ID already exists
                 if (workers.some(w => w.id === finalId)) {
                     showToast('خطأ في البيانات', 'هذا الرقم الوظيفي مسجل مسبقاً لعامل آخر', 'warning');
                     setIsSaving(false);
                     return;
                 }
-
                 await addWorker({
                     id: finalId,
                     name: workerData.name || '',
@@ -138,7 +125,10 @@ export const AdminView = () => {
             if (editingItem.data.id !== 'NEW') {
                 await updateUser(editingItem.data.id, editingItem.data as Partial<User>);
                 showToast('تم تحديث بيانات المستخدم بنجاح');
+            } else {
+                showToast('تنبيه', 'خاصية إضافة المستخدمين قيد التطوير', 'warning');
             }
+
             setEditingItem(null);
         } catch (err) {
             console.error(err);
@@ -160,12 +150,10 @@ export const AdminView = () => {
     };
 
     const handleDeleteUser = async (id: string) => {
-        // Prevent self-deletion
         if (appUser?.id === id) {
             showToast('تنبيه', 'لا يمكنك حذف حسابك الشخصي', 'warning');
             return;
         }
-
         if (!window.confirm('هل أنت متأكد من حذف هذا المستخدم؟')) return;
         try {
             await deleteUser(id);
@@ -184,7 +172,7 @@ export const AdminView = () => {
     return (
         <>
             <div className="space-y-8 pb-24 animate-in fade-in duration-700 print:hidden">
-                {/* Executive Admin Header - Sticky & Premium Glass */}
+                {/* Executive Admin Header */}
                 <div className="sticky top-0 z-50 -mx-4 px-4 py-4 bg-slate-50/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm transition-all duration-300">
                     <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-6">
                         <div className="flex items-center gap-5">
@@ -224,11 +212,10 @@ export const AdminView = () => {
                     </div>
                 </div>
 
-
                 {/* Content based on active tab */}
                 {activeTab === 'overview' && (
                     <div className="space-y-8 animate-in fade-in duration-700">
-                        {/* Stats Grid - Standardized Pattern */}
+                        {/* Stats Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                             {[
                                 { label: 'إجمالي العمال', value: workers.length, unit: 'عامل', icon: HardHat, color: 'indigo', trend: 'القوى العاملة' },
@@ -253,7 +240,6 @@ export const AdminView = () => {
                                                 <span className="text-[11px] font-bold text-slate-400 uppercase">{stat.unit}</span>
                                             </div>
                                         </div>
-                                        <div className={`absolute -right-4 -bottom-4 w-24 h-24 bg-${stat.color}-100 rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-1000 blur-3xl`}></div>
                                     </div>
                                 </div>
                             ))}
@@ -324,10 +310,6 @@ export const AdminView = () => {
                                             <p className="text-sm font-black text-slate-800 mb-2">
                                                 تعديل في جدول {log.table_name}
                                             </p>
-                                            <div className="flex items-center gap-2 text-[10px] text-slate-400 font-black uppercase tracking-tighter">
-                                                <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
-                                                بواسطة: {log.changed_by || 'نظام'}
-                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -344,224 +326,77 @@ export const AdminView = () => {
                     </div>
                 )}
 
-                {/* Global Search Center - Floating Premium Glass */}
-                {(activeTab === 'users' || activeTab === 'workers') && (
-                    <div className="relative group max-w-2xl mx-auto w-full px-1 animate-in fade-in slide-in-from-bottom-2 duration-1000">
-                        <div className="absolute inset-0 bg-indigo-500/5 rounded-[2.5rem] blur-2xl group-focus-within:bg-indigo-500/10 transition-all duration-700"></div>
-                        <Search className="absolute right-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 group-focus-within:scale-110 transition-all duration-500 z-10" />
-                        <Input
-                            placeholder="ابحث بالاسم، الرقم الوظيفي، أو القطاع..."
-                            className="pr-16 h-16 bg-white/70 backdrop-blur-xl border border-white/60 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 rounded-[2.5rem] shadow-2xl shadow-slate-200/60 text-lg transition-all duration-500 relative z-0 placeholder:text-slate-300 font-bold"
-                            value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
+
+                {activeTab === 'users' && (
+                    <div className="space-y-6 animate-in fade-in duration-500">
+                        <div className="flex items-center justify-between gap-4 bg-white/60 p-2 rounded-2xl border border-white/60 shadow-sm backdrop-blur-md">
+                            <div className="flex items-center gap-2 px-3">
+                                <Users className="h-5 w-5 text-indigo-600" />
+                                <span className="text-sm font-black text-slate-700">المستخدمين</span>
+                            </div>
+                            <div className="relative w-full max-w-md">
+                                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                <Input
+                                    placeholder="بحث سريع عن مستخدم..."
+                                    className="pr-10 h-10 bg-white/80 border-slate-200/60 focus:bg-white transition-all rounded-xl text-sm font-bold"
+                                    value={searchTerm}
+                                    onChange={e => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <UsersTab
+                            users={users}
+                            areas={areas}
+                            searchTerm={searchTerm}
+                            onEditUser={(u) => {
+                                setEditingItem({ type: 'user', data: u });
+                                setSelectedAreaIds(u.areaId ? u.areaId.split(',') : []);
+                            }}
+                            onDeleteUser={handleDeleteUser}
+                            onToggleActive={(id, current) => updateUser(id, { isActive: !current })}
+                            onAddUser={() => setEditingItem({ type: 'user', data: { id: 'NEW', name: '', username: '', role: 'SUPERVISOR', areaId: '' } })}
                         />
                     </div>
                 )}
 
-                {activeTab === 'users' && (
-                    <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40 overflow-hidden animate-in slide-in-from-bottom-8 duration-1000">
-                        <div className="p-8 border-b border-slate-100/50 flex flex-col md:flex-row justify-between items-center gap-6 bg-gradient-to-r from-indigo-50/30 to-transparent">
-                            <div className="flex items-center gap-6">
-                                <div className="bg-gradient-to-br from-indigo-100 to-violet-100 p-4 rounded-2xl text-indigo-600 shadow-inner">
-                                    <UserPlus className="h-7 w-7" />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">إدارة الصلاحيات</h3>
-                                    <p className="text-xs text-slate-500 font-black uppercase tracking-widest mt-1">Access Control & Team Management</p>
-                                </div>
+                {activeTab === 'workers' && (
+                    <div className="space-y-6 animate-in fade-in duration-500">
+                        <div className="flex items-center justify-between gap-4 bg-white/60 p-2 rounded-2xl border border-white/60 shadow-sm backdrop-blur-md">
+                            <div className="flex items-center gap-2 px-3">
+                                <HardHat className="h-5 w-5 text-blue-600" />
+                                <span className="text-sm font-black text-slate-700">الكوادر العمالية</span>
                             </div>
-                            <Button
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-200 h-14 px-10 rounded-2xl font-black text-sm gap-4 group transition-all duration-500 hover:-translate-y-0.5"
-                                onClick={() => setEditingItem({ type: 'user', data: { id: 'NEW', name: '', username: '', role: 'SUPERVISOR', areaId: '' } })}
-                            >
-                                <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-500" />
-                                إضافة مستخدم جديد
-                            </Button>
+                            <div className="relative w-full max-w-md">
+                                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                <Input
+                                    placeholder="بحث باسم العامل أو القطاع..."
+                                    className="pr-10 h-10 bg-white/80 border-slate-200/60 focus:bg-white transition-all rounded-xl text-sm font-bold"
+                                    value={searchTerm}
+                                    onChange={e => setSearchTerm(e.target.value)}
+                                />
+                            </div>
                         </div>
-
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-right">
-                                <thead>
-                                    <tr className="bg-slate-50/50 border-b border-slate-100/50">
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">المستخدم</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">الدور</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">النطاق الإشرافي</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">الحالة</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">التحكم</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {users.filter(u =>
-                                        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                        u.username.toLowerCase().includes(searchTerm.toLowerCase())
-                                    ).map((u) => {
-                                        const areaName = u.areaId === 'ALL' ? 'التحكم الكامل' : (areas.find(a => a.id === u.areaId)?.name || "غير محدد");
-                                        return (
-                                            <tr key={u.id} className="hover:bg-indigo-50/30 transition-all duration-500 group border-b border-slate-50 last:border-0 font-bold">
-                                                <td className="px-8 py-6">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center font-black text-slate-500 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-all duration-500 shadow-sm">
-                                                            {u.name.charAt(0)}
-                                                        </div>
-                                                        <div>
-                                                            <div className="font-black text-slate-900 group-hover:text-indigo-800 transition-colors text-sm">{u.name}</div>
-                                                            <div className="text-[10px] text-slate-400 font-black font-mono uppercase tracking-tighter">{u.username}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-8 py-6 text-center">
-                                                    <Badge variant="outline" className={`font-black text-[9px] uppercase tracking-widest ring-1 px-2.5 py-0.5 ${u.role === 'ADMIN' ? 'bg-indigo-50 text-indigo-700 ring-indigo-100/50 border-indigo-200' : 'bg-slate-50 text-slate-600 ring-slate-100'} `}>
-                                                        {u.role}
-                                                    </Badge>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <div className="flex items-center gap-2.5 text-[11px] font-black text-slate-500 group-hover:text-indigo-600 transition-colors">
-                                                        <MapPin className="h-3.5 w-3.5 text-slate-300 group-hover:text-indigo-400 transition-colors" />
-                                                        {areaName}
-                                                    </div>
-                                                </td>
-                                                <td className="px-8 py-6 text-center">
-                                                    <span className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[10px] font-black tracking-widest ${u.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-100/50' : 'bg-amber-50 text-amber-700 border border-amber-100/50'} `}>
-                                                        <span className={`w-1.5 h-1.5 rounded-full ${u.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'} `}></span>
-                                                        {u.isActive ? 'نشط' : 'معطل'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <div className="flex justify-center items-center gap-2">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-10 w-10 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 hover:shadow-sm transition-all duration-300"
-                                                            onClick={() => {
-                                                                setEditingItem({ type: 'user', data: u });
-                                                                setSelectedAreaIds(u.areaId ? u.areaId.split(',') : []);
-                                                            }}
-                                                        >
-                                                            <Edit2 className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className={`h-10 w-10 rounded-xl transition-all duration-300 ${u.isActive ? 'text-slate-400 hover:text-amber-600 hover:bg-amber-50' : 'text-emerald-500 hover:bg-emerald-50'} `}
-                                                            onClick={() => updateUser(u.id, { isActive: !u.isActive })}
-                                                        >
-                                                            <ShieldCheck className="h-4.5 w-4.5" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-10 w-10 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all duration-300"
-                                                            onClick={() => handleDeleteUser(u.id)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
+                        <WorkersTab
+                            workers={workers}
+                            areas={areas}
+                            searchTerm={searchTerm}
+                            onEditWorker={(w) => setEditingItem({ type: 'worker', data: w })}
+                            onDeleteWorker={handleDeleteWorker}
+                            onAddWorker={() => setEditingItem({ type: 'worker', data: { id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0 } })}
+                        />
                     </div>
                 )}
 
-                {activeTab === 'workers' && (
-                    <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40 overflow-hidden animate-in slide-in-from-bottom-8 duration-1000">
-                        <div className="p-8 border-b border-slate-100/50 flex flex-col md:flex-row justify-between items-center gap-6 bg-gradient-to-r from-blue-50/30 to-transparent">
-                            <div className="flex items-center gap-6">
-                                <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-4 rounded-2xl text-blue-600 shadow-inner">
-                                    <HardHat className="h-7 w-7" />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">الكوادر العمالية</h3>
-                                    <p className="text-xs text-slate-500 font-black uppercase tracking-widest mt-1">Workforce Management & Area Assignment</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <Button
-                                    variant="outline"
-                                    className="h-12 px-6 rounded-2xl border-slate-200 text-slate-600 hover:bg-slate-50 font-black text-xs gap-2.5 transition-all"
-                                    onClick={() => window.print()}
-                                >
-                                    <Printer className="h-4 w-4" />
-                                    نسخة ورقية
-                                </Button>
-                                <Button
-                                    className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-200 h-12 px-8 rounded-2xl font-black text-sm gap-3 group transition-all duration-500 hover:-translate-y-0.5"
-                                    onClick={() => setEditingItem({ type: 'worker', data: { id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0 } })}
-                                >
-                                    <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-500" />
-                                    إضافة عامل جديد
-                                </Button>
-                            </div>
-                        </div>
-
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-right">
-                                <thead>
-                                    <tr className="bg-slate-50/50 border-b border-slate-100/50">
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">المعرف (ID)</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">الاسم الكامل</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">القطاع / الحي</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">الأجر اليومي</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">التحكم</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {workers.filter(w => {
-                                        const areaName = areas.find(a => a.id === w.areaId)?.name || "";
-                                        return w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                            w.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                            areaName.toLowerCase().includes(searchTerm.toLowerCase());
-                                    }).map((w) => {
-                                        const areaName = areas.find(a => a.id === w.areaId)?.name || "غير محدد";
-                                        return (
-                                            <tr key={w.id} className="hover:bg-blue-50/30 transition-all duration-500 group border-b border-slate-50 last:border-0 font-bold">
-                                                <td className="px-8 py-6">
-                                                    <span className="bg-slate-100 text-slate-500 px-3.5 py-1 rounded-xl font-mono text-[10px] font-black group-hover:bg-blue-100 group-hover:text-blue-600 transition-all duration-500">
-                                                        #{w.id}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <div className="font-black text-slate-900 group-hover:text-blue-800 transition-colors text-sm">{w.name}</div>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <Badge variant="secondary" className="bg-white text-slate-600 border border-slate-100/50 font-black text-[10px] px-2.5 shadow-sm group-hover:shadow-md transition-all">
-                                                        <MapPin className="h-3.5 w-3.5 ml-1.5 text-blue-400 group-hover:text-blue-600 transition-colors" />
-                                                        {areaName}
-                                                    </Badge>
-                                                </td>
-                                                <td className="px-8 py-6 text-center">
-                                                    <div className="text-sm font-black text-slate-900 group-hover:text-blue-700 transition-colors">{w.dayValue} <span className="text-[10px] text-slate-400">د.أ</span></div>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <div className="flex justify-center items-center gap-2">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-10 w-10 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm transition-all duration-300"
-                                                            onClick={() => setEditingItem({ type: 'worker', data: w })}
-                                                        >
-                                                            <Edit2 className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-10 w-10 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all duration-300"
-                                                            onClick={() => handleDeleteWorker(w.id)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                {activeTab === 'logs' && (
+                    <LogsTab
+                        logs={auditLogs}
+                        searchTerm={logSearchTerm}
+                        onSearchChange={setLogSearchTerm}
+                        tableFilter={logTableFilter}
+                        onTableFilterChange={setLogTableFilter}
+                        actionFilter={logActionFilter}
+                        onActionFilterChange={setLogActionFilter}
+                    />
                 )}
 
                 {activeTab === 'attendance' && (
@@ -694,353 +529,177 @@ export const AdminView = () => {
                         </div>
                     </div>
                 )}
+            </div>
 
-                {activeTab === 'logs' && (
-                    <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40 overflow-hidden animate-in slide-in-from-bottom-8 duration-1000">
-                        <div className="p-8 border-b border-slate-100/50 flex flex-col lg:flex-row justify-between items-center gap-6 bg-gradient-to-r from-slate-50/50 to-transparent">
-                            <div className="flex items-center gap-6">
-                                <div className="bg-gradient-to-br from-slate-100 to-slate-200 p-4 rounded-2xl text-slate-600 shadow-inner">
-                                    <History className="h-7 w-7" />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">سجل الرقابة والنظام</h3>
-                                    <p className="text-xs text-slate-500 font-black uppercase tracking-widest mt-1">Full System Audit & Activity Tracking</p>
-                                </div>
-                            </div>
-                            <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
-                                <div className="relative w-full sm:w-64">
-                                    <Input
-                                        placeholder="تصفية حسب المسئول..."
-                                        className="h-12 bg-white/60 border-slate-200 focus:border-indigo-500 rounded-2xl shadow-sm text-sm font-bold"
-                                        value={logSearchTerm}
-                                        onChange={e => setLogSearchTerm(e.target.value)}
-                                    />
-                                </div>
-                                <select
-                                    className="h-12 px-4 bg-white/60 border border-slate-200 focus:border-indigo-500 rounded-2xl shadow-sm text-sm font-bold text-slate-600 outline-none transition-all cursor-pointer"
-                                    value={logActionFilter}
-                                    onChange={e => setLogActionFilter(e.target.value)}
-                                >
-                                    <option value="ALL">جميع العمليات</option>
-                                    <option value="INSERT">إضافة (INSERT)</option>
-                                    <option value="UPDATE">تعديل (UPDATE)</option>
-                                    <option value="DELETE">حذف (DELETE)</option>
-                                </select>
-                                <select
-                                    className="h-12 px-4 bg-white/60 border border-slate-200 focus:border-indigo-500 rounded-2xl shadow-sm text-sm font-bold text-slate-600 outline-none transition-all cursor-pointer"
-                                    value={logTableFilter}
-                                    onChange={e => setLogTableFilter(e.target.value)}
-                                >
-                                    <option value="ALL">جميع الجداول</option>
-                                    <option value="workers">العمال (Workers)</option>
-                                    <option value="users">المستخدمين (Users)</option>
-                                    <option value="attendance_records">الحضور (Attendance)</option>
-                                    <option value="areas">القطاعات (Areas)</option>
-                                </select>
-                            </div>
+            {/* Modals - Kept in parent to share state easily for now, or could be extracted too */}
+            {(editingItem?.type === 'worker') && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] w-full max-w-lg shadow-2xl border border-white/50 animate-in zoom-in-95 duration-300">
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+                            <h3 className="text-xl font-black text-slate-900">
+                                {editingItem.data.id === 'NEW' ? 'إضافة عامل جديد' : 'تعديل بيانات عامل'}
+                            </h3>
+                            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setEditingItem(null)}>✕</Button>
                         </div>
-
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-right">
-                                <thead>
-                                    <tr className="bg-slate-50/50 border-b border-slate-100/50">
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">التوقيت</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">المستخدم</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">العملية</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الجدول المتأثر</th>
-                                        <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">التغييرات الجوهرية</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {filteredLogs.map((log) => (
-                                        <tr key={log.id} className="hover:bg-slate-50/50 transition-all duration-500 group border-b border-slate-50 last:border-0 font-bold">
-                                            <td className="px-8 py-6">
-                                                <div className="text-[11px] font-black font-mono text-slate-400 group-hover:text-slate-600 transition-colors">
-                                                    {new Date(log.changed_at).toLocaleString('ar-JO')}
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center font-black text-slate-500 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 shadow-sm text-xs">
-                                                        {log.changed_by?.charAt(0) || 'S'}
-                                                    </div>
-                                                    <span className="font-black text-slate-700 text-sm">{log.changed_by || 'نظام تلقائي'}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6 text-center">
-                                                <Badge variant="outline" className={`font-black text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-lg ${log.action === 'INSERT' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                                                    log.action === 'UPDATE' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                                                        'bg-rose-50 text-rose-700 border-rose-100'} `}>
-                                                    {log.action}
-                                                </Badge>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <div className="text-sm font-black text-slate-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{log.table_name}</div>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <div className="max-w-md overflow-hidden text-ellipsis whitespace-nowrap text-[10px] font-mono text-slate-400 bg-slate-50 p-2.5 rounded-xl border border-slate-100/50 shadow-inner group-hover:bg-white group-hover:text-slate-600 transition-all">
-                                                    {JSON.stringify(log.new_data)}
-                                                </div>
-                                            </td>
-                                        </tr>
+                        <form onSubmit={handleSaveWorker} className="p-6 space-y-5">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-slate-600">الرقم الوظيفي</label>
+                                <Input
+                                    required
+                                    disabled={editingItem.data.id !== 'NEW'}
+                                    value={editingItem.data.id === 'NEW' ? editingItem.data.id_entered || '' : editingItem.data.id}
+                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, id_entered: e.target.value } })}
+                                    className="font-mono text-left"
+                                    placeholder="مثال: 1024"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-slate-600">الاسم الكامل</label>
+                                <Input
+                                    required
+                                    value={editingItem.data.name}
+                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
+                                    className="text-right"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-slate-600">القطاع / الحي</label>
+                                <select
+                                    className="w-full h-10 rounded-xl border border-slate-200 px-3 bg-white text-sm font-bold text-right"
+                                    value={editingItem.data.areaId}
+                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } })}
+                                >
+                                    <option value="">اختر القطاع...</option>
+                                    {areas.map(a => (
+                                        <option key={a.id} value={a.id}>{a.name}</option>
                                     ))}
-                                    {filteredLogs.length === 0 && (
-                                        <tr>
-                                            <td colSpan={5} className="py-[10%] text-center text-slate-400 font-black italic text-lg opacity-20">
-                                                لا توجد سجلات مطابقة
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Printable Area - Standardized Official Layout */}
-            < div className="hidden print:block font-sans" >
-                <div className="text-center mb-10 border-b-[6px] border-slate-900 pb-8">
-                    <div className="flex justify-between items-center mb-6">
-                        <div className="text-right">
-                            <h1 className="text-2xl font-bold mb-1">بيانات العمال والمستحقات الأساسية</h1>
-                            <p className="text-gray-600">التاريخ: {new Date().toLocaleDateString('ar-JO')} | القطاع: جميع المناطق</p>
-                            <p className="text-sm mt-1 text-red-600 font-bold uppercase">مركز إدارة النظام</p>
-                        </div>
-                        <Image src="/logo.png" alt="Logo" width={100} height={70} className="print-logo" priority />
-                        <div className="text-left text-sm font-bold text-slate-500">
-                            <p>التاريخ: {printMetadata.date}</p>
-                            <p>الرقم: AD/{printMetadata.ref}</p>
-                        </div>
-                    </div>
-                    <h1 className="text-4xl font-black text-slate-900 mb-2">كشف بيانات القوى العاملة المعتمد</h1>
-                    <div className="flex justify-center gap-12 mt-4 text-slate-600 font-black">
-                        <p>عدد العمال: <span className="text-red-600">{workers.length}</span></p>
-                        <p>تاريخ النسخة: <span className="text-red-600">{new Date().toLocaleDateString('ar-JO')}</span></p>
-                    </div>
-                </div>
-
-                <table className="w-full border-collapse text-sm mb-12">
-                    <thead>
-                        <tr className="bg-slate-100 font-black border-2 border-slate-900">
-                            <th className="border-2 border-slate-900 p-3 text-right">م</th>
-                            <th className="border-2 border-slate-900 p-3 text-right">رقم العامل</th>
-                            <th className="border-2 border-slate-900 p-3 text-right">الاسم الكامل</th>
-                            <th className="border-2 border-slate-900 p-3 text-right">المنطقة</th>
-                            <th className="border-2 border-slate-900 p-3 text-center">أجر اليوم</th>
-                            <th className="border-2 border-slate-900 p-3 text-center">الراتب الأساسي</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {workers.map((w, index) => {
-                            const areaName = areas.find(a => a.id === w.areaId)?.name || w.areaId;
-                            return (
-                                <tr key={w.id} className="border-b-2 border-slate-400">
-                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{index + 1}</td>
-                                    <td className="border-2 border-slate-900 p-3 font-mono">{w.id}</td>
-                                    <td className="border-2 border-slate-900 p-3 font-black">{w.name}</td>
-                                    <td className="border-2 border-slate-900 p-3">{areaName}</td>
-                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{w.dayValue} د.أ</td>
-                                    <td className="border-2 border-slate-900 p-3 text-center font-bold">{w.baseSalary} د.أ</td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-
-                <div className="grid grid-cols-3 gap-8 mt-20">
-                    <div className="space-y-16 text-center">
-                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">مدير النظام</p>
-                        <div className="h-20" />
-                        <p className="font-bold text-slate-400 text-xs">الاسم والتوقيع</p>
-                    </div>
-                    <div className="space-y-16 text-center">
-                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">تدقيق الموارد البشرية</p>
-                        <div className="h-20" />
-                        <p className="font-bold text-slate-400 text-xs">الاسم والتوقيع</p>
-                    </div>
-                    <div className="space-y-16 text-center">
-                        <p className="font-black text-lg underline underline-offset-8 decoration-2 text-slate-800">اعتماد الإدارة العليا</p>
-                        <div className="h-20" />
-                        <p className="font-bold text-slate-400 text-[10px] border-2 border-dashed border-slate-200 rounded-full w-24 h-24 flex items-center justify-center mx-auto">ختم الإدارة</p>
-                    </div>
-                </div>
-                <div className="mt-32 pt-8 border-t border-slate-200 text-center">
-                    <p className="text-[10px] text-slate-400 font-mono tracking-widest uppercase">
-                        Admin Control Panel - Ref: {printMetadata.ref} - Date: {printMetadata.date}
-                    </p>
-                </div>
-            </div>
-
-            {/* Editing Modals / Forms */}
-            <div className="print:hidden">
-                {editingItem && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setEditingItem(null)} />
-                        <div className="relative w-full max-w-xl bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-2xl border border-white/50 overflow-hidden animate-in zoom-in-95 duration-300">
-                            <div className={`h-2 w-full ${editingItem.type === 'user' ? 'bg-indigo-500' : 'bg-blue-500'}`} />
-                            <div className="p-8">
-                                <h2 className="text-2xl font-black text-slate-900 mb-2">
-                                    {editingItem.data.id === 'NEW' ? 'إضافة سجل جديد' : 'تعديل البيانات'}
-                                </h2>
-                                <p className="text-sm text-slate-500 font-bold mb-8">يرجى التحقق من صحة المعلومات المدخلة قبل الحفظ</p>
-
-                                <form onSubmit={editingItem.type === 'user' ? handleSaveUser : handleSaveWorker} className="space-y-6">
-                                    {editingItem.type === 'user' ? (
-                                        <div className="space-y-4">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">الاسم الكامل</label>
-                                                    <Input
-                                                        className="h-12 rounded-2xl bg-white border-slate-100 focus:border-rose-500 text-sm font-bold"
-                                                        value={editingItem.data.name}
-                                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">اسم المستخدم</label>
-                                                    <Input
-                                                        className="h-12 rounded-2xl bg-white border-slate-100 focus:border-rose-500 text-sm font-bold"
-                                                        value={editingItem.data.username}
-                                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, username: e.target.value } })}
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">نوع الحساب / الصلاحيات</label>
-                                                <Select
-                                                    value={editingItem.data.role}
-                                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value as UserRole } })}
-                                                    className="h-12 rounded-2xl bg-white border-slate-100 font-black text-sm"
-                                                >
-                                                    <option value="SUPERVISOR">مراقب قطاع (Supervisor)</option>
-                                                    <option value="GENERAL_SUPERVISOR">مراقب عام (GS)</option>
-                                                    <option value="HR">موارد بشرية (HR)</option>
-                                                    <option value="FINANCE">مالية (Finance)</option>
-                                                    <option value="MAYOR">رئيس بلدية (Mayor)</option>
-                                                    <option value="ADMIN">مدير نظام (Admin)</option>
-                                                </Select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">النطاق الجغرافي / القطاع</label>
-                                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 overflow-y-auto max-h-40 p-1">
-                                                    <div
-                                                        className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-center text-center text-[11px] font-black ${selectedAreaIds.includes('ALL')
-                                                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-200'
-                                                            : 'bg-white text-slate-500 border-slate-100 hover:border-indigo-200'
-                                                            }`}
-                                                        onClick={() => {
-                                                            const newIds = selectedAreaIds.includes('ALL') ? [] : ['ALL'];
-                                                            setSelectedAreaIds(newIds);
-                                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: newIds.join(',') } });
-                                                        }}
-                                                    >
-                                                        كل المناطق
-                                                    </div>
-                                                    {areas.map(area => (
-                                                        <div
-                                                            key={area.id}
-                                                            className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-center text-center text-[11px] font-black ${selectedAreaIds.includes(area.id)
-                                                                ? 'bg-indigo-50 text-indigo-700 border-indigo-500 shadow-md'
-                                                                : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300'
-                                                                }`}
-                                                            onClick={() => {
-                                                                let newIds = [...selectedAreaIds].filter(id => id !== 'ALL');
-                                                                if (newIds.includes(area.id)) {
-                                                                    newIds = newIds.filter(id => id !== area.id);
-                                                                } else {
-                                                                    newIds.push(area.id);
-                                                                }
-                                                                setSelectedAreaIds(newIds);
-                                                                if (editingItem && editingItem.type === 'user') {
-                                                                    setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: newIds.join(',') } });
-                                                                }
-                                                            }}
-                                                        >
-                                                            {area.name}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-4">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">اسم العامل</label>
-                                                    <Input
-                                                        className="h-12 rounded-2xl bg-white border-slate-100 focus:border-blue-500 text-sm font-bold"
-                                                        value={editingItem.data.name}
-                                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">الرقم الوظيفي</label>
-                                                    <Input
-                                                        className="h-12 rounded-2xl bg-white border-slate-100 focus:border-blue-500 text-sm font-bold font-mono"
-                                                        value={editingItem.data.id}
-                                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, id: e.target.value } })}
-                                                        disabled={editingItem.data.id !== 'NEW'}
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">الأجر اليومي (د.أ)</label>
-                                                    <Input
-                                                        type="number"
-                                                        step="0.01"
-                                                        className="h-12 rounded-2xl bg-white border-slate-100 focus:border-blue-500 text-sm font-bold"
-                                                        value={editingItem.data.dayValue}
-                                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, dayValue: parseFloat(e.target.value) } })}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">القطاع / الحي</label>
-                                                    <Select
-                                                        value={editingItem.data.areaId}
-                                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } })}
-                                                        className="h-12 rounded-2xl bg-white border-slate-100 font-black text-sm"
-                                                    >
-                                                        <option value="">اختر القطاع</option>
-                                                        {areas.map(area => (
-                                                            <option key={area.id} value={area.id}>{area.name}</option>
-                                                        ))}
-                                                    </Select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="flex gap-4 pt-4">
-                                        <Button
-                                            type="submit"
-                                            className={`flex-1 h-14 rounded-2xl font-black text-white shadow-xl group transition-all ${editingItem.type === 'user' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'}`}
-                                            disabled={isSaving}
-                                        >
-                                            {isSaving ? <Loader2 className="h-5 w-5 ml-2 animate-spin" /> : <Save className="h-5 w-5 ml-2 group-hover:scale-110 transition-transform" />}
-                                            {isSaving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
-                                        </Button>
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            className="h-14 px-8 rounded-2xl font-black text-slate-400 hover:bg-slate-50 transition-all"
-                                            onClick={() => setEditingItem(null)}
-                                        >
-                                            إلغاء
-                                        </Button>
-                                    </div>
-                                </form>
+                                </select>
                             </div>
-                        </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-slate-600">قيمة اليوم (دينار)</label>
+                                <Input
+                                    type="number"
+                                    step="0.5"
+                                    min="0"
+                                    required
+                                    value={editingItem.data.dayValue}
+                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, dayValue: parseFloat(e.target.value) } })}
+                                    className="text-left font-mono"
+                                />
+                            </div>
+                            <div className="pt-4 flex gap-3">
+                                <Button type="submit" disabled={isSaving} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white h-12 rounded-xl font-bold">
+                                    {isSaving ? <Loader2 className="animate-spin" /> : <><Save className="ml-2 h-4 w-4" /> حفظ البيانات</>}
+                                </Button>
+                                <Button type="button" variant="outline" onClick={() => setEditingItem(null)} className="h-12 rounded-xl font-bold">إلغاء</Button>
+                            </div>
+                        </form>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
+
+            {(editingItem?.type === 'user') && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] w-full max-w-lg shadow-2xl border border-white/50 animate-in zoom-in-95 duration-300">
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+                            <h3 className="text-xl font-black text-slate-900">
+                                {editingItem.data.id === 'NEW' ? 'إضافة مستخدم جديد' : 'تعديل بيانات مستخدم'}
+                            </h3>
+                            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setEditingItem(null)}>✕</Button>
+                        </div>
+                        <form onSubmit={handleSaveUser} className="p-6 space-y-5">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-slate-600">اسم المستخدم (للدخول)</label>
+                                <Input
+                                    required
+                                    disabled={editingItem.data.id !== 'NEW'}
+                                    value={editingItem.data.username}
+                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, username: e.target.value } })}
+                                    className="font-mono text-left"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-slate-600">الاسم الظاهر</label>
+                                <Input
+                                    required
+                                    value={editingItem.data.name}
+                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
+                                    className="text-right"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-slate-600">الدور الوظيفي</label>
+                                <select
+                                    className="w-full h-10 rounded-xl border border-slate-200 px-3 bg-white text-sm font-bold text-right"
+                                    value={editingItem.data.role}
+                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value as UserRole } })}
+                                >
+                                    <option value="SUPERVISOR">مراقب ميداني</option>
+                                    <option value="GENERAL_SUPERVISOR">مراقب عام</option>
+                                    <option value="HEALTH_DIRECTOR">مدير صحة وبيئة</option>
+                                    <option value="HR">موارد بشرية</option>
+                                    <option value="FINANCE">مالية</option>
+                                    <option value="ADMIN">مدير نظام</option>
+                                    <option value="MAYOR">رئيس البلدية</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-slate-600">النطاق الإشرافي</label>
+                                <div className="border border-slate-200 rounded-xl p-3 max-h-40 overflow-y-auto bg-white/50">
+                                    <div className="space-y-2">
+                                        <label className="flex items-center gap-2 cursor-pointer p-1 hover:bg-slate-50 rounded">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedAreaIds.length === areas.length}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setSelectedAreaIds(areas.map(a => a.id));
+                                                        setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: areas.map(a => a.id).join(',') } });
+                                                    } else {
+                                                        setSelectedAreaIds([]);
+                                                        setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: '' } });
+                                                    }
+                                                }}
+                                                className="rounded border-slate-300"
+                                            />
+                                            <span className="text-xs font-bold text-indigo-600">تحديد الكل</span>
+                                        </label>
+                                        {areas.map(area => (
+                                            <label key={area.id} className="flex items-center gap-2 cursor-pointer p-1 hover:bg-slate-50 rounded">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedAreaIds.includes(area.id)}
+                                                    onChange={(e) => {
+                                                        let newIds;
+                                                        if (e.target.checked) {
+                                                            newIds = [...selectedAreaIds, area.id];
+                                                        } else {
+                                                            newIds = selectedAreaIds.filter(id => id !== area.id);
+                                                        }
+                                                        setSelectedAreaIds(newIds);
+                                                        setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: newIds.join(',') } });
+                                                    }}
+                                                    className="rounded border-slate-300"
+                                                />
+                                                <span className="text-xs font-medium">{area.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-slate-400 mt-1">يمكن اختيار أكثر من منطقة للمراقبين</p>
+                            </div>
+
+                            <div className="pt-4 flex gap-3">
+                                <Button type="submit" disabled={isSaving} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white h-12 rounded-xl font-bold">
+                                    {isSaving ? <Loader2 className="animate-spin" /> : <><Save className="ml-2 h-4 w-4" /> حفظ البيانات</>}
+                                </Button>
+                                <Button type="button" variant="outline" onClick={() => setEditingItem(null)} className="h-12 rounded-xl font-bold">إلغاء</Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </>
     );
 };
