@@ -9,6 +9,13 @@
   <img src="./public/dashboard-mockup.png" alt="Dashboard Mockup" width="800" />
 </div>
 
+### 📸 لقطات من النظام (System Snapshots)
+
+| واجهة الموارد البشرية | واجهة المالية | واجهة المراقب |
+| :---: | :---: | :---: |
+| ![HR](./public/LoginPage.png) | ![Finance](./public/FinanceDashbord.png) | ![Supervisor](./public/SupervisorDashbord.png) |
+
+
 <div dir="rtl">
 
 ## 🌟 نبذة عن النظام
@@ -63,31 +70,30 @@
 
 ```mermaid
 stateDiagram-v2
-    [*] --> DRAFT: المراقب يسجل الحضور
-    DRAFT --> PENDING_GS: إرسال للاعتماد
+    [*] --> PENDING_SUPERVISOR: المراقب يسجل الحضور (المسودة)
+    PENDING_SUPERVISOR --> PENDING_GS: إرسال للاعتماد (المراقب العام)
     
     state "المراقب العام" as GS {
         PENDING_GS --> PENDING_HR: اعتماد (عمال غير صحة)
         PENDING_GS --> PENDING_HEALTH: اعتماد (عمال صحة)
-        PENDING_GS --> REJECTED: رفض
+        PENDING_GS --> PENDING_SUPERVISOR: رفض (إعادة للتعديل)
     }
 
     state "مدير الصحة" as Health {
         PENDING_HEALTH --> PENDING_HR: اعتماد
-        PENDING_HEALTH --> REJECTED: رفض
+        PENDING_HEALTH --> PENDING_SUPERVISOR: رفض (إعادة للتعديل)
     }
 
     state "الموارد البشرية" as HR {
         PENDING_HR --> PENDING_FINANCE: اعتماد
-        PENDING_HR --> REJECTED: رفض
+        PENDING_HR --> PENDING_SUPERVISOR: رفض (إعادة للتعديل)
     }
 
     state "المالية" as Finance {
         PENDING_FINANCE --> APPROVED: اعتماد نهائي
-        PENDING_FINANCE --> REJECTED: رفض
+        PENDING_FINANCE --> PENDING_SUPERVISOR: رفض (إعادة للتعديل)
     }
 
-    REJECTED --> DRAFT: تصحيح وإعادة إرسال
     APPROVED --> [*]: أرشفة وصرف
 ```
 
