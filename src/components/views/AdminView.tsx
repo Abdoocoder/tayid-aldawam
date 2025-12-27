@@ -207,7 +207,7 @@ export const AdminView = () => {
                                         }`}
                                 >
                                     <tab.icon className={`h-3.5 w-3.5 ${activeTab === tab.id ? 'scale-110' : ''}`} />
-                                    <span className="inline">{tab.label}</span>
+                                    <span className="hidden xs:inline">{tab.label}</span>
                                 </button>
                             ))}
                         </div>
@@ -226,11 +226,14 @@ export const AdminView = () => {
                                     { label: 'سجلات الحضور', value: attendanceRecords.length, unit: 'سجل', icon: FileText, color: 'blue', gradient: 'from-blue-50 to-blue-100/30', text: 'blue', border: 'blue' },
                                     { label: 'العمليات', value: auditLogs.length, unit: 'عملية', icon: History, color: 'slate', gradient: 'from-slate-50 to-slate-100/30', text: 'slate', border: 'slate' }
                                 ].map((stat, i) => (
-                                    <div key={i} className={`border-none shadow-sm bg-gradient-to-br ${stat.gradient} ring-1 ring-${stat.border}-100 rounded-2xl overflow-hidden group p-4 flex flex-col items-center text-center gap-2`}>
-                                        <div className={`bg-white p-2.5 rounded-xl text-${stat.text}-600 shadow-sm border border-${stat.border}-50 group-hover:scale-110 transition-transform`}>
+                                    <div key={i} className={`relative border-none shadow-sm bg-gradient-to-br ${stat.gradient} ring-1 ring-${stat.border}-100 rounded-2xl overflow-hidden group p-4 flex flex-col items-center text-center gap-2 min-h-[110px] justify-center`}>
+                                        {/* Background Watermark Icon */}
+                                        <stat.icon className={`absolute -bottom-2 -right-2 h-16 w-16 opacity-[0.08] text-${stat.text}-600 rotate-12 group-hover:scale-110 transition-transform duration-500`} />
+
+                                        <div className={`relative z-10 bg-white/80 backdrop-blur-sm p-2 rounded-xl text-${stat.text}-600 shadow-sm border border-${stat.border}-50 group-hover:scale-110 transition-transform`}>
                                             <stat.icon className="h-5 w-5" />
                                         </div>
-                                        <div>
+                                        <div className="relative z-10">
                                             <p className={`text-[10px] text-${stat.text}-600 font-black uppercase tracking-tight`}>{stat.label}</p>
                                             <p className={`text-2xl font-black text-${stat.text}-900 leading-tight`}>{stat.value}</p>
                                         </div>
@@ -520,123 +523,154 @@ export const AdminView = () => {
             </div>
 
             {/* Modals - Kept in parent to share state easily for now, or could be extracted too */}
+            {/* Worker Modal - Modern & Responsive */}
             {(editingItem?.type === 'worker') && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] w-full max-w-lg shadow-2xl border border-white/50 animate-in zoom-in-95 duration-300">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-                            <h3 className="text-xl font-black text-slate-900">
-                                {editingItem.data.id === 'NEW' ? 'إضافة عامل جديد' : 'تعديل بيانات عامل'}
-                            </h3>
-                            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setEditingItem(null)}>✕</Button>
+                    <div className="bg-white/95 backdrop-blur-xl rounded-2xl w-full max-w-lg shadow-2xl border border-white/50 animate-in zoom-in-95 duration-300 overflow-hidden">
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <div className="text-right">
+                                <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                                    {editingItem.data.id === 'NEW' ? 'إضافة عامل جديد' : 'تعديل بيانات العامل'}
+                                </h3>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">سجل القوى العاملة</p>
+                            </div>
+                            <button onClick={() => setEditingItem(null)} className="p-2 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-colors">
+                                <span className="text-lg font-bold">✕</span>
+                            </button>
                         </div>
-                        <form onSubmit={handleSaveWorker} className="p-6 space-y-5">
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-slate-600">الرقم الوظيفي</label>
-                                <Input
-                                    required
-                                    disabled={editingItem.data.id !== 'NEW'}
-                                    value={editingItem.data.id === 'NEW' ? editingItem.data.id_entered || '' : editingItem.data.id}
-                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, id_entered: e.target.value } })}
-                                    className="font-mono text-left"
-                                    placeholder="مثال: 1024"
-                                />
+                        <form onSubmit={handleSaveWorker} className="p-6 space-y-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الرقم الوظيفي</label>
+                                    <Input
+                                        required
+                                        disabled={editingItem.data.id !== 'NEW'}
+                                        value={editingItem.data.id === 'NEW' ? editingItem.data.id_entered || '' : editingItem.data.id}
+                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, id_entered: e.target.value } })}
+                                        className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-left font-mono"
+                                        placeholder="مثال: 1024"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الاسم الكامل</label>
+                                    <Input
+                                        required
+                                        value={editingItem.data.name}
+                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
+                                        className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-right font-bold"
+                                        placeholder="أدخل اسم العامل..."
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-slate-600">الاسم الكامل</label>
-                                <Input
-                                    required
-                                    value={editingItem.data.name}
-                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
-                                    className="text-right"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-slate-600">القطاع / الحي</label>
-                                <select
-                                    className="w-full h-10 rounded-xl border border-slate-200 px-3 bg-white text-sm font-bold text-right"
-                                    value={editingItem.data.areaId}
-                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } })}
-                                >
-                                    <option value="">اختر القطاع...</option>
-                                    {areas.map(a => (
-                                        <option key={a.id} value={a.id}>{a.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-slate-600">قيمة اليوم (دينار)</label>
-                                <Input
-                                    type="number"
-                                    step="0.5"
-                                    min="0"
-                                    required
-                                    value={editingItem.data.dayValue}
-                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, dayValue: parseFloat(e.target.value) } })}
-                                    className="text-left font-mono"
-                                />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">القطاع / الحي</label>
+                                    <select
+                                        className="w-full h-12 rounded-xl border border-slate-100 px-3 bg-slate-50/50 text-sm font-bold text-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                                        value={editingItem.data.areaId}
+                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } })}
+                                    >
+                                        <option value="">اختر القطاع...</option>
+                                        {areas.map(a => (
+                                            <option key={a.id} value={a.id}>{a.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">قيمة اليومية (دينار)</label>
+                                    <div className="relative">
+                                        <Input
+                                            type="number"
+                                            step="0.5"
+                                            min="0"
+                                            required
+                                            value={editingItem.data.dayValue}
+                                            onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, dayValue: parseFloat(e.target.value) } })}
+                                            className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-left font-mono pl-12"
+                                        />
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400 uppercase">JOD</span>
+                                    </div>
+                                </div>
                             </div>
                             <div className="pt-4 flex gap-3">
-                                <Button type="submit" disabled={isSaving} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white h-12 rounded-xl font-bold">
-                                    {isSaving ? <Loader2 className="animate-spin" /> : <><Save className="ml-2 h-4 w-4" /> حفظ البيانات</>}
+                                <Button type="submit" disabled={isSaving} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white h-12 rounded-xl font-black shadow-lg shadow-indigo-200 transition-all active:scale-[0.98]">
+                                    {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Save className="ml-2 h-4 w-4" /> حفظ البيانات</>}
                                 </Button>
-                                <Button type="button" variant="outline" onClick={() => setEditingItem(null)} className="h-12 rounded-xl font-bold">إلغاء</Button>
+                                <Button type="button" variant="outline" onClick={() => setEditingItem(null)} className="h-12 px-6 rounded-xl font-black border-slate-200 text-slate-600 hover:bg-slate-50">إلغاء</Button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
 
+            {/* User Modal - Modern & Responsive */}
             {(editingItem?.type === 'user') && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] w-full max-w-lg shadow-2xl border border-white/50 animate-in zoom-in-95 duration-300">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-                            <h3 className="text-xl font-black text-slate-900">
-                                {editingItem.data.id === 'NEW' ? 'إضافة مستخدم جديد' : 'تعديل بيانات مستخدم'}
-                            </h3>
-                            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setEditingItem(null)}>✕</Button>
+                    <div className="bg-white/95 backdrop-blur-xl rounded-2xl w-full max-w-[500px] shadow-2xl border border-white/50 animate-in zoom-in-95 duration-300 overflow-hidden">
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <div className="text-right">
+                                <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                                    {editingItem.data.id === 'NEW' ? 'إضافة مستخدم جديد' : 'تعديل بيانات مستخدم'}
+                                </h3>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">إدارة صلاحيات النظام</p>
+                            </div>
+                            <button onClick={() => setEditingItem(null)} className="p-2 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-colors">
+                                <span className="text-lg font-bold">✕</span>
+                            </button>
                         </div>
                         <form onSubmit={handleSaveUser} className="p-6 space-y-5">
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-slate-600">اسم المستخدم (للدخول)</label>
-                                <Input
-                                    required
-                                    disabled={editingItem.data.id !== 'NEW'}
-                                    value={editingItem.data.username}
-                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, username: e.target.value } })}
-                                    className="font-mono text-left"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-slate-600">الاسم الظاهر</label>
-                                <Input
-                                    required
-                                    value={editingItem.data.name}
-                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
-                                    className="text-right"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-slate-600">الدور الوظيفي</label>
-                                <select
-                                    className="w-full h-10 rounded-xl border border-slate-200 px-3 bg-white text-sm font-bold text-right"
-                                    value={editingItem.data.role}
-                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value as UserRole } })}
-                                >
-                                    <option value="SUPERVISOR">مراقب ميداني</option>
-                                    <option value="GENERAL_SUPERVISOR">مراقب عام</option>
-                                    <option value="HEALTH_DIRECTOR">مدير صحة وبيئة</option>
-                                    <option value="HR">موارد بشرية</option>
-                                    <option value="FINANCE">مالية</option>
-                                    <option value="ADMIN">مدير نظام</option>
-                                    <option value="MAYOR">رئيس البلدية</option>
-                                </select>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">اسم الدخول (بـ الإنجليزية)</label>
+                                    <Input
+                                        required
+                                        disabled={editingItem.data.id !== 'NEW'}
+                                        value={editingItem.data.username}
+                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, username: e.target.value } })}
+                                        className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-left font-mono"
+                                        placeholder="username"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الاسم الظاهر</label>
+                                    <Input
+                                        required
+                                        value={editingItem.data.name}
+                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
+                                        className="h-12 bg-slate-50/50 border-slate-100 focus:border-indigo-500 rounded-xl text-right font-bold"
+                                        placeholder="الاسم الكامل..."
+                                    />
+                                </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-bold text-slate-600">النطاق الإشرافي</label>
-                                <div className="border border-slate-200 rounded-xl p-3 max-h-40 overflow-y-auto bg-white/50">
+                                <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الدور الوظيفي / الصلاحية</label>
+                                <select
+                                    className="w-full h-12 rounded-xl border border-slate-100 px-3 bg-slate-50/50 text-sm font-bold text-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                                    value={editingItem.data.role}
+                                    onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value as UserRole } })}
+                                >
+                                    <optgroup label="الطاقم الميداني">
+                                        <option value="SUPERVISOR">مراقب ميداني</option>
+                                        <option value="GENERAL_SUPERVISOR">مراقب عام قطاعات</option>
+                                    </optgroup>
+                                    <optgroup label="الإدارة العليا">
+                                        <option value="HEALTH_DIRECTOR">مدير الدائرة الصحية</option>
+                                        <option value="HR">قسم الموارد البشرية</option>
+                                        <option value="FINANCE">قسم الرواتب والمالية</option>
+                                        <option value="MAYOR">عطوفة رئيس البلدية</option>
+                                    </optgroup>
+                                    <optgroup label="التقنيين">
+                                        <option value="ADMIN">مدير النظام الرقمي</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">نطاق الإشراف (القطاعات المتاحة)</label>
+                                <div className="border border-slate-100 rounded-xl p-4 max-h-[160px] overflow-y-auto bg-slate-50/50 shadow-inner">
                                     <div className="space-y-2">
-                                        <label className="flex items-center gap-2 cursor-pointer p-1 hover:bg-slate-50 rounded">
+                                        <label className="flex items-center gap-3 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-slate-100 group">
                                             <input
                                                 type="checkbox"
                                                 checked={selectedAreaIds.length === areas.length}
@@ -649,40 +683,41 @@ export const AdminView = () => {
                                                         setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: '' } });
                                                     }
                                                 }}
-                                                className="rounded border-slate-300"
+                                                className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500"
                                             />
-                                            <span className="text-xs font-bold text-indigo-600">تحديد الكل</span>
+                                            <span className="text-[11px] font-black text-indigo-600 uppercase tracking-tighter">تحديد جميع القطاعات</span>
                                         </label>
-                                        {areas.map(area => (
-                                            <label key={area.id} className="flex items-center gap-2 cursor-pointer p-1 hover:bg-slate-50 rounded">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedAreaIds.includes(area.id)}
-                                                    onChange={(e) => {
-                                                        let newIds;
-                                                        if (e.target.checked) {
-                                                            newIds = [...selectedAreaIds, area.id];
-                                                        } else {
-                                                            newIds = selectedAreaIds.filter(id => id !== area.id);
-                                                        }
-                                                        setSelectedAreaIds(newIds);
-                                                        setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: newIds.join(',') } });
-                                                    }}
-                                                    className="rounded border-slate-300"
-                                                />
-                                                <span className="text-xs font-medium">{area.name}</span>
-                                            </label>
-                                        ))}
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {areas.map(area => (
+                                                <label key={area.id} className="flex items-center gap-2 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-slate-100">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedAreaIds.includes(area.id)}
+                                                        onChange={(e) => {
+                                                            let newIds;
+                                                            if (e.target.checked) {
+                                                                newIds = [...selectedAreaIds, area.id];
+                                                            } else {
+                                                                newIds = selectedAreaIds.filter(id => id !== area.id);
+                                                            }
+                                                            setSelectedAreaIds(newIds);
+                                                            setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: newIds.join(',') } });
+                                                        }}
+                                                        className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500"
+                                                    />
+                                                    <span className="text-[11px] font-bold text-slate-600 truncate">{area.name}</span>
+                                                </label>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-slate-400 mt-1">يمكن اختيار أكثر من منطقة للمراقبين</p>
                             </div>
 
                             <div className="pt-4 flex gap-3">
-                                <Button type="submit" disabled={isSaving} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white h-12 rounded-xl font-bold">
-                                    {isSaving ? <Loader2 className="animate-spin" /> : <><Save className="ml-2 h-4 w-4" /> حفظ البيانات</>}
+                                <Button type="submit" disabled={isSaving} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white h-12 rounded-xl font-black shadow-lg shadow-indigo-200 transition-all active:scale-[0.98]">
+                                    {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Save className="ml-2 h-4 w-4" /> اعتماد المستخدم</>}
                                 </Button>
-                                <Button type="button" variant="outline" onClick={() => setEditingItem(null)} className="h-12 rounded-xl font-bold">إلغاء</Button>
+                                <Button type="button" variant="outline" onClick={() => setEditingItem(null)} className="h-12 px-6 rounded-xl font-black border-slate-200 text-slate-600 hover:bg-slate-50">إلغاء</Button>
                             </div>
                         </form>
                     </div>

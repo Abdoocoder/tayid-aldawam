@@ -109,18 +109,18 @@ export function MayorView() {
         <>
             <div className="space-y-6 pb-24 print:hidden">
                 {/* Executive Header - Ultra Premium Glass */}
-                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm">
+                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
                     <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="flex items-center gap-4">
                             <div className="bg-gradient-to-br from-fuchsia-600 to-purple-700 p-2.5 rounded-2xl text-white shadow-xl shadow-fuchsia-500/20 ring-1 ring-white/30">
                                 <ShieldCheck className="h-5 w-5" />
                             </div>
-                            <div>
+                            <div className="text-right">
                                 <div className="flex items-center gap-2">
                                     <h2 className="text-xl font-black text-slate-900 tracking-tight">رئاسة البلدية</h2>
                                     <Badge className="bg-fuchsia-50 text-fuchsia-700 border-fuchsia-100 text-[9px] font-black uppercase tracking-tighter">Executive</Badge>
                                 </div>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">نظام الرقابة والحوكمة الذكي</p>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider text-right">نظام الرقابة والحوكمة الذكي</p>
                             </div>
                         </div>
 
@@ -129,44 +129,39 @@ export function MayorView() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => window.print()}
-                                className="flex gap-2 text-fuchsia-600 hover:bg-fuchsia-50"
+                                className="hidden sm:flex gap-2 text-fuchsia-600 hover:bg-fuchsia-50 rounded-xl"
                             >
                                 <Printer className="h-4 w-4" />
-                                <span className="text-xs font-black">طباعة التقرير الاستراتيجي</span>
+                                <span className="text-xs font-black">تقرير استراتيجي</span>
                             </Button>
-                            <div className="bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner">
+                            <div className="flex-1">
                                 <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Strategic Overview Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Strategic Overview Grid - Mobile Optimized (grid-cols-2) */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-1">
                     {[
-                        { label: "القوة العاملة", value: stats.totalWorkers, unit: "عامل", icon: Users, color: "blue", trend: "إجمالي السجلات" },
-                        { label: "قيد المراجعة", value: stats.totalPending, unit: "معاملة", icon: Clock, color: "amber", trend: "بانتظار التدقيق" },
-                        { label: "نسبة الإنجاز", value: stats.completionRate, unit: "%", icon: Target, color: "emerald", trend: "الكفاءة الكلية" },
-                        { label: "الميزانية المعتمدة", value: stats.approvedAmount.toLocaleString(), unit: "د.أ", icon: TrendingUp, color: "fuchsia", trend: "المستحقات الحالية" }
+                        { label: "القوة العاملة", value: stats.totalWorkers, unit: "عامل", icon: Users, color: "blue", gradient: 'from-blue-50 to-blue-100/30', text: 'blue', border: 'blue', trend: "إجمالي السجلات" },
+                        { label: "قيد المراجعة", value: stats.totalPending, unit: "مهمة", icon: Clock, color: "amber", gradient: 'from-amber-50 to-amber-100/30', text: 'amber', border: 'amber', trend: "بانتظار التدقيق" },
+                        { label: "نسبة الإنجاز", value: stats.completionRate, unit: "%", icon: Target, color: "emerald", gradient: 'from-emerald-50 to-emerald-100/30', text: 'emerald', border: 'emerald', trend: "الكفاءة الكلية" },
+                        { label: "الميزانية المعتمدة", value: stats.approvedAmount.toLocaleString(), unit: "د.أ", icon: TrendingUp, color: "fuchsia", gradient: 'from-fuchsia-50 to-fuchsia-100/30', text: 'fuchsia', border: 'fuchsia', trend: "المستحقات الحالية" }
                     ].map((kpi, i) => (
-                        <div key={i} className="relative group overflow-hidden">
-                            <div className="relative z-10 bg-white/60 backdrop-blur-xl p-5 rounded-2xl border border-white/40 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className={`p-3 rounded-2xl bg-${kpi.color}-50 text-${kpi.color}-600 ring-1 ring-${kpi.color}-100 shadow-inner group-hover:scale-110 transition-transform duration-500`}>
-                                        <kpi.icon className="h-6 w-6" />
-                                    </div>
-                                    <div className={`text-[10px] font-black px-2.5 py-1 rounded-full bg-${kpi.color}-50 text-${kpi.color}-700 uppercase tracking-tighter shadow-sm`}>
-                                        {kpi.trend}
-                                    </div>
+                        <div key={i} className={`relative border-none shadow-sm bg-gradient-to-br ${kpi.gradient} ring-1 ring-${kpi.border}-100 rounded-2xl overflow-hidden group p-4 flex flex-col items-center text-center gap-2 min-h-[140px] justify-center transition-all duration-300 hover:shadow-md`}>
+                            {/* Background Watermark Icon */}
+                            <kpi.icon className={`absolute -bottom-2 -right-2 h-16 w-16 opacity-[0.08] text-${kpi.text}-600 rotate-12 group-hover:scale-110 transition-transform duration-500`} />
+
+                            <div className={`relative z-10 bg-white/80 backdrop-blur-sm p-3 rounded-xl text-${kpi.text}-600 shadow-sm border border-${kpi.border}-50 group-hover:scale-110 transition-transform`}>
+                                <kpi.icon className="h-6 w-6" />
+                            </div>
+                            <div className="relative z-10">
+                                <p className={`text-[10px] text-${kpi.text}-600 font-black uppercase tracking-tight`}>{kpi.label}</p>
+                                <p className={`text-xl font-black text-${kpi.text}-900 leading-tight`}>{kpi.value} <span className="text-[10px] font-bold opacity-60 uppercase">{kpi.unit}</span></p>
+                                <div className={`text-[9px] font-black px-2 py-0.5 rounded-full bg-${kpi.text}-50 text-${kpi.text}-700 uppercase tracking-tighter mt-1 inline-block`}>
+                                    {kpi.trend}
                                 </div>
-                                <div>
-                                    <h3 className="text-slate-500 text-[11px] font-black uppercase tracking-widest mb-1">{kpi.label}</h3>
-                                    <div className="flex items-baseline gap-1.2">
-                                        <span className="text-3xl font-black text-slate-900 tracking-tighter">{kpi.value}</span>
-                                        <span className="text-xs font-bold text-slate-400 uppercase">{kpi.unit}</span>
-                                    </div>
-                                </div>
-                                <div className={`absolute -right-4 -bottom-4 w-24 h-24 bg-${kpi.color}-50 rounded-full opacity-0 group-hover:opacity-40 transition-opacity duration-700 blur-2xl`}></div>
                             </div>
                         </div>
                     ))}

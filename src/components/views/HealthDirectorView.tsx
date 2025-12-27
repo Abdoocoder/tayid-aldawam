@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from "react";
 import { useAttendance } from "@/context/AttendanceContext";
 import { MonthYearPicker } from "../ui/month-year-picker";
-import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
@@ -227,127 +226,128 @@ export function HealthDirectorView() {
                     </div>
                 </div>
 
-                {/* Enhanced KPI Dashboard */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                {/* Enhanced KPI Dashboard - Optimized for Mobile Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 px-1">
                     {[
-                        { label: 'بانتظار اعتمادك', value: analytics.health, color: 'emerald', icon: Activity, desc: 'تحت المراجعة' },
-                        { label: 'تم التحويل للموارد', value: analytics.completed, color: 'slate', icon: CheckCircle2, desc: 'سجلات معتمدة' },
-                        { label: 'مرحلة المراقب العام', value: analytics.general, color: 'indigo', icon: ShieldCheck, desc: 'سجلات مدققة' },
+                        { label: 'بانتظار اعتمادك', value: analytics.health, color: 'emerald', icon: Activity, desc: 'تحت المراجعة', gradient: 'from-emerald-50 to-emerald-100/30', text: 'emerald', border: 'emerald' },
+                        { label: 'التحويل للموارد', value: analytics.completed, color: 'indigo', icon: CheckCircle2, desc: 'سجلات معتمدة', gradient: 'from-indigo-50 to-indigo-100/30', text: 'indigo', border: 'indigo' },
+                        { label: 'المراقب العام', value: analytics.general, color: 'violet', icon: ShieldCheck, desc: 'سجلات مدققة', gradient: 'from-violet-50 to-violet-100/30', text: 'violet', border: 'violet' },
                         {
                             label: 'التكلفة التقديرية',
                             value: `${analytics.totalCost.toLocaleString()} د.أ`,
                             color: 'amber',
                             icon: Coins,
+                            gradient: 'from-amber-50 to-amber-100/30',
+                            text: 'amber',
+                            border: 'amber',
                             desc: analytics.costDiff !== 0 ? (
                                 <span className={`flex items-center gap-1 ${analytics.costDiff > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                    {analytics.costDiff > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                                    {Math.abs(analytics.costDiff).toFixed(1)}% عن الشهر الماضي
+                                    {analytics.costDiff > 0 ? <TrendingUp className="h-2 w-2" /> : <TrendingDown className="h-2 w-2" />}
+                                    {Math.abs(analytics.costDiff).toFixed(1)}%
                                 </span>
-                            ) : 'لا يوجد بيانات سابقة'
+                            ) : 'لا يوجد بيانات'
                         },
                         {
                             label: 'تنبيهات الحضور',
                             value: analytics.anomalies,
                             color: analytics.anomalies > 0 ? 'rose' : 'slate',
                             icon: AlertTriangle,
-                            desc: 'سجلات تتطلب مراجعة دقيقة'
+                            gradient: analytics.anomalies > 0 ? 'from-rose-50 to-rose-100/30' : 'from-slate-50 to-slate-100/30',
+                            text: analytics.anomalies > 0 ? 'rose' : 'slate',
+                            border: analytics.anomalies > 0 ? 'rose' : 'slate',
+                            desc: 'سجلات هامة'
                         }
                     ].map((stat, i) => (
-                        <Card key={i} className={`group relative border-none shadow-xl shadow-slate-200/40 bg-white hover:bg-${stat.color}-50/30 transition-all duration-300 rounded-2xl overflow-hidden`}>
-                            <div className={`absolute top-0 right-0 w-1.5 h-full bg-${stat.color}-500/50`} />
-                            <CardContent className="p-6 flex flex-col justify-between h-full">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className={`bg-${stat.color}-50 p-3 rounded-2xl text-${stat.color}-600`}>
-                                        <stat.icon className="h-6 w-6" />
-                                    </div>
-                                    <p className={`text-[10px] font-black text-${stat.color}-600 uppercase tracking-[0.15em] opacity-80`}>{stat.label}</p>
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-black text-slate-900 tracking-tight mb-1">{stat.value}</p>
-                                    <div className="text-xs text-slate-400 font-bold">{stat.desc}</div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <div key={i} className={`relative border-none shadow-sm bg-gradient-to-br ${stat.gradient} ring-1 ring-${stat.border}-100 rounded-2xl overflow-hidden group p-4 flex flex-col items-center text-center gap-2 min-h-[120px] justify-center transition-all duration-300 hover:shadow-md`}>
+                            {/* Background Watermark Icon */}
+                            <stat.icon className={`absolute -bottom-2 -right-2 h-16 w-16 opacity-[0.08] text-${stat.text}-600 rotate-12 group-hover:scale-110 transition-transform duration-500`} />
+
+                            <div className={`relative z-10 bg-white/80 backdrop-blur-sm p-2.5 rounded-xl text-${stat.text}-600 shadow-sm border border-${stat.border}-50 group-hover:scale-110 transition-transform`}>
+                                <stat.icon className="h-6 w-6" />
+                            </div>
+                            <div className="relative z-10">
+                                <p className={`text-[10px] text-${stat.text}-600 font-black uppercase tracking-tight`}>{stat.label}</p>
+                                <p className={`text-xl font-black text-${stat.text}-900 leading-tight`}>{stat.value}</p>
+                                <div className="text-[9px] text-slate-400 font-bold mt-0.5">{stat.desc}</div>
+                            </div>
+                        </div>
                     ))}
                 </div>
 
-                {/* Tab Navigation - Violet & Slate Theme */}
-                <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/40 border border-white/40 p-3">
-                    <div className="flex flex-wrap gap-2">
-                        {[
-                            { id: 'pending' as TabType, label: 'بانتظار اعتمادك', icon: Activity, count: analytics.health, color: 'emerald' },
-                            { id: 'hr_forwarded' as TabType, label: 'تم التحويل للموارد', icon: CheckCircle2, count: analytics.hrForwarded, color: 'indigo' },
-                            { id: 'gs_stage' as TabType, label: 'مرحلة المراقب العام', icon: ShieldCheck, count: analytics.general, color: 'violet' },
-                            { id: 'cost_analysis' as TabType, label: 'تحليل التكاليف', icon: Coins, count: null, color: 'amber' },
-                            { id: 'anomalies' as TabType, label: 'التنبيهات', icon: AlertTriangle, count: analytics.anomalies, color: 'rose' },
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`group relative flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-sm transition-all duration-300 ${activeTab === tab.id
-                                    ? `bg-white text-${tab.color}-600 shadow-lg shadow-${tab.color}-200 ring-1 ring-${tab.color}-100 scale-[1.02]`
-                                    : 'text-slate-500 hover:text-slate-900 hover:bg-white/40'
-                                    }`}
-                            >
-                                <tab.icon className={`h-5 w-5 transition-transform group-hover:scale-110 ${activeTab === tab.id ? `text-${tab.color}-600` : 'text-slate-400 group-hover:text-slate-600'
-                                    }`} />
-                                <span>{tab.label}</span>
-                                {tab.count !== null && tab.count > 0 && (
-                                    <span className={`px-2.5 py-1 rounded-lg text-xs font-black ${activeTab === tab.id
-                                        ? `bg-${tab.color}-50 text-${tab.color}-700`
-                                        : 'bg-slate-100 text-slate-600'
-                                        }`}>
-                                        {tab.count}
-                                    </span>
-                                )}
-                            </button>
-                        ))}
-                    </div>
+                {/* Tab Navigation - Refined Pill Style */}
+                <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm overflow-x-auto no-scrollbar">
+                    {[
+                        { id: 'pending' as TabType, label: 'بانتظار اعتمادك', icon: Activity, count: analytics.health, color: 'emerald' },
+                        { id: 'hr_forwarded' as TabType, label: 'تم التحويل للموارد', icon: CheckCircle2, count: analytics.hrForwarded, color: 'indigo' },
+                        { id: 'gs_stage' as TabType, label: 'مرحلة المراقب العام', icon: ShieldCheck, count: analytics.general, color: 'violet' },
+                        { id: 'cost_analysis' as TabType, label: 'تحليل التكاليف', icon: Coins, count: null, color: 'amber' },
+                        { id: 'anomalies' as TabType, label: 'التنبيهات', icon: AlertTriangle, count: analytics.anomalies, color: 'rose' },
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`flex-1 px-4 py-2.5 rounded-xl text-[11px] md:text-xs font-black transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap min-w-fit ${activeTab === tab.id
+                                ? `bg-white text-${tab.color}-700 shadow-md shadow-${tab.color}-900/5`
+                                : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+                                }`}
+                        >
+                            <tab.icon className={`h-4 w-4 ${activeTab === tab.id ? 'scale-110' : ''}`} />
+                            <span className="hidden xs:inline">{tab.label}</span>
+                            {tab.count !== null && tab.count > 0 && (
+                                <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${activeTab === tab.id
+                                    ? `bg-${tab.color}-50 text-${tab.color}-700`
+                                    : 'bg-slate-200 text-slate-600'
+                                    }`}>
+                                    {tab.count}
+                                </span>
+                            )}
+                        </button>
+                    ))}
                 </div>
 
-                {/* Main Action Area */}
-                <div className="bg-white rounded-2xl shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden transition-all duration-500">
-                    <div className="p-8 border-b border-slate-50 flex flex-col xl:flex-row justify-between items-center gap-6 bg-slate-50/30">
-                        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full xl:w-auto">
-                            <div className="relative group flex-1 md:w-[320px]">
-                                <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                {/* Main Action Area - Refined Filters */}
+                <div className="bg-white/70 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/40 border border-white/60 overflow-hidden transition-all duration-500">
+                    <div className="p-4 lg:p-6 border-b border-slate-100/50 flex flex-col xl:flex-row justify-between items-center gap-4 bg-gradient-to-r from-emerald-50/30 to-transparent">
+                        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full xl:w-auto">
+                            <div className="relative group flex-1 md:w-[280px]">
+                                <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                                 <Input
-                                    placeholder="ابحث عن عامل أو رقم الموظف..."
-                                    className="pr-12 h-14 bg-white border-2 border-slate-100 focus:border-emerald-500 rounded-2xl text-base font-bold transition-all shadow-sm"
+                                    placeholder="بحث في السجلات..."
+                                    className="pr-10 h-12 bg-white/80 border-slate-200 focus:border-emerald-500 rounded-xl text-sm font-bold shadow-sm"
                                     value={searchTerm}
                                     onChange={e => setSearchTerm(e.target.value)}
                                 />
                             </div>
-                            <div className="flex flex-wrap items-center gap-3">
+                            <div className="grid grid-cols-2 md:flex items-center gap-2">
                                 <Select
-                                    className="h-14 min-w-[180px] border-2 border-slate-100 bg-white rounded-2xl font-bold shadow-sm"
+                                    className="h-12 flex-1 md:min-w-[160px] border-slate-200 bg-white/80 rounded-xl font-bold text-xs shadow-sm"
                                     value={selectedSupervisorId}
                                     onChange={e => setSelectedSupervisorId(e.target.value)}
                                 >
-                                    <option value="ALL">جميع المراقبين</option>
+                                    <option value="ALL">كل المراقبين</option>
                                     {supervisors.map(s => (
                                         <option key={s.id} value={s.id}>{s.name}</option>
                                     ))}
                                 </Select>
                                 <Select
-                                    className="h-14 min-w-[180px] border-2 border-slate-100 bg-white rounded-2xl font-bold shadow-sm"
+                                    className="h-12 flex-1 md:min-w-[160px] border-slate-200 bg-white/80 rounded-xl font-bold text-xs shadow-sm"
                                     value={selectedAreaId}
                                     onChange={e => setSelectedAreaId(e.target.value)}
                                 >
-                                    <option value="ALL">جميع المناطق</option>
+                                    <option value="ALL">كل المناطق</option>
                                     {areas.map(area => (
                                         <option key={area.id} value={area.id}>{area.name}</option>
                                     ))}
                                 </Select>
-                                <Button
-                                    variant={showAnomaliesOnly ? 'destructive' : 'outline'}
-                                    onClick={() => setShowAnomaliesOnly(!showAnomaliesOnly)}
-                                    className={`h-14 px-6 rounded-2xl font-bold transition-all gap-2 ${!showAnomaliesOnly && 'border-slate-100 text-slate-600'}`}
-                                >
-                                    <AlertTriangle className="h-5 w-5" />
-                                    {showAnomaliesOnly ? 'عرض الكل' : 'عرض التنبيهات فقط'}
-                                </Button>
                             </div>
+                            <Button
+                                variant={showAnomaliesOnly ? 'destructive' : 'outline'}
+                                onClick={() => setShowAnomaliesOnly(!showAnomaliesOnly)}
+                                className={`h-12 px-4 rounded-xl font-bold transition-all gap-2 text-xs ${!showAnomaliesOnly && 'border-slate-200 text-slate-600'}`}
+                            >
+                                <AlertTriangle className="h-4 w-4" />
+                                <span className="hidden sm:inline">{showAnomaliesOnly ? 'عرض الكل' : 'التنبيهات'}</span>
+                            </Button>
                         </div>
 
                         <div className="flex items-center gap-4 w-full xl:w-auto justify-end">
