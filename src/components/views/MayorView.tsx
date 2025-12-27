@@ -150,7 +150,7 @@ export function MayorView() {
                         { label: "الميزانية المعتمدة", value: stats.approvedAmount.toLocaleString(), unit: "د.أ", icon: TrendingUp, color: "fuchsia", trend: "المستحقات الحالية" }
                     ].map((kpi, i) => (
                         <div key={i} className="relative group overflow-hidden">
-                            <div className="relative z-10 bg-white/60 backdrop-blur-xl p-5 rounded-[2.5rem] border border-white/40 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 hover:-translate-y-1">
+                            <div className="relative z-10 bg-white/60 backdrop-blur-xl p-5 rounded-3xl border border-white/40 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className={`p-3 rounded-2xl bg-${kpi.color}-50 text-${kpi.color}-600 ring-1 ring-${kpi.color}-100 shadow-inner group-hover:scale-110 transition-transform duration-500`}>
                                         <kpi.icon className="h-6 w-6" />
@@ -175,7 +175,7 @@ export function MayorView() {
                 {/* Analytics Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Process Funnel Card */}
-                    <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/40 shadow-xl shadow-slate-200/50">
+                    <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl p-8 rounded-3xl border border-white/40 shadow-xl shadow-slate-200/50">
                         <div className="flex justify-between items-center mb-8">
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 bg-fuchsia-50 rounded-2xl text-fuchsia-600">
@@ -225,7 +225,7 @@ export function MayorView() {
                     </div>
 
                     {/* Regional Performance Card */}
-                    <div className="bg-white/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/40 shadow-xl shadow-slate-200/50">
+                    <div className="bg-white/60 backdrop-blur-xl p-8 rounded-3xl border border-white/40 shadow-xl shadow-slate-200/50">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="p-2.5 bg-indigo-50 rounded-2xl text-indigo-600">
                                 <Target className="h-5 w-5" />
@@ -259,7 +259,7 @@ export function MayorView() {
                 </div>
 
                 {/* Live Updates Table - Clean Glass */}
-                <div className="bg-white/40 backdrop-blur-md rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white/60 overflow-hidden mx-1">
+                <div className="bg-white/40 backdrop-blur-md rounded-3xl shadow-xl shadow-slate-200/50 border border-white/60 overflow-hidden mx-1">
                     <div className="p-6 border-b border-white/40 flex justify-between items-center">
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-6 bg-fuchsia-600 rounded-full"></div>
