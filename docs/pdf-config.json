@@ -1,0 +1,15 @@
+{
+    "stylesheet": "docs/pdf-style.css",
+    "pdf_options": {
+        "format": "A4",
+        "margin": {
+            "top": "20mm",
+            "right": "20mm",
+            "bottom": "20mm",
+            "left": "20mm"
+        },
+        "displayHeaderFooter": true,
+        "headerTemplate": "<div style=\"font-size: 10px; width: 100%; text-align: center; border-bottom: 1px solid #eee; margin-bottom: 10px;\">دليل المستخدم - نظام تأييد الدوام الذكي</div>",
+        "footerTemplate": "<div style=\"font-size: 10px; width: 100%; text-align: center; border-top: 1px solid #eee; padding-top: 5px;\"><span class=\"pageNumber\"></span> / <span class=\"totalPages\"></span></div>"
+    }
+}
