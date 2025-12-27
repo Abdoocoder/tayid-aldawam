@@ -13,8 +13,7 @@ import {
     LayoutDashboard,
     ShieldCheck,
     Loader2,
-    Save,
-    Activity
+    Save
 } from 'lucide-react';
 import { Badge } from '../ui/badge';
 
