@@ -362,13 +362,13 @@ export function InternalAuditView() {
                                                 <td className="p-5 text-center">
                                                     <Badge
                                                         className={`font-black text-[10px] px-2 py-1 ${record!.status === 'PENDING_SUPERVISOR' ? 'bg-slate-100 text-slate-700' :
-                                                                record!.status === 'PENDING_GS' ? 'bg-blue-100 text-blue-700' :
-                                                                    record!.status === 'PENDING_HEALTH' ? 'bg-teal-100 text-teal-700' :
-                                                                        record!.status === 'PENDING_HR' ? 'bg-purple-100 text-purple-700' :
-                                                                            record!.status === 'PENDING_AUDIT' ? 'bg-rose-100 text-rose-700' :
-                                                                                record!.status === 'PENDING_FINANCE' ? 'bg-emerald-100 text-emerald-700' :
-                                                                                    record!.status === 'PENDING_PAYROLL' ? 'bg-cyan-100 text-cyan-700' :
-                                                                                        'bg-green-100 text-green-700'
+                                                            record!.status === 'PENDING_GS' ? 'bg-blue-100 text-blue-700' :
+                                                                record!.status === 'PENDING_HEALTH' ? 'bg-teal-100 text-teal-700' :
+                                                                    record!.status === 'PENDING_HR' ? 'bg-purple-100 text-purple-700' :
+                                                                        record!.status === 'PENDING_AUDIT' ? 'bg-rose-100 text-rose-700' :
+                                                                            record!.status === 'PENDING_FINANCE' ? 'bg-emerald-100 text-emerald-700' :
+                                                                                record!.status === 'PENDING_PAYROLL' ? 'bg-cyan-100 text-cyan-700' :
+                                                                                    'bg-green-100 text-green-700'
                                                             }`}
                                                     >
                                                         {record!.status === 'PENDING_SUPERVISOR' ? '📋 مراقب' :
@@ -405,23 +405,25 @@ export function InternalAuditView() {
                                                 <td className="p-5">
                                                     <div className="flex justify-center gap-2">
                                                         {record!.status === 'PENDING_AUDIT' ? (
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() => handleApprove(record!.id)}
-                                                            disabled={approvingIds.has(record!.id)}
-                                                            className="bg-rose-600 hover:bg-rose-700 text-white font-black rounded-xl h-10 px-6 gap-2"
-                                                        >
-                                                            {approvingIds.has(record!.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                                                            اعتماد
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            onClick={() => handleReject(record!.id)}
-                                                            className="text-rose-600 hover:bg-rose-50 h-10 w-10 p-0 rounded-xl"
-                                                        >
-                                                            <XCircle className="h-5 w-5" />
-                                                        </Button>
+                                                            <>
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={() => handleApprove(record!.id)}
+                                                                    disabled={approvingIds.has(record!.id)}
+                                                                    className="bg-rose-600 hover:bg-rose-700 text-white font-black rounded-xl h-10 px-6 gap-2"
+                                                                >
+                                                                    {approvingIds.has(record!.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                                                                    اعتماد
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    onClick={() => handleReject(record!.id)}
+                                                                    className="text-rose-600 hover:bg-rose-50 h-10 w-10 p-0 rounded-xl"
+                                                                >
+                                                                    <XCircle className="h-5 w-5" />
+                                                                </Button>
+                                                            </>
                                                         ) : (
                                                             <Badge variant="outline" className="text-slate-500 text-xs">
                                                                 {record!.status === 'APPROVED' ? '✅ معتمد نهائياً' : '⏳ في مرحلة أخرى'}
