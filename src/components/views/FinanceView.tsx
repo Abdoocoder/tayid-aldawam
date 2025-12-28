@@ -36,18 +36,32 @@ export function FinanceView() {
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
+    // Budget Configuration (in a real app, this would be fetched from database)
+    const [monthlyBudget] = useState(500000); // Example budget in dinars
+
     // Filter workers based on search and area
     const approvedPayrolls = workers.map(w => {
         const record = getWorkerAttendance(w.id, month, year);
         const isApproved = record?.status === 'APPROVED';
         const areaName = areas.find(a => a.id === w.areaId)?.name || "غير محدد";
 
+        // Calculate cost breakdown
+        const normalCost = record ? record.normalDays * w.dayValue : 0;
+        const overtimeNormalCost = record ? record.overtimeNormalDays * 0.5 * w.dayValue : 0;
+        const overtimeHolidayCost = record ? record.overtimeHolidayDays * w.dayValue : 0;
+        const overtimeEidCost = record ? (record.overtimeEidDays || 0) * w.dayValue : 0;
+        const totalAmount = normalCost + overtimeNormalCost + overtimeHolidayCost + overtimeEidCost;
+
         return {
             worker: w,
             record,
             isApproved,
             areaName,
-            totalAmount: record ? record.totalCalculatedDays * w.dayValue : 0
+            totalAmount,
+            normalCost,
+            overtimeNormalCost,
+            overtimeHolidayCost,
+            overtimeEidCost
         };
     }).filter(p => {
         const matchesSearch = p.worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -89,28 +103,48 @@ export function FinanceView() {
         }
     };
 
-    // Stats calculations based on all workers for the selected month
+    // Enhanced stats calculations with budget tracking and cost breakdown
     const stats = useMemo(() => {
-        let total = 0;
+        let totalAmount = 0;
         let totalDays = 0;
-        let workersWithRecord = 0;
+        let workersCount = 0;
+        let normalCostTotal = 0;
+        let overtimeCostTotal = 0;
+        let holidayCostTotal = 0;
 
         workers.forEach(w => {
             const r = getWorkerAttendance(w.id, month, year);
             if (r && r.status === 'APPROVED') {
-                total += (r.totalCalculatedDays * w.dayValue);
+                const normalCost = r.normalDays * w.dayValue;
+                const otNormalCost = r.overtimeNormalDays * 0.5 * w.dayValue;
+                const otHolidayCost = r.overtimeHolidayDays * w.dayValue;
+                const otEidCost = (r.overtimeEidDays || 0) * w.dayValue;
+
+                normalCostTotal += normalCost;
+                overtimeCostTotal += otNormalCost;
+                holidayCostTotal += otHolidayCost + otEidCost;
+
+                totalAmount += normalCost + otNormalCost + otHolidayCost + otEidCost;
                 totalDays += r.totalCalculatedDays;
-                workersWithRecord++;
+                workersCount++;
             }
         });
 
+        const budgetRemaining = monthlyBudget - totalAmount;
+        const budgetUtilization = (totalAmount / monthlyBudget) * 100;
+
         return {
-            totalAmount: total,
-            totalDays: totalDays,
-            workersCount: workersWithRecord,
-            avgSalary: workersWithRecord > 0 ? total / workersWithRecord : 0
+            totalAmount,
+            totalDays,
+            workersCount,
+            avgSalary: workersCount > 0 ? totalAmount / workersCount : 0,
+            normalCostTotal,
+            overtimeCostTotal,
+            holidayCostTotal,
+            budgetRemaining,
+            budgetUtilization
         };
-    }, [workers, getWorkerAttendance, month, year]);
+    }, [workers, getWorkerAttendance, month, year, monthlyBudget]);
 
     // Stable print metadata - generated on mount to fix purity lint errors
     const [printMetadata] = useState(() => ({

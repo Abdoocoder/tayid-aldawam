@@ -9,7 +9,11 @@ import {
     History,
     AlertCircle,
     Loader2,
-    Menu
+    Menu,
+    TrendingUp,
+    FileCheck,
+    AlertTriangle,
+    Filter
 } from "lucide-react";
 import { useAttendance } from "@/context/AttendanceContext";
 import { useAuth } from "@/context/AuthContext";
@@ -179,6 +183,99 @@ export function InternalAuditView() {
                     </div>
                 </div>
 
+                {/* Analytics Dashboard */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-5 text-white shadow-lg relative overflow-hidden">
+                        <div className="relative z-10">
+                            <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-0.5">إجمالي السجلات</p>
+                            <div className="flex items-baseline gap-1.5">
+                                <span className="text-3xl font-black tracking-tighter">{analytics.total}</span>
+                                <span className="text-[9px] font-bold text-white/60 uppercase">سجل</span>
+                            </div>
+                        </div>
+                        <FileCheck className="absolute -bottom-4 -right-4 h-20 w-20 text-white/10 -rotate-12" />
+                    </div>
+                    <div className="bg-gradient-to-br from-green-600 to-emerald-700 rounded-[2rem] p-5 text-white shadow-lg relative overflow-hidden">
+                        <div className="relative z-10">
+                            <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-0.5">منخفضة المخاطر</p>
+                            <div className="flex items-baseline gap-1.5">
+                                <span className="text-3xl font-black tracking-tighter">{analytics.lowRisk}</span>
+                                <span className="text-[9px] font-bold text-white/60 uppercase">🟢</span>
+                            </div>
+                        </div>
+                        <TrendingUp className="absolute -bottom-4 -right-4 h-20 w-20 text-white/10 -rotate-12" />
+                    </div>
+                    <div className="bg-gradient-to-br from-amber-600 to-orange-700 rounded-[2rem] p-5 text-white shadow-lg relative overflow-hidden">
+                        <div className="relative z-10">
+                            <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-0.5">متوسطة المخاطر</p>
+                            <div className="flex items-baseline gap-1.5">
+                                <span className="text-3xl font-black tracking-tighter">{analytics.mediumRisk}</span>
+                                <span className="text-[9px] font-bold text-white/60 uppercase">🟡</span>
+                            </div>
+                        </div>
+                        <AlertCircle className="absolute -bottom-4 -right-4 h-20 w-20 text-white/10 -rotate-12" />
+                    </div>
+                    <div className="bg-gradient-to-br from-red-600 to-rose-700 rounded-[2rem] p-5 text-white shadow-lg relative overflow-hidden">
+                        <div className="relative z-10">
+                            <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-0.5">عالية المخاطر</p>
+                            <div className="flex items-baseline gap-1.5">
+                                <span className="text-3xl font-black tracking-tighter">{analytics.highRisk}</span>
+                                <span className="text-[9px] font-bold text-white/60 uppercase">🔴</span>
+                            </div>
+                        </div>
+                        <AlertTriangle className="absolute -bottom-4 -right-4 h-20 w-20 text-white/10 -rotate-12" />
+                    </div>
+                </div>
+
+                {/* Enhanced Filters */}
+                <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-white/40">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Filter className="h-5 w-5 text-rose-600" />
+                        <h3 className="font-black text-slate-900">تصفية متقدمة</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-600 mb-2">مستوى المخاطر</label>
+                            <select
+                                value={riskFilter}
+                                onChange={(e) => setRiskFilter(e.target.value as any)}
+                                className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-sm font-bold text-slate-700"
+                            >
+                                <option value="all">الكل</option>
+                                <option value="low">🟢 منخفضة</option>
+                                <option value="medium">🟡 متوسطة</option>
+                                <option value="high">🔴 عالية</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-600 mb-2">القطاع</label>
+                            <select
+                                value={areaFilter}
+                                onChange={(e) => setAreaFilter(e.target.value)}
+                                className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-sm font-bold text-slate-700"
+                            >
+                                <option value="all">جميع القطاعات</option>
+                                {areas.map(area => (
+                                    <option key={area.id} value={area.id}>{area.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-600 mb-2">عدد الأيام</label>
+                            <select
+                                value={amountFilter}
+                                onChange={(e) => setAmountFilter(e.target.value as any)}
+                                className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-sm font-bold text-slate-700"
+                            >
+                                <option value="all">الكل</option>
+                                <option value="0-20">0-20 يوم</option>
+                                <option value="20-30">20-30 يوم</option>
+                                <option value="30+">30+ يوم</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Search and Tabs */}
                 <div className="flex flex-col md:flex-row gap-4 px-1">
                     <div className="relative flex-1">
@@ -215,6 +312,7 @@ export function InternalAuditView() {
                                     <tr className="bg-slate-50/50 text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
                                         <th className="p-5">العامل</th>
                                         <th className="p-5">القطاع</th>
+                                        <th className="p-5 text-center">المخاطر</th>
                                         <th className="p-5 text-center">الأيام</th>
                                         <th className="p-5 text-center">إضافي</th>
                                         <th className="p-5 text-center">الإجمالي</th>
@@ -224,12 +322,12 @@ export function InternalAuditView() {
                                 <tbody className="divide-y divide-slate-100">
                                     {filteredRecords.length === 0 ? (
                                         <tr>
-                                            <td colSpan={6} className="p-20 text-center text-slate-400 italic font-bold">
+                                            <td colSpan={7} className="p-20 text-center text-slate-400 italic font-bold">
                                                 لا توجد سجلات بانتظار التدقيق الرقابي حالياً
                                             </td>
                                         </tr>
                                     ) : (
-                                        filteredRecords.map(({ worker, record, areaName }) => (
+                                        filteredRecords.map(({ worker, record, areaName, risk }) => (
                                             <tr key={record!.id} className="hover:bg-rose-50/30 transition-all duration-300 group">
                                                 <td className="p-5">
                                                     <div className="font-black text-slate-800 group-hover:text-rose-600 transition-colors">{worker.name}</div>
@@ -238,6 +336,16 @@ export function InternalAuditView() {
                                                 <td className="p-5">
                                                     <Badge variant="outline" className="font-bold border-slate-200 text-slate-600">
                                                         {areaName}
+                                                    </Badge>
+                                                </td>
+                                                <td className="p-5 text-center">
+                                                    <Badge
+                                                        className={`font-black text-xs px-3 py-1 ${risk === 'high' ? 'bg-red-100 text-red-800 border-red-200' :
+                                                                risk === 'medium' ? 'bg-amber-100 text-amber-800 border-amber-200' :
+                                                                    'bg-green-100 text-green-800 border-green-200'
+                                                            }`}
+                                                    >
+                                                        {risk === 'high' ? '🔴 عالية' : risk === 'medium' ? '🟡 متوسطة' : '🟢 منخفضة'}
                                                     </Badge>
                                                 </td>
                                                 <td className="p-5 text-center font-black text-slate-700">{record!.normalDays}</td>

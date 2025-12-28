@@ -25,7 +25,12 @@ export function MonthYearPicker({ month, year, onChange }: MonthYearPickerProps)
         { value: 12, label: "ديسمبر (12)" },
     ];
 
-    const years = [2024, 2025, 2026];
+    // Generate years dynamically: from 2020 to current year + 2
+    const currentYear = new Date().getFullYear();
+    const years = Array.from(
+        { length: currentYear - 2020 + 3 },
+        (_, i) => 2020 + i
+    );
 
     return (
         <div className="flex gap-3 items-center">
