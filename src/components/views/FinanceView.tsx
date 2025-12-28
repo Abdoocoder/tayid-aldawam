@@ -31,7 +31,7 @@ export function FinanceView() {
     const [year, setYear] = useState(new Date().getFullYear());
     const [searchTerm, setSearchTerm] = useState("");
     const [areaFilter, setAreaFilter] = useState("ALL");
-    const [statusFilter, setStatusFilter] = useState<'PENDING_FINANCE' | 'APPROVED'>('PENDING_FINANCE');
+    const [statusFilter, setStatusFilter] = useState<string>('PENDING_FINANCE'); // Default to finance pending
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -68,7 +68,7 @@ export function FinanceView() {
             p.worker.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
             p.areaName.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesArea = areaFilter === "ALL" || p.worker.areaId === areaFilter;
-        const matchesStatus = p.record?.status === statusFilter;
+        const matchesStatus = statusFilter === 'all' || p.record?.status === statusFilter;
         return matchesStatus && matchesSearch && matchesArea;
     });
 
@@ -341,10 +341,17 @@ export function FinanceView() {
                         <select
                             className="hidden md:block h-12 bg-white/80 backdrop-blur-md border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[200px] outline-none px-4 transition-all"
                             value={statusFilter}
-                            onChange={e => setStatusFilter(e.target.value as 'PENDING_FINANCE' | 'APPROVED')}
+                            onChange={e => setStatusFilter(e.target.value)}
                         >
-                            <option value="PENDING_FINANCE">📊 بانتظار الاعتماد المالي</option>
-                            <option value="APPROVED">✅ الكشوف المعتمدة</option>
+                            <option value="all">🔍 جميع الحالات</option>
+                            <option value="PENDING_SUPERVISOR">📋 عند المراقب</option>
+                            <option value="PENDING_GS">👤 المراقب العام</option>
+                            <option value="PENDING_HEALTH">🏥 الصحة</option>
+                            <option value="PENDING_HR">👥 الموارد البشرية</option>
+                            <option value="PENDING_AUDIT">🛡️ الرقابة الداخلية</option>
+                            <option value="PENDING_FINANCE">💰 المالية (أنت)</option>
+                            <option value="PENDING_PAYROLL">💳 الرواتب</option>
+                            <option value="APPROVED">✅ معتمد نهائياً</option>
                         </select>
 
                         <div className="md:hidden flex-1">
@@ -405,7 +412,7 @@ export function FinanceView() {
                             <tbody className="divide-y divide-slate-100">
                                 {approvedPayrolls.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} className="p-20 text-center text-slate-400 italic font-bold">
+                                        <td colSpan={8} className="p-20 text-center text-slate-400 italic font-bold">
                                             لا توجد سجلات مالية مطابقة للبحث
                                         </td>
                                     </tr>
@@ -420,6 +427,28 @@ export function FinanceView() {
                                                 <div className="inline-flex items-center px-3 py-1 bg-slate-100/50 text-slate-600 rounded-full text-[11px] font-bold border border-slate-200/50">
                                                     {p.areaName}
                                                 </div>
+                                            </td>
+                                            <td className="p-5 text-center">
+                                                <Badge
+                                                    className={`font-black text-[10px] px-2 py-1 ${p.record?.status === 'PENDING_SUPERVISOR' ? 'bg-slate-100 text-slate-700' :
+                                                            p.record?.status === 'PENDING_GS' ? 'bg-blue-100 text-blue-700' :
+                                                                p.record?.status === 'PENDING_HEALTH' ? 'bg-teal-100 text-teal-700' :
+                                                                    p.record?.status === 'PENDING_HR' ? 'bg-purple-100 text-purple-700' :
+                                                                        p.record?.status === 'PENDING_AUDIT' ? 'bg-rose-100 text-rose-700' :
+                                                                            p.record?.status === 'PENDING_FINANCE' ? 'bg-emerald-100 text-emerald-700' :
+                                                                                p.record?.status === 'PENDING_PAYROLL' ? 'bg-cyan-100 text-cyan-700' :
+                                                                                    'bg-green-100 text-green-700'
+                                                        }`}
+                                                >
+                                                    {p.record?.status === 'PENDING_SUPERVISOR' ? '📋 مراقب' :
+                                                        p.record?.status === 'PENDING_GS' ? '👤 م.عام' :
+                                                            p.record?.status === 'PENDING_HEALTH' ? '🏥 صحة' :
+                                                                p.record?.status === 'PENDING_HR' ? '👥 م.ب' :
+                                                                    p.record?.status === 'PENDING_AUDIT' ? '🛡️ رقابة' :
+                                                                        p.record?.status === 'PENDING_FINANCE' ? '💰 مالية' :
+                                                                            p.record?.status === 'PENDING_PAYROLL' ? '💳 رواتب' :
+                                                                                '✅ معتمد'}
+                                                </Badge>
                                             </td>
                                             <td className="p-5 text-center font-black text-slate-700 text-lg">{p.record?.totalCalculatedDays || "-"}</td>
                                             <td className="p-5 text-center font-bold text-slate-500 text-sm">
