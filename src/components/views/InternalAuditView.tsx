@@ -51,7 +51,6 @@ export function InternalAuditView() {
     const [areaFilter, setAreaFilter] = useState<string>('all');
     const [amountFilter, setAmountFilter] = useState<'all' | '0-20' | '20-30' | '30+'>('all');
     const [statusFilter, setStatusFilter] = useState<string>('PENDING_AUDIT'); // Default to audit pending
-    const [selectedRecords, setSelectedRecords] = useState<Set<string>>(new Set());
 
     const navItems = [
         { id: 'audit', label: 'تدقيق المستحقات', icon: ShieldCheck },
@@ -59,7 +58,7 @@ export function InternalAuditView() {
     ];
 
     // Risk calculation function
-    const calculateRisk = (record: any, worker: any): 'low' | 'medium' | 'high' => {
+    const calculateRisk = (record: { totalCalculatedDays: number; normalDays: number }): 'low' | 'medium' | 'high' => {
         const totalDays = record.totalCalculatedDays;
         const normalDays = record.normalDays;
         const overtimeRatio = (totalDays - normalDays) / Math.max(normalDays, 1);
@@ -75,7 +74,7 @@ export function InternalAuditView() {
         return workers.map(w => {
             const record = getWorkerAttendance(w.id, month, year);
             const areaName = areas.find(a => a.id === w.areaId)?.name || "غير محدد";
-            const risk = record ? calculateRisk(record, w) : 'low';
+            const risk = record ? calculateRisk(record) : 'low';
             const amount = record ? record.totalCalculatedDays * w.dayValue : 0;
             return { worker: w, record, areaName, risk, amount };
         }).filter(item => {
@@ -97,7 +96,7 @@ export function InternalAuditView() {
 
             return matchesSearch && matchesRisk && matchesArea && matchesAmount;
         });
-    }, [workers, areas, getWorkerAttendance, month, year, activeTab, searchTerm, riskFilter, areaFilter, amountFilter]);
+    }, [workers, areas, getWorkerAttendance, month, year, activeTab, searchTerm, riskFilter, areaFilter, amountFilter, statusFilter]);
 
     // Analytics
     const analytics = useMemo(() => {
@@ -258,7 +257,7 @@ export function InternalAuditView() {
                             <label className="block text-xs font-bold text-slate-600 mb-2">مستوى المخاطر</label>
                             <select
                                 value={riskFilter}
-                                onChange={(e) => setRiskFilter(e.target.value as any)}
+                                onChange={(e) => setRiskFilter(e.target.value as 'all' | 'low' | 'medium' | 'high')}
                                 className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-sm font-bold text-slate-700"
                             >
                                 <option value="all">الكل</option>
@@ -284,7 +283,7 @@ export function InternalAuditView() {
                             <label className="block text-xs font-bold text-slate-600 mb-2">عدد الأيام</label>
                             <select
                                 value={amountFilter}
-                                onChange={(e) => setAmountFilter(e.target.value as any)}
+                                onChange={(e) => setAmountFilter(e.target.value as 'all' | '0-20' | '20-30' | '30+')}
                                 className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-sm font-bold text-slate-700"
                             >
                                 <option value="all">الكل</option>
