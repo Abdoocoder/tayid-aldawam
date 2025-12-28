@@ -34,7 +34,7 @@ export interface AttendanceRecord {
     overtime_holiday_days: number;
     overtime_eid_days: number;
     total_calculated_days: number;
-    status: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED';
+    status: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'PENDING_PAYROLL' | 'APPROVED';
     created_at?: string;
     updated_at?: string;
 }
@@ -43,7 +43,7 @@ export interface User {
     id: string;
     username: string;
     name: string;
-    role: 'SUPERVISOR' | 'GENERAL_SUPERVISOR' | 'HEALTH_DIRECTOR' | 'HR' | 'FINANCE' | 'ADMIN' | 'MAYOR';
+    role: 'SUPERVISOR' | 'GENERAL_SUPERVISOR' | 'HEALTH_DIRECTOR' | 'HR' | 'INTERNAL_AUDIT' | 'FINANCE' | 'PAYROLL' | 'ADMIN' | 'MAYOR';
     area_id?: string | null; // Keep for compatibility/single selection
     areas?: Area[]; // For multi-area support
     is_active: boolean;

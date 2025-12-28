@@ -298,9 +298,10 @@ export function SupervisorView() {
                                                     {isFilled ? (
                                                         record.status === 'PENDING_GS' ? "بانتظار المشرف العام" :
                                                             record.status === 'PENDING_HR' ? "بانتظار الموارد" :
-                                                                record.status === 'PENDING_FINANCE' ? "بانتظار الرواتب" :
-                                                                    record.status === 'PENDING_SUPERVISOR' ? "يحتاج تصحيح" :
-                                                                        "معتمد نهائياً"
+                                                                record.status === 'PENDING_AUDIT' ? "بانتظار الرقابة" :
+                                                                    record.status === 'PENDING_FINANCE' ? "بانتظار الرواتب" :
+                                                                        record.status === 'PENDING_SUPERVISOR' ? "يحتاج تصحيح" :
+                                                                            "معتمد نهائياً"
                                                     ) : "بانتظار الإدخال"}
                                                 </span>
                                             </div>

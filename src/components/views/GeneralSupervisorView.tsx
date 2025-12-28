@@ -493,7 +493,8 @@ export function GeneralSupervisorView() {
                                                                             {record!.status === 'APPROVED' ? 'تم الاعتماد النهائي' :
                                                                                 record!.status === 'PENDING_HEALTH' ? 'عند مدير الصحة' :
                                                                                     record!.status === 'PENDING_HR' ? 'عند شؤون الموظفين' :
-                                                                                        record!.status === 'PENDING_FINANCE' ? 'عند المالية' : 'قيد المعالجة'}
+                                                                                        record!.status === 'PENDING_AUDIT' ? 'عند الرقابة الداخلية' :
+                                                                                            record!.status === 'PENDING_FINANCE' ? 'عند المالية' : 'قيد المعالجة'}
                                                                         </div>
                                                                     )}
                                                                 </div>

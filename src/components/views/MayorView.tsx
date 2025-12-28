@@ -48,6 +48,7 @@ export function MayorView() {
             GS: periodRecords.filter(r => r.status === 'PENDING_GS').length,
             HEALTH: periodRecords.filter(r => r.status === 'PENDING_HEALTH').length,
             HR: periodRecords.filter(r => r.status === 'PENDING_HR').length,
+            AUDIT: periodRecords.filter(r => r.status === 'PENDING_AUDIT').length,
             FINANCE: periodRecords.filter(r => r.status === 'PENDING_FINANCE').length,
         };
 
@@ -265,6 +266,7 @@ export function MayorView() {
                                 { label: "المراقب العام", count: stats.pendingStages.GS, color: "indigo", icon: ShieldCheck },
                                 { label: "الصحة", count: stats.pendingStages.HEALTH, color: "emerald", icon: Activity },
                                 { label: "الموارد", count: stats.pendingStages.HR, color: "amber", icon: Briefcase },
+                                { label: "الرقابة", count: stats.pendingStages.AUDIT, color: "rose", icon: ShieldCheck },
                                 { label: "المالية", count: stats.pendingStages.FINANCE, color: "teal", icon: Landmark },
                                 { label: "الاعتماد", count: stats.totalApproved, color: "fuchsia", icon: CheckCircle2 }
                             ].map((step, i) => (
@@ -360,7 +362,9 @@ export function MayorView() {
                                             PENDING_GS: { label: 'المراقب العام', color: 'indigo' },
                                             PENDING_HEALTH: { label: 'مدير الصحة', color: 'emerald' },
                                             PENDING_HR: { label: 'الموارد البشرية', color: 'amber' },
+                                            PENDING_AUDIT: { label: 'الرقابة الداخلية', color: 'rose' },
                                             PENDING_FINANCE: { label: 'المالية', color: 'teal' },
+                                            PENDING_PAYROLL: { label: 'الرواتب', color: 'cyan' },
                                             APPROVED: { label: 'معتمد نهائياً', color: 'fuchsia' }
                                         }[record.status] || { label: record.status, color: 'slate' };
 

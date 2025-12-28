@@ -166,11 +166,13 @@ export default function RegisterPage() {
                                     onChange={(e) => setRole(e.target.value as UserRole)}
                                     disabled={loading || isLoading}
                                 >
-                                    <option value="SUPERVISOR">مراقب</option>
+                                    <option value="SUPERVISOR">مراقب ميداني</option>
                                     <option value="GENERAL_SUPERVISOR">مراقب عام</option>
                                     <option value="HEALTH_DIRECTOR">مدير الدائرة الصحية</option>
-                                    <option value="HR">موارد بشرية</option>
-                                    <option value="FINANCE">قسم مالي</option>
+                                    <option value="HR">مدير الموارد البشرية</option>
+                                    <option value="INTERNAL_AUDIT">مدقق داخلي</option>
+                                    <option value="FINANCE">المدير المالي</option>
+                                    <option value="PAYROLL">قسم الرواتب</option>
                                     <option value="MAYOR">رئيس البلدية</option>
                                     <option value="ADMIN">مدير النظام</option>
                                 </Select>

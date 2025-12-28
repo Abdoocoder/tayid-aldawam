@@ -76,7 +76,17 @@ export function UsersTab({ users, areas, searchTerm, onEditUser, onDeleteUser, o
                                     </td>
                                     <td className="px-10 py-8 text-center text-center">
                                         <Badge variant="outline" className={`font-black text-[10px] uppercase tracking-widest ring-1 border-none px-4 py-1.5 rounded-xl shadow-sm ${u.role === 'ADMIN' ? 'bg-indigo-600 text-white ring-indigo-500' : 'bg-white text-slate-600 ring-slate-200'} `}>
-                                            {u.role}
+                                            {{
+                                                'SUPERVISOR': 'مراقب ميداني',
+                                                'GENERAL_SUPERVISOR': 'مراقب عام',
+                                                'HEALTH_DIRECTOR': 'مدير صحة',
+                                                'HR': 'مدير الموارد البشرية',
+                                                'INTERNAL_AUDIT': 'مدقق داخلي',
+                                                'FINANCE': 'المدير المالي',
+                                                'PAYROLL': 'قسم الرواتب',
+                                                'MAYOR': 'رئيس بلدية',
+                                                'ADMIN': 'مدير نظام'
+                                            }[u.role] || u.role}
                                         </Badge>
                                     </td>
                                     <td className="px-10 py-8">

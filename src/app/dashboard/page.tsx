@@ -9,6 +9,8 @@ import { GeneralSupervisorView } from "@/components/views/GeneralSupervisorView"
 import { AdminView } from "@/components/views/AdminView";
 import { MayorView } from "@/components/views/MayorView";
 import { HealthDirectorView } from "@/components/views/HealthDirectorView";
+import { InternalAuditView } from "@/components/views/InternalAuditView";
+import { PayrollView } from "@/components/views/PayrollView";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -34,7 +36,9 @@ export default function DashboardPage() {
                 {currentUser.role === "GENERAL_SUPERVISOR" && <GeneralSupervisorView />}
                 {currentUser.role === "HEALTH_DIRECTOR" && <HealthDirectorView />}
                 {currentUser.role === "HR" && <HRView />}
+                {currentUser.role === "INTERNAL_AUDIT" && <InternalAuditView />}
                 {currentUser.role === "FINANCE" && <FinanceView />}
+                {currentUser.role === "PAYROLL" && <PayrollView />}
                 {currentUser.role === "ADMIN" && <AdminView />}
                 {currentUser.role === "MAYOR" && <MayorView />}
             </main>

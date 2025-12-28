@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 
 // --- Types ---
 
-export type UserRole = "SUPERVISOR" | "GENERAL_SUPERVISOR" | "HEALTH_DIRECTOR" | "HR" | "FINANCE" | "ADMIN" | "MAYOR";
+export type UserRole = "SUPERVISOR" | "GENERAL_SUPERVISOR" | "HEALTH_DIRECTOR" | "HR" | "INTERNAL_AUDIT" | "FINANCE" | "PAYROLL" | "ADMIN" | "MAYOR";
 
 export interface User {
     id: string;
@@ -38,7 +38,7 @@ export interface AttendanceRecord {
     overtimeHolidayDays: number; // 1.0 value
     overtimeEidDays: number; // 1.0 value
     totalCalculatedDays: number;
-    status: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED';
+    status: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'PENDING_PAYROLL' | 'APPROVED';
     updatedAt: string;
 }
 
@@ -64,8 +64,8 @@ interface AttendanceContextType {
     updateArea: (id: string, name: string) => Promise<void>;
     deleteArea: (id: string) => Promise<void>;
     refreshData: () => Promise<void>;
-    approveAttendance: (recordId: string, nextStatus: 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED') => Promise<void>;
-    rejectAttendance: (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE') => Promise<void>;
+    approveAttendance: (recordId: string, nextStatus: 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'PENDING_PAYROLL' | 'APPROVED') => Promise<void>;
+    rejectAttendance: (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE') => Promise<void>;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(undefined);
@@ -349,7 +349,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     }, [loadAreas]);
 
-    const approveAttendance = useCallback(async (recordId: string, nextStatus: 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED') => {
+    const approveAttendance = useCallback(async (recordId: string, nextStatus: 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'PENDING_PAYROLL' | 'APPROVED') => {
         try {
             const { error } = await supabase
                 .from('attendance_records')
@@ -363,7 +363,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     }, [loadAttendance]);
 
-    const rejectAttendance = useCallback(async (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE') => {
+    const rejectAttendance = useCallback(async (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE') => {
         try {
             const { error } = await supabase
                 .from('attendance_records')

@@ -26,7 +26,9 @@ export function SupervisorSection({ supervisors, areas, searchTerm, onEdit, onDe
             'GENERAL_SUPERVISOR': 'مراقب عام',
             'HEALTH_DIRECTOR': 'مدير الدائرة الصحية',
             'HR': 'موارد بشرية',
+            'INTERNAL_AUDIT': 'قسم الرقابة الداخلية',
             'FINANCE': 'مالية',
+            'PAYROLL': 'رواتب',
             'MAYOR': 'رئيس بلدية',
             'ADMIN': 'مدير نظام'
         }[s.role] || s.role;
@@ -79,7 +81,9 @@ export function SupervisorSection({ supervisors, areas, searchTerm, onEdit, onDe
                                     'GENERAL_SUPERVISOR': { label: 'مراقب عام', color: 'indigo' },
                                     'HEALTH_DIRECTOR': { label: 'مدير الدائرة الصحية', color: 'emerald' },
                                     'HR': { label: 'موارد بشرية', color: 'purple' },
+                                    'INTERNAL_AUDIT': { label: 'الرقابة الداخلية', color: 'rose' },
                                     'FINANCE': { label: 'مالية', color: 'emerald' },
+                                    'PAYROLL': { label: 'رواتب', color: 'teal' },
                                     'MAYOR': { label: 'رئيس بلدية', color: 'amber' },
                                     'ADMIN': { label: 'مدير نظام', color: 'red' }
                                 }[s.role] || { label: s.role, color: 'gray' };

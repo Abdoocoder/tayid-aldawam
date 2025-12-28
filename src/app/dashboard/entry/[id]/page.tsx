@@ -79,17 +79,32 @@ export default function EntryPage() {
         if (!currentRecord) return true; // New record, can edit
         const { status } = currentRecord;
 
+        // General rule: No one but Admin can edit APPROVED records
+        if (status === 'APPROVED' && currentUser?.role !== 'ADMIN') return false;
+
         if (currentUser?.role === 'SUPERVISOR') {
-            return status === 'PENDING_GS' || status === 'PENDING_SUPERVISOR';
+            return status === 'PENDING_SUPERVISOR'; // Only if rejected back to them
         }
         if (currentUser?.role === 'GENERAL_SUPERVISOR') {
-            return status === 'PENDING_GS' || status === 'PENDING_HR';
+            return status === 'PENDING_GS';
+        }
+        if (currentUser?.role === 'HEALTH_DIRECTOR') {
+            return status === 'PENDING_HEALTH';
         }
         if (currentUser?.role === 'HR') {
-            return status === 'PENDING_HR' || status === 'PENDING_FINANCE';
+            return status === 'PENDING_HR';
+        }
+        if (currentUser?.role === 'INTERNAL_AUDIT') {
+            return status === 'PENDING_AUDIT';
+        }
+        if (currentUser?.role === 'FINANCE') {
+            return status === 'PENDING_FINANCE';
+        }
+        if (currentUser?.role === 'PAYROLL') {
+            return status === 'PENDING_PAYROLL';
         }
         if (currentUser?.role === 'ADMIN') {
-            return true; // Admin can always edit
+            return true; // Admin can always edit (Technical Admin)
         }
         return false;
     })();
@@ -98,17 +113,14 @@ export default function EntryPage() {
         if (!currentRecord) return null;
         const { status } = currentRecord;
 
-        if (currentUser?.role === 'SUPERVISOR' && status !== 'PENDING_GS' && status !== 'PENDING_SUPERVISOR') {
-            return 'تم اعتماد هذا السجل من قبل المراقب العام. لا يمكن التعديل بعد الاعتماد.';
+        if (currentUser?.role === 'SUPERVISOR' && status !== 'PENDING_SUPERVISOR') {
+            return 'تم رفع السجل للمراجعة. لا يمكن التعديل إلا في حال إعادته إليك.';
         }
-        if (currentUser?.role === 'SUPERVISOR' && status === 'PENDING_SUPERVISOR') {
-            return null; // Allowed to edit
+        if (status === 'APPROVED') {
+            return 'تم اعتماد هذا السجل نهائياً. لا يمكن التعديل بعد اعتماد قسم الرواتب.';
         }
-        if (currentUser?.role === 'GENERAL_SUPERVISOR' && (status === 'PENDING_FINANCE' || status === 'APPROVED')) {
-            return 'تم اعتماد هذا السجل من قبل الموارد البشرية. لا يمكن التعديل بعد الاعتماد.';
-        }
-        if (currentUser?.role === 'HR' && status === 'APPROVED') {
-            return 'تم اعتماد هذا السجل من قبل قسم الرواتب. لا يمكن التعديل بعد الاعتماد النهائي.';
+        if (!canEdit) {
+            return 'السجل في مرحلة تدقيقية أخرى. التعديل غير متاح حالياً لصلاحياتك.';
         }
         return null;
     };

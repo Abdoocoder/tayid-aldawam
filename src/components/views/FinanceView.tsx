@@ -61,7 +61,7 @@ export function FinanceView() {
     const handleApprove = async (recordId: string) => {
         setApprovingIds(prev => new Set(prev).add(recordId));
         try {
-            await approveAttendance(recordId, 'APPROVED');
+            await approveAttendance(recordId, 'PENDING_PAYROLL');
         } catch (err) {
             console.error(err);
         } finally {
@@ -77,7 +77,7 @@ export function FinanceView() {
         if (!confirm("هل أنت متأكد من رفض هذا السجل وإعادته؟")) return;
         setRejectingIds(prev => new Set(prev).add(recordId));
         try {
-            await rejectAttendance(recordId, 'PENDING_HR');
+            await rejectAttendance(recordId, 'PENDING_AUDIT');
         } catch (err) {
             console.error(err);
         } finally {
@@ -187,7 +187,7 @@ export function FinanceView() {
                 items={navItems}
                 activeTab="overview"
                 onTabChange={(id) => id === 'report' ? window.print() : null}
-                user={{ name: currentUser?.name || "مدير المالية", role: "الدائرة المالية" }}
+                user={{ name: currentUser?.name || "المدير المالي", role: "المدير المالي" }}
             />
 
             <div className="space-y-6 pb-24 print:hidden">
@@ -416,7 +416,7 @@ export function FinanceView() {
                                                                 disabled={approvingIds.has(p.record.id)}
                                                                 className="h-10 px-5 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-xl shadow-lg shadow-amber-200/50 transition-all active:scale-95"
                                                             >
-                                                                {approvingIds.has(p.record.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : "اعتماد"}
+                                                                {approvingIds.has(p.record.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : "تحويل للرواتب"}
                                                             </Button>
                                                             <Button
                                                                 size="sm"

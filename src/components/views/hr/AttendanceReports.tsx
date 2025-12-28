@@ -18,12 +18,12 @@ interface AttendanceReportsProps {
     reportAreaFilter: string;
     reportStatusFilter: string;
     getWorkerAttendance: (workerId: string, month: number, year: number) => AttendanceRecord | undefined;
-    approveAttendance: (recordId: string, nextStatus: 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED') => Promise<void>;
+    approveAttendance: (recordId: string, nextStatus: 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'APPROVED') => Promise<void>;
     onReject?: (recordId: string) => Promise<void>;
     onMonthChange: (m: number, y: number) => void;
     onSearchChange: (value: string) => void;
     onAreaFilterChange: (value: string) => void;
-    onStatusFilterChange: (value: 'ALL' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED') => void;
+    onStatusFilterChange: (value: 'ALL' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'APPROVED') => void;
     onExportCSV: () => void;
     onBulkApprove?: () => void;
 }
@@ -103,12 +103,13 @@ export function AttendanceReports({
                         <Select
                             className="h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-purple-500 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[160px]"
                             value={reportStatusFilter}
-                            onChange={e => onStatusFilterChange(e.target.value as 'ALL' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED')}
+                            onChange={e => onStatusFilterChange(e.target.value as 'ALL' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'APPROVED')}
                         >
                             <option value="ALL">كل الحالات</option>
                             <option value="PENDING_GS">بانتظار المراقب العام</option>
                             <option value="PENDING_HEALTH">بانتظار الصحة</option>
                             <option value="PENDING_HR">بانتظار الموارد</option>
+                            <option value="PENDING_AUDIT">بانتظار الرقابة</option>
                             <option value="PENDING_FINANCE">بانتظار الرواتب</option>
                             <option value="APPROVED">معتمد نهائياً</option>
                         </Select>
@@ -221,14 +222,16 @@ export function AttendanceReports({
                                                         {isFilled ? (
                                                             <div className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1.5 rounded-xl border-2 ${record.status === 'APPROVED' ? 'text-emerald-700 bg-emerald-50 border-emerald-100' :
                                                                 record.status === 'PENDING_FINANCE' ? 'text-blue-700 bg-blue-50 border-blue-100' :
-                                                                    record.status === 'PENDING_HR' ? 'text-purple-700 bg-purple-50 border-purple-100' :
-                                                                        'text-amber-700 bg-amber-50 border-amber-100'
+                                                                    record.status === 'PENDING_AUDIT' ? 'text-indigo-700 bg-indigo-50 border-indigo-100' :
+                                                                        record.status === 'PENDING_HR' ? 'text-purple-700 bg-purple-50 border-purple-100' :
+                                                                            'text-amber-700 bg-amber-50 border-amber-100'
                                                                 }`}>
                                                                 {record.status === 'APPROVED' ? <CheckCircle className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
                                                                 {record.status === 'APPROVED' ? 'معتمد نهائياً' :
                                                                     record.status === 'PENDING_FINANCE' ? 'بانتظار المالية' :
-                                                                        record.status === 'PENDING_HR' ? 'مراجعة الموارد' :
-                                                                            record.status === 'PENDING_HEALTH' ? 'مراجعة الصحة' : 'مراحل الاعتماد'}
+                                                                        record.status === 'PENDING_AUDIT' ? 'بانتظار الرقابة' :
+                                                                            record.status === 'PENDING_HR' ? 'مراجعة الموارد' :
+                                                                                record.status === 'PENDING_HEALTH' ? 'مراجعة الصحة' : 'مراحل الاعتماد'}
                                                             </div>
                                                         ) : (
                                                             <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-black bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
@@ -243,7 +246,7 @@ export function AttendanceReports({
                                                         {isFilled && record.status === 'PENDING_HR' && (
                                                             <Button
                                                                 size="sm"
-                                                                onClick={() => approveAttendance(record.id, 'PENDING_FINANCE')}
+                                                                onClick={() => approveAttendance(record.id, 'PENDING_AUDIT')}
                                                                 className="h-10 px-5 bg-purple-600 hover:bg-purple-700 text-white font-black rounded-xl shadow-lg shadow-purple-200 transition-all active:scale-95"
                                                             >
                                                                 إعتماد

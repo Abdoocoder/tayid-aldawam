@@ -84,7 +84,7 @@ export function HRView() {
     const [year, setYear] = useState(new Date().getFullYear());
     const [reportSearchTerm, setReportSearchTerm] = useState('');
     const [reportAreaFilter, setReportAreaFilter] = useState('ALL');
-    const [reportStatusFilter, setReportStatusFilter] = useState<'ALL' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_FINANCE' | 'APPROVED'>('PENDING_HR');
+    const [reportStatusFilter, setReportStatusFilter] = useState<'ALL' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'APPROVED'>('PENDING_HR');
 
     const filteredUsers = useMemo(() => users.filter(u => u.role !== 'ADMIN'), [users]);
 
@@ -258,12 +258,12 @@ export function HRView() {
 
         if (pendingRecords.length === 0) return;
 
-        if (!window.confirm(`هل أنت متأكد من اعتماد ${pendingRecords.length} سجلات وتحويلها لقسم الرواتب؟`)) return;
+        if (!window.confirm(`هل أنت متأكد من اعتماد ${pendingRecords.length} سجلات وتحويلها لقسم الرقابة الداخلية؟`)) return;
 
         setIsSaving(true);
         try {
             for (const record of pendingRecords) {
-                if (record) await approveAttendance(record.id, 'PENDING_FINANCE');
+                if (record) await approveAttendance(record.id, 'PENDING_AUDIT');
             }
             showToast(`تم اعتماد ${pendingRecords.length} سجلات بنجاح`);
         } catch (err) {
