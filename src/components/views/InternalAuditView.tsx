@@ -50,6 +50,7 @@ export function InternalAuditView() {
     const [riskFilter, setRiskFilter] = useState<'all' | 'low' | 'medium' | 'high'>('all');
     const [areaFilter, setAreaFilter] = useState<string>('all');
     const [amountFilter, setAmountFilter] = useState<'all' | '0-20' | '20-30' | '30+'>('all');
+    const [statusFilter, setStatusFilter] = useState<string>('PENDING_AUDIT'); // Default to audit pending
     const [selectedRecords, setSelectedRecords] = useState<Set<string>>(new Set());
 
     const navItems = [
@@ -79,7 +80,8 @@ export function InternalAuditView() {
             return { worker: w, record, areaName, risk, amount };
         }).filter(item => {
             if (!item.record) return false;
-            if (activeTab === 'audit' && item.record.status !== 'PENDING_AUDIT') return false;
+            // Apply status filter
+            if (activeTab === 'audit' && statusFilter !== 'all' && item.record.status !== statusFilter) return false;
 
             const matchesSearch = item.worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 item.worker.id.includes(searchTerm) ||
@@ -233,7 +235,25 @@ export function InternalAuditView() {
                         <Filter className="h-5 w-5 text-rose-600" />
                         <h3 className="font-black text-slate-900">تصفية متقدمة</h3>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-600 mb-2">حالة المعاملة</label>
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-sm font-bold text-slate-700"
+                            >
+                                <option value="all">🔍 جميع الحالات</option>
+                                <option value="PENDING_SUPERVISOR">📋 عند المراقب</option>
+                                <option value="PENDING_GS">👤 المراقب العام</option>
+                                <option value="PENDING_HEALTH">🏥 الصحة</option>
+                                <option value="PENDING_HR">👥 الموارد البشرية</option>
+                                <option value="PENDING_AUDIT">🛡️ الرقابة (أنت)</option>
+                                <option value="PENDING_FINANCE">💰 المالية</option>
+                                <option value="PENDING_PAYROLL">💳 الرواتب</option>
+                                <option value="APPROVED">✅ معتمد نهائياً</option>
+                            </select>
+                        </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-600 mb-2">مستوى المخاطر</label>
                             <select
@@ -312,6 +332,7 @@ export function InternalAuditView() {
                                     <tr className="bg-slate-50/50 text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
                                         <th className="p-5">العامل</th>
                                         <th className="p-5">القطاع</th>
+                                        <th className="p-5 text-center">الحالة</th>
                                         <th className="p-5 text-center">المخاطر</th>
                                         <th className="p-5 text-center">الأيام</th>
                                         <th className="p-5 text-center">إضافي</th>
@@ -322,7 +343,7 @@ export function InternalAuditView() {
                                 <tbody className="divide-y divide-slate-100">
                                     {filteredRecords.length === 0 ? (
                                         <tr>
-                                            <td colSpan={7} className="p-20 text-center text-slate-400 italic font-bold">
+                                            <td colSpan={8} className="p-20 text-center text-slate-400 italic font-bold">
                                                 لا توجد سجلات بانتظار التدقيق الرقابي حالياً
                                             </td>
                                         </tr>
@@ -340,9 +361,31 @@ export function InternalAuditView() {
                                                 </td>
                                                 <td className="p-5 text-center">
                                                     <Badge
+                                                        className={`font-black text-[10px] px-2 py-1 ${record!.status === 'PENDING_SUPERVISOR' ? 'bg-slate-100 text-slate-700' :
+                                                                record!.status === 'PENDING_GS' ? 'bg-blue-100 text-blue-700' :
+                                                                    record!.status === 'PENDING_HEALTH' ? 'bg-teal-100 text-teal-700' :
+                                                                        record!.status === 'PENDING_HR' ? 'bg-purple-100 text-purple-700' :
+                                                                            record!.status === 'PENDING_AUDIT' ? 'bg-rose-100 text-rose-700' :
+                                                                                record!.status === 'PENDING_FINANCE' ? 'bg-emerald-100 text-emerald-700' :
+                                                                                    record!.status === 'PENDING_PAYROLL' ? 'bg-cyan-100 text-cyan-700' :
+                                                                                        'bg-green-100 text-green-700'
+                                                            }`}
+                                                    >
+                                                        {record!.status === 'PENDING_SUPERVISOR' ? '📋 مراقب' :
+                                                            record!.status === 'PENDING_GS' ? '👤 م.عام' :
+                                                                record!.status === 'PENDING_HEALTH' ? '🏥 صحة' :
+                                                                    record!.status === 'PENDING_HR' ? '👥 م.ب' :
+                                                                        record!.status === 'PENDING_AUDIT' ? '🛡️ رقابة' :
+                                                                            record!.status === 'PENDING_FINANCE' ? '💰 مالية' :
+                                                                                record!.status === 'PENDING_PAYROLL' ? '💳 رواتب' :
+                                                                                    '✅ معتمد'}
+                                                    </Badge>
+                                                </td>
+                                                <td className="p-5 text-center">
+                                                    <Badge
                                                         className={`font-black text-xs px-3 py-1 ${risk === 'high' ? 'bg-red-100 text-red-800 border-red-200' :
-                                                                risk === 'medium' ? 'bg-amber-100 text-amber-800 border-amber-200' :
-                                                                    'bg-green-100 text-green-800 border-green-200'
+                                                            risk === 'medium' ? 'bg-amber-100 text-amber-800 border-amber-200' :
+                                                                'bg-green-100 text-green-800 border-green-200'
                                                             }`}
                                                     >
                                                         {risk === 'high' ? '🔴 عالية' : risk === 'medium' ? '🟡 متوسطة' : '🟢 منخفضة'}
@@ -361,6 +404,7 @@ export function InternalAuditView() {
                                                 </td>
                                                 <td className="p-5">
                                                     <div className="flex justify-center gap-2">
+                                                        {record!.status === 'PENDING_AUDIT' ? (
                                                         <Button
                                                             size="sm"
                                                             onClick={() => handleApprove(record!.id)}
@@ -378,6 +422,11 @@ export function InternalAuditView() {
                                                         >
                                                             <XCircle className="h-5 w-5" />
                                                         </Button>
+                                                        ) : (
+                                                            <Badge variant="outline" className="text-slate-500 text-xs">
+                                                                {record!.status === 'APPROVED' ? '✅ معتمد نهائياً' : '⏳ في مرحلة أخرى'}
+                                                            </Badge>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
