@@ -232,6 +232,9 @@ export default function EntryPage() {
                                                 <Minus className="h-5 w-5" />
                                             </Button>
                                             <Input
+                                                id="normal-days"
+                                                name="normalDays"
+                                                aria-label="أيام العمل العادية"
                                                 type="number"
                                                 min={0}
                                                 max={daysInMonth}
@@ -265,6 +268,9 @@ export default function EntryPage() {
                                                 <Minus className="h-5 w-5" />
                                             </Button>
                                             <Input
+                                                id="ot-normal"
+                                                name="otNormal"
+                                                aria-label="إضافي (أيام عادية)"
                                                 type="number"
                                                 min={0}
                                                 max={31}
@@ -295,6 +301,9 @@ export default function EntryPage() {
                                                 <Minus className="h-5 w-5" />
                                             </Button>
                                             <Input
+                                                id="ot-holiday"
+                                                name="otHoliday"
+                                                aria-label="إضافي (عطل وجمع)"
                                                 type="number"
                                                 min={0}
                                                 max={31}
@@ -325,6 +334,9 @@ export default function EntryPage() {
                                                 <Minus className="h-5 w-5" />
                                             </Button>
                                             <Input
+                                                id="ot-eid"
+                                                name="otEid"
+                                                aria-label="أيام الأعياد"
                                                 type="number"
                                                 min={0}
                                                 max={10}

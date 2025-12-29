@@ -396,6 +396,9 @@ export function HRView() {
                         <div className="relative group">
                             <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-purple-600 transition-colors" />
                             <Input
+                                id="global-search"
+                                name="globalSearch"
+                                aria-label="بحث عام"
                                 placeholder={`بحث في ${activeTab === 'workers' ? 'العمال' : activeTab === 'supervisors' ? 'المستخدمين' : 'المناطق'}...`}
                                 className="pr-12 h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-purple-500 rounded-2xl shadow-sm shadow-purple-900/5 text-base"
                                 value={searchTerm}
@@ -508,8 +511,10 @@ export function HRView() {
                             <form onSubmit={editingItem.type === 'worker' ? handleSaveWorker : handleSaveSupervisor} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {editingItem.type === 'worker' && (
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold text-gray-500">الرقم الوظيفي (البلدية)</label>
+                                        <label htmlFor="worker-id" className="text-xs font-bold text-gray-500">الرقم الوظيفي (البلدية)</label>
                                         <Input
+                                            id="worker-id"
+                                            name="workerId"
                                             value={editingItem.data.id === 'NEW' ? ((editingItem.data as WorkerEditingData).id_entered || '') : editingItem.data.id}
                                             onChange={e => {
                                                 if (editingItem.data.id === 'NEW') {
@@ -524,8 +529,10 @@ export function HRView() {
                                     </div>
                                 )}
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-500">الاسم</label>
+                                    <label htmlFor="form-name" className="text-xs font-bold text-gray-500">الاسم</label>
                                     <Input
+                                        id="form-name"
+                                        name="name"
                                         value={editingItem.data.name}
                                         onChange={e => {
                                             if (editingItem.type === 'worker') {
@@ -538,8 +545,10 @@ export function HRView() {
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-500">المنطقة / القطاع</label>
+                                    <label htmlFor="form-area" className="text-xs font-bold text-gray-500">المنطقة / القطاع</label>
                                     <Select
+                                        id="form-area"
+                                        name="areaId"
                                         value={editingItem.data.areaId || ''}
                                         onChange={e => {
                                             if (editingItem.type === 'worker') {
@@ -560,8 +569,10 @@ export function HRView() {
                                 {editingItem.type === 'worker' && (
                                     <>
                                         <div className="space-y-1">
-                                            <label className="text-xs font-bold text-gray-500">الأجر اليومي (د.أ)</label>
+                                            <label htmlFor="day-value" className="text-xs font-bold text-gray-500">الأجر اليومي (د.أ)</label>
                                             <Input
+                                                id="day-value"
+                                                name="dayValue"
                                                 type="number"
                                                 step="0.01"
                                                 value={editingItem.type === 'worker' ? editingItem.data.dayValue : 0}
@@ -574,8 +585,10 @@ export function HRView() {
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-xs font-bold text-gray-500">الراتب الأساسي</label>
+                                            <label htmlFor="base-salary" className="text-xs font-bold text-gray-500">الراتب الأساسي</label>
                                             <Input
+                                                id="base-salary"
+                                                name="baseSalary"
                                                 type="number"
                                                 step="0.01"
                                                 value={editingItem.type === 'worker' ? editingItem.data.baseSalary : 0}
@@ -592,8 +605,10 @@ export function HRView() {
                                 {editingItem.type === 'supervisor' && (
                                     <>
                                         <div className="space-y-1">
-                                            <label className="text-xs font-bold text-gray-500">اسم المستخدم (للتسجيل)</label>
+                                            <label htmlFor="username" className="text-xs font-bold text-gray-500">اسم المستخدم (للتسجيل)</label>
                                             <Input
+                                                id="username"
+                                                name="username"
                                                 value={editingItem.type === 'supervisor' ? (editingItem.data.username || '') : ''}
                                                 onChange={e => {
                                                     if (editingItem.type === 'supervisor') {
@@ -606,8 +621,10 @@ export function HRView() {
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-xs font-bold text-gray-500">الدور الوظيفي</label>
+                                            <label htmlFor="role-select" className="text-xs font-bold text-gray-500">الدور الوظيفي</label>
                                             <Select
+                                                id="role-select"
+                                                name="role"
                                                 value={editingItem.data.role || 'SUPERVISOR'}
                                                 onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value as UserRole } })}
                                                 required
@@ -622,8 +639,10 @@ export function HRView() {
                                         </div>
                                         {editingItem.data.id === 'NEW' && (
                                             <div className="space-y-1">
-                                                <label className="text-xs font-bold text-gray-500">كلمة المرور</label>
+                                                <label htmlFor="password" className="text-xs font-bold text-gray-500">كلمة المرور</label>
                                                 <Input
+                                                    id="password"
+                                                    name="password"
                                                     type="password"
                                                     value={editingItem.type === 'supervisor' ? (editingItem.data.password || '') : ''}
                                                     onChange={e => {
