@@ -22,9 +22,10 @@ import { UsersTab } from './admin/UsersTab';
 import { WorkersTab } from './admin/WorkersTab';
 import { LogsTab } from './admin/LogsTab';
 import { AreasTab } from './admin/AreasTab';
+import { AdminPrintReport } from './admin/AdminPrintReport';
 
 import { Input } from '../ui/input';
-import { Search } from "lucide-react";
+import { Search, Printer } from "lucide-react";
 import { MobileNav, NavItem } from "../ui/mobile-nav";
 
 export const AdminView = () => {
@@ -247,15 +248,30 @@ export const AdminView = () => {
                             ))}
                         </div>
 
-                        {/* Mobile Menu Trigger */}
-                        <button
-                            onClick={() => setIsMobileNavOpen(true)}
-                            className="md:hidden p-3 bg-white/80 border border-slate-200 rounded-2xl text-slate-600 shadow-xl active:scale-95 transition-all"
-                        >
-                            <Menu className="h-6 w-6" />
-                        </button>
+                        <div className="hidden lg:flex items-center gap-3">
+                            {activeTab !== 'overview' && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-10 px-4 rounded-xl border-slate-200 bg-white/50 text-slate-600 hover:text-indigo-600 font-black text-xs gap-2 transition-all"
+                                    onClick={() => window.print()}
+                                >
+                                    <Printer className="h-4 w-4" />
+                                    طباعة
+                                </Button>
+                            )}
+                            <button
+                                onClick={() => setIsMobileNavOpen(true)}
+                                className="md:hidden p-3 bg-white/80 border border-slate-200 rounded-2xl text-slate-600 shadow-xl active:scale-95 transition-all"
+                            >
+                                <Menu className="h-6 w-6" />
+                            </button>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4">
 
                 {/* Content based on active tab */}
                 <div className="animate-in fade-in zoom-in-95 duration-500 delay-200 print:hidden">
@@ -785,6 +801,13 @@ export const AdminView = () => {
                         )}
                     </div>
                 </div>
+            )}
+            {/* Specialized Print Layout */}
+            {activeTab !== 'overview' && (
+                <AdminPrintReport
+                    type={activeTab === 'users' ? 'users' : activeTab === 'workers' ? 'workers' : activeTab === 'areas' ? 'areas' : 'logs'}
+                    data={{ users, workers, areas, logs: auditLogs }}
+                />
             )}
         </>
     );
