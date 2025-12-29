@@ -92,7 +92,11 @@ export const workersAPI = {
 
     async getByAreaId(areaId: string | string[]): Promise<Worker[]> {
         let query = supabase.from('workers').select('*');
-        if (areaId !== 'ALL') {
+
+        const isAll = (typeof areaId === 'string' && areaId === 'ALL') ||
+            (Array.isArray(areaId) && areaId.includes('ALL'));
+
+        if (!isAll) {
             if (Array.isArray(areaId)) {
                 query = query.in('area_id', areaId);
             } else {
@@ -168,7 +172,10 @@ export const attendanceAPI = {
             .eq('month', month)
             .eq('year', year);
 
-        if (areaId && areaId !== 'ALL') {
+        const isAll = (typeof areaId === 'string' && areaId === 'ALL') ||
+            (Array.isArray(areaId) && areaId.includes('ALL'));
+
+        if (areaId && !isAll) {
             // Filter by workers in the specified area(s)
             let workerQuery = supabase.from('workers').select('id');
             if (Array.isArray(areaId)) {

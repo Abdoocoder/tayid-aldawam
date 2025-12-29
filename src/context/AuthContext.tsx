@@ -120,8 +120,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setError(null);
             setIsLoading(true);
 
+            // Apply standardized email transformation for username-based login
+            let finalEmail = email.trim().toLowerCase();
+            if (!finalEmail.includes('@')) {
+                const prefix = finalEmail.replace(/[^a-z0-9]/g, '');
+                finalEmail = `${prefix}.sv@tayid-attendance.com`;
+            }
+
             const { error } = await supabase.auth.signInWithPassword({
-                email,
+                email: finalEmail,
                 password,
             });
 
