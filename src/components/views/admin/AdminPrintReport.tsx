@@ -77,6 +77,7 @@ export function AdminPrintReport({ type, data, month, year }: AdminPrintReportPr
                             <th className="border-2 border-slate-900 p-3 text-right">الاسم الكامل</th>
                             <th className="border-2 border-slate-900 p-3 text-right">اسم المستخدم</th>
                             <th className="border-2 border-slate-900 p-3 text-right">الدور الوظيفي</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">النطاق الإشرافي</th>
                             <th className="border-2 border-slate-900 p-3 text-right">الحالة</th>
                         </tr>
                     </thead>
@@ -86,7 +87,26 @@ export function AdminPrintReport({ type, data, month, year }: AdminPrintReportPr
                                 <td className="border border-slate-300 p-3 text-center font-bold">{i + 1}</td>
                                 <td className="border border-slate-300 p-3 font-black">{u.name}</td>
                                 <td className="border border-slate-300 p-3 font-mono">{u.username}</td>
-                                <td className="border border-slate-300 p-3 font-bold">{u.role}</td>
+                                <td className="border border-slate-300 p-3 font-bold">
+                                    {{
+                                        'SUPERVISOR': 'مراقب ميداني',
+                                        'GENERAL_SUPERVISOR': 'مراقب عام',
+                                        'HEALTH_DIRECTOR': 'مدير صحة',
+                                        'HR': 'مدير الموارد البشرية',
+                                        'INTERNAL_AUDIT': 'مدقق داخلي',
+                                        'FINANCE': 'المدير المالي',
+                                        'PAYROLL': 'قسم الرواتب',
+                                        'MAYOR': 'رئيس بلدية',
+                                        'ADMIN': 'مدير نظام'
+                                    }[u.role] || u.role}
+                                </td>
+                                <td className="border border-slate-300 p-3 text-sm">
+                                    {u.areaId === 'ALL'
+                                        ? 'التحكم الكامل'
+                                        : (u.areaId
+                                            ? u.areaId.split(',').map(id => data.areas?.find(a => a.id === id)?.name || id).join('، ')
+                                            : 'غير محدد')}
+                                </td>
                                 <td className="border border-slate-300 p-3 text-center">{u.isActive ? 'نشط' : 'معطل'}</td>
                             </tr>
                         ))}

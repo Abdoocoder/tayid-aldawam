@@ -57,7 +57,11 @@ export function UsersTab({ users, areas, searchTerm, onEditUser, onDeleteUser, o
                             u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             u.username.toLowerCase().includes(searchTerm.toLowerCase())
                         ).map((u) => {
-                            const areaName = u.areaId === 'ALL' ? 'التحكم الكامل' : (areas.find(a => a.id === u.areaId)?.name || u.areaId || "غير محدد");
+                            const areaNames = u.areaId === 'ALL'
+                                ? 'التحكم الكامل'
+                                : (u.areaId
+                                    ? u.areaId.split(',').map(id => areas.find(a => a.id === id)?.name || id).join('، ')
+                                    : "غير محدد");
                             return (
                                 <tr key={u.id} className="hover:bg-indigo-50/20 transition-all duration-700 group border-b border-white/5 last:border-0 font-bold">
                                     <td className="px-10 py-8">
@@ -94,7 +98,7 @@ export function UsersTab({ users, areas, searchTerm, onEditUser, onDeleteUser, o
                                             <div className="p-1.5 rounded-lg bg-slate-100 group-hover:bg-indigo-100 transition-colors">
                                                 <MapPin className="h-4 w-4 text-slate-300 group-hover:text-indigo-500 transition-colors" />
                                             </div>
-                                            {areaName}
+                                            {areaNames}
                                         </div>
                                     </td>
                                     <td className="px-10 py-8 text-center">
