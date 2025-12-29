@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MobileNav } from "../ui/mobile-nav";
+import { resolveAreaNames } from "@/lib/utils";
 
 export function PayrollView() {
     const { currentUser, workers, getWorkerAttendance, isLoading, error, areas, approveAttendance, rejectAttendance } = useAttendance();
@@ -33,7 +34,7 @@ export function PayrollView() {
     const payrollRecords = workers.map(w => {
         const record = getWorkerAttendance(w.id, month, year);
         const isApproved = record?.status === 'APPROVED';
-        const areaName = areas.find(a => a.id === w.areaId)?.name || "غير محدد";
+        const areaName = resolveAreaNames(w.areaId, areas);
 
         return {
             worker: w,

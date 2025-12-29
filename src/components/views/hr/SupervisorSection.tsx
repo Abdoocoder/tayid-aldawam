@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { User, Area } from "@/context/AttendanceContext";
 import { EmptyState } from "@/components/ui/empty-state";
+import { resolveAreaNames } from "@/lib/utils";
 
 interface SupervisorSectionProps {
     supervisors: User[];
@@ -20,7 +21,7 @@ interface SupervisorSectionProps {
 
 export const SupervisorSection = React.memo(function SupervisorSection({ supervisors, areas, searchTerm, onEdit, onDelete, onActivate, onAdd }: SupervisorSectionProps) {
     const filteredSupervisors = supervisors.filter(s => {
-        const areaName = s.areaId === 'ALL' ? 'كل المناطق' : (areas.find(a => a.id === s.areaId)?.name || "");
+        const areaName = resolveAreaNames(s.areaId, areas, 'كل المناطق');
         const roleLabel = {
             'SUPERVISOR': 'مراقب ميداني',
             'GENERAL_SUPERVISOR': 'مراقب عام',
@@ -109,7 +110,7 @@ export const SupervisorSection = React.memo(function SupervisorSection({ supervi
                                                         {s.areaId && (
                                                             <Badge variant="outline" className="flex items-center gap-1 w-fit bg-blue-50/50 text-blue-700 border-blue-100">
                                                                 <MapPin className="h-3 w-3" />
-                                                                {areas.find(a => a.id === s.areaId)?.name || s.areaId}
+                                                                {resolveAreaNames(s.areaId, areas)}
                                                             </Badge>
                                                         )}
                                                         {s.areas?.map(area => (

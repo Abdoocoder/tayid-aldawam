@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MobileNav } from "../ui/mobile-nav";
+import { resolveAreaNames } from "@/lib/utils";
 
 export function FinanceView() {
     const { currentUser, workers, getWorkerAttendance, loadAttendance, isLoading, error, areas, approveAttendance, rejectAttendance } = useAttendance();
@@ -49,7 +50,7 @@ export function FinanceView() {
     const approvedPayrolls = workers.map(w => {
         const record = getWorkerAttendance(w.id, month, year);
         const isApproved = record?.status === 'APPROVED';
-        const areaName = areas.find(a => a.id === w.areaId)?.name || "غير محدد";
+        const areaName = resolveAreaNames(w.areaId, areas);
 
         // Calculate cost breakdown
         const normalCost = record ? record.normalDays * w.dayValue : 0;

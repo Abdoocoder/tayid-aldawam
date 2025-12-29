@@ -26,6 +26,7 @@ import Link from "next/link";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 import Image from "next/image";
+import { resolveAreaNames } from "@/lib/utils";
 
 type ViewTab = 'requests' | 'history' | 'areas' | 'workers' | 'supervisors';
 
@@ -448,7 +449,7 @@ export function GeneralSupervisorView() {
                                             (filteredRecords as (Worker | AttendanceRecord)[]).map((item) => {
                                                 const worker = activeTab === 'workers' ? (item as Worker) : workers.find(w => w.id === (item as AttendanceRecord).workerId);
                                                 const record = activeTab === 'workers' ? attendanceRecords.find(r => r.workerId === (item as Worker).id && r.month === month && r.year === year) : (item as AttendanceRecord);
-                                                const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
+                                                const areaName = resolveAreaNames(worker?.areaId, areas);
 
                                                 return (
                                                     <tr key={item.id} className="hover:bg-indigo-50/30 transition-all group">
@@ -617,7 +618,7 @@ export function GeneralSupervisorView() {
                             activeTab === 'history' ? historyRecords : (filteredRecords as (AttendanceRecord | Worker)[])).map((item, index: number) => {
                                 const worker = activeTab === 'workers' ? (item as Worker) : workers.find(w => w.id === (item as AttendanceRecord).workerId);
                                 const record = activeTab === 'workers' ? attendanceRecords.find(r => r.workerId === (item as Worker).id && r.month === month && r.year === year) : (item as AttendanceRecord);
-                                const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
+                                const areaName = resolveAreaNames(worker?.areaId, areas);
                                 return (
                                     <tr key={'id' in item ? item.id : index} className="border-b-2 border-slate-400">
                                         <td className="border-2 border-slate-900 p-2 text-center font-bold">{index + 1}</td>

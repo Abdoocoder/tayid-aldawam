@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
+import { resolveAreaNames } from "@/lib/utils";
 
 type TabType = 'pending' | 'hr_forwarded' | 'gs_stage' | 'cost_analysis' | 'anomalies';
 
@@ -600,7 +601,7 @@ export function HealthDirectorView() {
                                     ) : (
                                         filteredRecords.map(record => {
                                             const worker = workers.find(w => w.id === record.workerId);
-                                            const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
+                                            const areaName = resolveAreaNames(worker?.areaId, areas);
                                             return (
                                                 <tr key={record.id} className="hover:bg-emerald-50/30 transition-all group/row">
                                                     <td className="p-6">
@@ -781,7 +782,7 @@ export function HealthDirectorView() {
                     <tbody>
                         {filteredRecords.map((record, index) => {
                             const worker = workers.find(w => w.id === record.workerId);
-                            const areaName = areas.find(a => a.id === worker?.areaId)?.name || 'غير معروف';
+                            const areaName = resolveAreaNames(worker?.areaId, areas);
                             const supervisorName = supervisors.find(u => u.areaId === worker?.areaId || u.areas?.some(a => a.id === worker?.areaId))?.name || 'غير محدد';
                             return (
                                 <tr key={record.id} className="border-b-2 border-slate-400">

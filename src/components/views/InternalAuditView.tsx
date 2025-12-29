@@ -24,6 +24,7 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
 import { MonthYearPicker } from "../ui/month-year-picker";
+import { resolveAreaNames } from "@/lib/utils";
 
 export function InternalAuditView() {
     const {
@@ -82,7 +83,7 @@ export function InternalAuditView() {
     const filteredRecords = useMemo(() => {
         return workers.map(w => {
             const record = getWorkerAttendance(w.id, month, year);
-            const areaName = areas.find(a => a.id === w.areaId)?.name || "غير محدد";
+            const areaName = resolveAreaNames(w.areaId, areas);
             const risk = record ? calculateRisk(record) : 'low';
             const amount = record ? record.totalCalculatedDays * w.dayValue : 0;
             return { worker: w, record, areaName, risk, amount };

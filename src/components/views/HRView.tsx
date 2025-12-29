@@ -28,6 +28,7 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
+import { resolveAreaNames } from "@/lib/utils";
 
 interface WorkerEditingData extends Partial<Worker> {
     id: string; // 'NEW' or existing ID
@@ -284,7 +285,7 @@ export function HRView() {
         const headers = ["الرقم", "الاسم", "القطاع", "أيام عادية", "إضافي عادي (x0.5)", "إضافي عطل (x1.0)", "أيام الأعياد (x1.0)", "الإجمالي"];
         const rows = workers.map(worker => {
             const record = getWorkerAttendance(worker.id, month, year);
-            const areaName = areas.find(a => a.id === worker.areaId)?.name || worker.areaId;
+            const areaName = resolveAreaNames(worker.areaId, areas);
             return [
                 worker.id,
                 worker.name,

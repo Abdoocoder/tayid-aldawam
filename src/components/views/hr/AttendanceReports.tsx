@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { MonthYearPicker } from "../../ui/month-year-picker";
 import { Worker, Area, AttendanceRecord } from "@/context/AttendanceContext";
+import { resolveAreaNames } from "@/lib/utils";
 
 interface AttendanceReportsProps {
     workers: Worker[];
@@ -51,7 +52,7 @@ export const AttendanceReports = React.memo(function AttendanceReports({
 
     const filteredWorkers = workers.filter(w => {
         const record = getWorkerAttendance(w.id, month, year);
-        const areaName = areas.find(a => a.id === w.areaId)?.name || "";
+        const areaName = resolveAreaNames(w.areaId, areas);
         const matchesSearch =
             w.name.toLowerCase().includes(reportSearchTerm.toLowerCase()) ||
             w.id.includes(reportSearchTerm) ||
@@ -193,7 +194,7 @@ export const AttendanceReports = React.memo(function AttendanceReports({
                                     filteredWorkers.map((worker) => {
                                         const record = getWorkerAttendance(worker.id, month, year);
                                         const isFilled = !!record;
-                                        const areaName = areas.find(a => a.id === worker.areaId)?.name || "غير محدد";
+                                        const areaName = resolveAreaNames(worker.areaId, areas);
 
                                         return (
                                             <tr key={worker.id} className="hover:bg-purple-50/30 transition-all duration-300 group">
@@ -319,7 +320,7 @@ export const AttendanceReports = React.memo(function AttendanceReports({
                     <tbody>
                         {filteredWorkers.map((worker, index) => {
                             const record = getWorkerAttendance(worker.id, month, year);
-                            const areaName = areas.find(a => a.id === worker.areaId)?.name || worker.areaId;
+                            const areaName = resolveAreaNames(worker.areaId, areas);
 
                             return (
                                 <tr key={worker.id} className="border-b-2 border-slate-400">
