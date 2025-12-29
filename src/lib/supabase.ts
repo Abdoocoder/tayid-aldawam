@@ -35,6 +35,7 @@ export interface AttendanceRecord {
     overtime_eid_days: number;
     total_calculated_days: number;
     status: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'PENDING_PAYROLL' | 'APPROVED';
+    rejection_notes?: string;
     created_at?: string;
     updated_at?: string;
 }

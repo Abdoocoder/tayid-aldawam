@@ -66,11 +66,12 @@ export function PayrollView() {
     };
 
     const handleReject = async (recordId: string) => {
-        if (!confirm("هل أنت متأكد من إعادة هذا السجل للمالية؟")) return;
+        const reason = prompt("يرجى كتابة سبب إعادة السجل للمدير المالي:");
+        if (!reason) return;
+
         setRejectingIds(prev => new Set(prev).add(recordId));
         try {
-            // Return to Financial Manager for re-check
-            await rejectAttendance(recordId, 'PENDING_FINANCE');
+            await rejectAttendance(recordId, 'PENDING_FINANCE', reason);
         } catch (err) {
             console.error(err);
         } finally {

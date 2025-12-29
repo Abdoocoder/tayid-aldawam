@@ -176,10 +176,12 @@ export function GeneralSupervisorView() {
     };
 
     const handleReject = async (recordId: string) => {
-        if (!confirm("هل أنت متأكد من رفض هذا السجل وإعادته للمراقب؟")) return;
+        const reason = prompt("يرجى كتابة سبب رفض هذا السجل وإعادته للمراقب الميداني:");
+        if (!reason) return;
+
         setRejectingIds(prev => new Set(prev).add(recordId));
         try {
-            await rejectAttendance(recordId, 'PENDING_SUPERVISOR');
+            await rejectAttendance(recordId, 'PENDING_SUPERVISOR', reason);
         } catch (err) {
             console.error(err);
         } finally {

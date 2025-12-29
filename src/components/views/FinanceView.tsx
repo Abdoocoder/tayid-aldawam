@@ -94,10 +94,11 @@ export function FinanceView() {
     };
 
     const handleReject = async (recordId: string) => {
-        if (!confirm("هل أنت متأكد من رفض هذا السجل وإعادته؟")) return;
+        const reason = prompt("يرجى كتابة سبب رفض هذا السجل وإعادته للرقابة:");
+        if (!reason) return;
         setRejectingIds(prev => new Set(prev).add(recordId));
         try {
-            await rejectAttendance(recordId, 'PENDING_AUDIT');
+            await rejectAttendance(recordId, 'PENDING_AUDIT', reason);
         } catch (err) {
             console.error(err);
         } finally {

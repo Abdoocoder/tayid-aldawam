@@ -291,6 +291,15 @@ export function SupervisorView() {
                                     </div>
 
                                     <div className="px-5 pb-5">
+                                        {isFilled && record.status === 'PENDING_SUPERVISOR' && record.rejectionNotes && (
+                                            <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 animate-in fade-in slide-in-from-top-2">
+                                                <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                                                <div className="text-[10px] text-amber-800 font-bold leading-relaxed">
+                                                    <span className="block mb-0.5 underline">ملاحظة التعديل:</span>
+                                                    {record.rejectionNotes}
+                                                </div>
+                                            </div>
+                                        )}
                                         <div className={`flex items-center justify-between gap-3 p-2.5 rounded-2xl border transition-colors ${isFilled ? 'bg-white/80 border-emerald-100' : 'bg-slate-50/50 border-slate-100'}`}>
                                             <div className="flex flex-col text-right">
                                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">الحالة التدقيقية</span>

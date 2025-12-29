@@ -687,9 +687,10 @@ export function HRView() {
                                 showToast('تم اعتماد السجل بنجاح');
                             }}
                             onReject={async (id) => {
-                                if (!confirm('هل أنت متأكد من رفض السجل وإعادته للمراقب العام؟')) return;
+                                const reason = prompt('يرجى كتابة سبب رفض السجل وإعادته للمراقب العام:');
+                                if (!reason) return;
                                 try {
-                                    await rejectAttendance(id, 'PENDING_GS');
+                                    await rejectAttendance(id, 'PENDING_GS', reason);
                                     showToast('تم رفض السجل وإعادته للمراقب العام');
                                 } catch (err) {
                                     console.error(err);

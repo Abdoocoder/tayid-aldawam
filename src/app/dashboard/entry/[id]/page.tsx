@@ -7,7 +7,7 @@ import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Save, Calculator, User, Calendar, Minus, Plus, HardHat, Lock } from "lucide-react";
+import { ArrowRight, Save, Calculator, User, Calendar, Minus, Plus, HardHat, Lock, AlertCircle } from "lucide-react";
 
 export default function EntryPage() {
     const params = useParams();
@@ -136,7 +136,8 @@ export default function EntryPage() {
             overtimeNormalDays: otNormal,
             overtimeHolidayDays: otHoliday,
             overtimeEidDays: otEid,
-            status: 'PENDING_GS'
+            status: 'PENDING_GS',
+            rejectionNotes: undefined // Clear the notes on resubmission
         });
         router.push("/dashboard");
     };
@@ -196,6 +197,20 @@ export default function EntryPage() {
                                         <div>
                                             <h3 className="font-bold text-red-900 text-lg mb-1">السجل معتمد - التعديل غير مسموح</h3>
                                             <p className="text-sm text-red-700">{statusMessage}</p>
+                                        </div>
+                                    </div>
+                                )}
+                                {/* Rejection Notes from Management */}
+                                {canEdit && currentRecord?.status === 'PENDING_SUPERVISOR' && currentRecord.rejectionNotes && (
+                                    <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 flex items-start gap-4 animate-in fade-in slide-in-from-top-4">
+                                        <div className="bg-amber-100 p-3 rounded-xl text-amber-600">
+                                            <AlertCircle className="h-6 w-6" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-black text-amber-900 text-lg mb-1 italic underline underline-offset-4">سبب الإعادة للتصحيح:</h3>
+                                            <p className="text-gray-800 font-bold leading-relaxed bg-white/50 p-3 rounded-xl border border-amber-100 mt-2">
+                                                {currentRecord.rejectionNotes}
+                                            </p>
                                         </div>
                                     </div>
                                 )}

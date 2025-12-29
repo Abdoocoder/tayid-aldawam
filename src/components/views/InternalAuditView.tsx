@@ -138,7 +138,7 @@ export function InternalAuditView() {
         if (!reason) return;
 
         try {
-            await rejectAttendance(recordId, 'PENDING_HR');
+            await rejectAttendance(recordId, 'PENDING_HR', reason);
             showToast('تم إعادة السجل لقسم الموارد البشرية');
         } catch (err) {
             console.error(err);

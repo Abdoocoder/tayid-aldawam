@@ -39,6 +39,7 @@ export interface AttendanceRecord {
     overtimeEidDays: number; // 1.0 value
     totalCalculatedDays: number;
     status: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'PENDING_PAYROLL' | 'APPROVED';
+    rejectionNotes?: string;
     updatedAt: string;
 }
 
@@ -66,7 +67,7 @@ interface AttendanceContextType {
     refreshData: () => Promise<void>;
     loadAttendance: (month: number, year: number, areaId?: string | string[]) => Promise<void>;
     approveAttendance: (recordId: string, nextStatus: 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'PENDING_PAYROLL' | 'APPROVED') => Promise<void>;
-    rejectAttendance: (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE') => Promise<void>;
+    rejectAttendance: (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE', reason?: string) => Promise<void>;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(undefined);
@@ -424,11 +425,14 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     }, [loadAttendance, appUser?.areaId, appUser?.areas]);
 
-    const rejectAttendance = useCallback(async (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE') => {
+    const rejectAttendance = useCallback(async (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE', reason?: string) => {
         try {
             const { error } = await supabase
                 .from('attendance_records')
-                .update({ status: newStatus })
+                .update({
+                    status: newStatus,
+                    rejection_notes: reason || null
+                })
                 .eq('id', recordId);
 
             if (error) throw error;
