@@ -545,6 +545,9 @@ export const AdminView = () => {
                                 <div className="relative flex-1 max-w-md">
                                     <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                                     <Input
+                                        id="user-search"
+                                        name="userSearch"
+                                        aria-label="بحث عن المستخدمين"
                                         placeholder="بحث سريع..."
                                         className="pr-9 h-9 bg-white/80 border-slate-200/60 focus:bg-white transition-all rounded-xl text-xs font-bold"
                                         value={searchTerm}
@@ -577,6 +580,9 @@ export const AdminView = () => {
                                 <div className="relative flex-1 max-w-md">
                                     <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                                     <Input
+                                        id="worker-search"
+                                        name="workerSearch"
+                                        aria-label="بحث عن العمال"
                                         placeholder="بحث سريع..."
                                         className="pr-9 h-9 bg-white/80 border-slate-200/60 focus:bg-white transition-all rounded-xl text-xs font-bold"
                                         value={searchTerm}
@@ -640,8 +646,10 @@ export const AdminView = () => {
                             <form onSubmit={handleSaveUser} className="p-6 space-y-5">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">اسم الدخول (بـ الإنجليزية)</label>
+                                        <label htmlFor="edit-username" className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">اسم الدخول (بـ الإنجليزية)</label>
                                         <Input
+                                            id="edit-username"
+                                            name="editUsername"
                                             required
                                             disabled={editingItem.data.id !== 'NEW'}
                                             value={editingItem.data.username || ''}
@@ -651,8 +659,10 @@ export const AdminView = () => {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الاسم الظاهر</label>
+                                        <label htmlFor="edit-name" className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الاسم الظاهر</label>
                                         <Input
+                                            id="edit-name"
+                                            name="editName"
                                             required
                                             value={editingItem.data.name || ''}
                                             onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
@@ -663,8 +673,10 @@ export const AdminView = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الدور الوظيفي / الصلاحية</label>
+                                    <label htmlFor="edit-role" className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الدور الوظيفي / الصلاحية</label>
                                     <select
+                                        id="edit-role"
+                                        name="editRole"
                                         className="w-full h-12 rounded-xl border border-slate-100 px-3 bg-slate-50/50 text-sm font-bold text-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
                                         value={editingItem.data.role || 'SUPERVISOR'}
                                         onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, role: e.target.value as UserRole } })}
@@ -739,8 +751,10 @@ export const AdminView = () => {
                         {editingItem.type === 'worker' && (
                             <form onSubmit={handleSaveWorker} className="p-6 space-y-5">
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الاسم الكامل للعامل</label>
+                                    <label htmlFor="worker-name" className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الاسم الكامل للعامل</label>
                                     <Input
+                                        id="worker-name"
+                                        name="workerName"
                                         required
                                         value={editingItem.data.name || ''}
                                         onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}
@@ -750,8 +764,10 @@ export const AdminView = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الأجر اليومي (دينار)</label>
+                                        <label htmlFor="worker-day-value" className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الأجر اليومي (دينار)</label>
                                         <Input
+                                            id="worker-day-value"
+                                            name="workerDayValue"
                                             type="number"
                                             required
                                             value={editingItem.data.dayValue || ''}
@@ -760,8 +776,10 @@ export const AdminView = () => {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">القطاع</label>
+                                        <label htmlFor="worker-area" className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">القطاع</label>
                                         <select
+                                            id="worker-area"
+                                            name="workerArea"
                                             className="w-full h-12 rounded-xl border border-slate-100 px-3 bg-slate-50/50 text-sm font-bold text-right outline-none"
                                             value={editingItem.data.areaId}
                                             onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, areaId: e.target.value } })}
@@ -782,8 +800,10 @@ export const AdminView = () => {
                         {editingItem.type === 'area' && (
                             <form onSubmit={handleSaveArea} className="p-6 space-y-5">
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">اسم القطاع الجديد</label>
+                                    <label htmlFor="area-name" className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">اسم القطاع الجديد</label>
                                     <Input
+                                        id="area-name"
+                                        name="areaName"
                                         required
                                         value={editingItem.data.name || ''}
                                         onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, name: e.target.value } })}

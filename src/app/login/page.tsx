@@ -87,10 +87,12 @@ export default function LoginPage() {
                         {/* Email/Password Form */}
                         <form onSubmit={handleEmailLogin} className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">البريد الإلكتروني</label>
+                                <label htmlFor="email" className="text-sm font-medium text-gray-700">البريد الإلكتروني</label>
                                 <div className="relative">
                                     <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                     <Input
+                                        id="email"
+                                        name="email"
                                         type="text"
                                         placeholder="البريد الإلكتروني أو اسم المستخدم"
                                         value={email}
@@ -103,10 +105,12 @@ export default function LoginPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">كلمة المرور</label>
+                                <label htmlFor="password" className="text-sm font-medium text-gray-700">كلمة المرور</label>
                                 <div className="relative">
                                     <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                     <Input
+                                        id="password"
+                                        name="password"
                                         type="password"
                                         placeholder="••••••••"
                                         value={password}

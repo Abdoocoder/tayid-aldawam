@@ -84,6 +84,9 @@ export const AttendanceReports = React.memo(function AttendanceReports({
                     <div className="relative flex-1 group">
                         <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-purple-600 transition-colors" />
                         <Input
+                            id="report-search"
+                            name="reportSearch"
+                            aria-label="بحث في التقارير"
                             placeholder="بحث باسم العامل أو القطاع..."
                             className="pr-12 h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-purple-500 rounded-2xl shadow-sm text-base"
                             value={reportSearchTerm}
@@ -93,6 +96,9 @@ export const AttendanceReports = React.memo(function AttendanceReports({
 
                     <div className="flex flex-wrap gap-2">
                         <Select
+                            id="report-area-filter"
+                            name="reportAreaFilter"
+                            aria-label="تصفية التقرير حسب المنطقة"
                             className="h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-purple-500 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[140px]"
                             value={reportAreaFilter}
                             onChange={e => onAreaFilterChange(e.target.value)}
@@ -104,6 +110,9 @@ export const AttendanceReports = React.memo(function AttendanceReports({
                         </Select>
 
                         <Select
+                            id="report-status-filter"
+                            name="reportStatusFilter"
+                            aria-label="تصفية التقرير حسب الحالة"
                             className="h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-purple-500 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[160px]"
                             value={reportStatusFilter}
                             onChange={e => onStatusFilterChange(e.target.value as 'ALL' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'APPROVED')}

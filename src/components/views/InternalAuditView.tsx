@@ -259,6 +259,9 @@ export function InternalAuditView() {
                         <div>
                             <label className="block text-xs font-bold text-slate-600 mb-2">حالة المعاملة</label>
                             <select
+                                id="audit-status-filter"
+                                name="auditStatusFilter"
+                                aria-label="تصفية حسب حالة المعاملة"
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
                                 className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-sm font-bold text-slate-700"
@@ -277,6 +280,9 @@ export function InternalAuditView() {
                         <div>
                             <label className="block text-xs font-bold text-slate-600 mb-2">مستوى المخاطر</label>
                             <select
+                                id="audit-risk-filter"
+                                name="auditRiskFilter"
+                                aria-label="تصفية حسب مستوى المخاطر"
                                 value={riskFilter}
                                 onChange={(e) => setRiskFilter(e.target.value as 'all' | 'low' | 'medium' | 'high')}
                                 className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-sm font-bold text-slate-700"
@@ -290,6 +296,9 @@ export function InternalAuditView() {
                         <div>
                             <label className="block text-xs font-bold text-slate-600 mb-2">القطاع</label>
                             <select
+                                id="audit-area-filter"
+                                name="auditAreaFilter"
+                                aria-label="تصفية حسب القطاع"
                                 value={areaFilter}
                                 onChange={(e) => setAreaFilter(e.target.value)}
                                 className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-sm font-bold text-slate-700"
@@ -303,6 +312,9 @@ export function InternalAuditView() {
                         <div>
                             <label className="block text-xs font-bold text-slate-600 mb-2">عدد الأيام</label>
                             <select
+                                id="audit-amount-filter"
+                                name="auditAmountFilter"
+                                aria-label="تصفية حسب عدد الأيام"
                                 value={amountFilter}
                                 onChange={(e) => setAmountFilter(e.target.value as 'all' | '0-20' | '20-30' | '30+')}
                                 className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-sm font-bold text-slate-700"
@@ -321,6 +333,9 @@ export function InternalAuditView() {
                     <div className="relative flex-1">
                         <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <Input
+                            id="audit-search"
+                            name="auditSearch"
+                            aria-label="بحث في السجلات المطروحة"
                             placeholder="بحث في السجلات المطروحة..."
                             className="pr-12 h-12 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border-slate-100"
                             value={searchTerm}

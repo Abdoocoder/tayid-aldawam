@@ -362,6 +362,9 @@ export function FinanceView() {
                     <div className="relative flex-1 group">
                         <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-amber-600 transition-colors" />
                         <Input
+                            id="finance-search"
+                            name="financeSearch"
+                            aria-label="بحث في السجلات المالية"
                             placeholder="بحث بالاسم أو الرقم أو القطاع..."
                             className="pr-12 h-12 bg-white/80 backdrop-blur-md border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 rounded-2xl shadow-sm text-base transition-all"
                             value={searchTerm}
@@ -371,6 +374,9 @@ export function FinanceView() {
 
                     <div className="flex flex-wrap lg:flex-nowrap items-center gap-2">
                         <select
+                            id="finance-status-filter"
+                            name="financeStatusFilter"
+                            aria-label="تصفية حسب الحالة المالية"
                             className="hidden md:block h-12 bg-white/80 backdrop-blur-md border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[200px] outline-none px-4 transition-all"
                             value={statusFilter}
                             onChange={e => setStatusFilter(e.target.value)}
@@ -393,6 +399,9 @@ export function FinanceView() {
                         </div>
 
                         <select
+                            id="finance-area-filter"
+                            name="financeAreaFilter"
+                            aria-label="تصفية حسب القطاع المالي"
                             className="h-12 bg-white/80 backdrop-blur-md border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[160px] outline-none px-4 transition-all"
                             value={areaFilter}
                             onChange={e => setAreaFilter(e.target.value)}

@@ -345,6 +345,9 @@ export function GeneralSupervisorView() {
                             <div className="relative flex-1 group">
                                 <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
                                 <Input
+                                    id="gs-search"
+                                    name="gsSearch"
+                                    aria-label="بحث عام"
                                     placeholder="بحث..."
                                     className="pr-12 h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-indigo-500 rounded-2xl shadow-sm text-base"
                                     value={searchTerm}
@@ -352,6 +355,9 @@ export function GeneralSupervisorView() {
                                 />
                             </div>
                             <Select
+                                id="gs-area-filter"
+                                name="gsAreaFilter"
+                                aria-label="تصفية حسب المنطقة"
                                 className="h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-indigo-500 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[200px]"
                                 value={selectedAreaId}
                                 onChange={e => setSelectedAreaId(e.target.value)}

@@ -52,8 +52,10 @@ export function AreaSection({
                     <CardContent className="p-6">
                         <form onSubmit={onSave} className="space-y-5">
                             <div className="space-y-2">
-                                <label className="text-sm font-bold text-gray-700 block">اسم المنطقة / القطاع</label>
+                                <label htmlFor="area-name" className="text-sm font-bold text-gray-700 block">اسم المنطقة / القطاع</label>
                                 <Input
+                                    id="area-name"
+                                    name="areaName"
                                     value={areaForm.name}
                                     onChange={e => onFormChange({ ...areaForm, name: e.target.value })}
                                     placeholder="مثلاً: مخيم الكرامة، منطقة السوق..."

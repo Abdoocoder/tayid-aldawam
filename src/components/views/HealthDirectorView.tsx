@@ -412,6 +412,9 @@ export function HealthDirectorView() {
                             <div className="relative group flex-1 md:w-[280px]">
                                 <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                                 <Input
+                                    id="health-search"
+                                    name="healthSearch"
+                                    aria-label="بحث في السجلات"
                                     placeholder="بحث في السجلات..."
                                     className="pr-10 h-12 bg-white/80 border-slate-200 focus:border-emerald-500 rounded-xl text-sm font-bold shadow-sm"
                                     value={searchTerm}
@@ -420,6 +423,9 @@ export function HealthDirectorView() {
                             </div>
                             <div className="grid grid-cols-2 md:flex items-center gap-2">
                                 <Select
+                                    id="supervisor-filter"
+                                    name="supervisorFilter"
+                                    aria-label="تصفية حسب المراقب"
                                     className="h-12 flex-1 md:min-w-[160px] border-slate-200 bg-white/80 rounded-xl font-bold text-xs shadow-sm"
                                     value={selectedSupervisorId}
                                     onChange={e => setSelectedSupervisorId(e.target.value)}
@@ -430,6 +436,9 @@ export function HealthDirectorView() {
                                     ))}
                                 </Select>
                                 <Select
+                                    id="area-filter"
+                                    name="areaFilter"
+                                    aria-label="تصفية حسب المنطقة"
                                     className="h-12 flex-1 md:min-w-[160px] border-slate-200 bg-white/80 rounded-xl font-bold text-xs shadow-sm"
                                     value={selectedAreaId}
                                     onChange={e => setSelectedAreaId(e.target.value)}
@@ -440,6 +449,9 @@ export function HealthDirectorView() {
                                     ))}
                                 </Select>
                                 <Select
+                                    id="status-filter"
+                                    name="statusFilter"
+                                    aria-label="تصفية حسب الحالة"
                                     className="h-12 flex-1 md:min-w-[180px] border-slate-200 bg-white/80 rounded-xl font-bold text-xs shadow-sm"
                                     value={statusFilter}
                                     onChange={e => setStatusFilter(e.target.value)}

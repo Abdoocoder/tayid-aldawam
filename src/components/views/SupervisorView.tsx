@@ -224,6 +224,9 @@ export function SupervisorView() {
                     <div className="relative group">
                         <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                         <Input
+                            id="worker-search"
+                            name="workerSearch"
+                            aria-label="البحث عن العمال"
                             placeholder="ابحث عن عامل..."
                             className="pr-10 h-11 bg-white/60 backdrop-blur-md border-slate-200 focus:border-blue-500 rounded-2xl shadow-sm"
                             value={searchTerm}
@@ -232,6 +235,9 @@ export function SupervisorView() {
                     </div>
                     {supervisorAreas.length > 1 && (
                         <Select
+                            id="area-filter"
+                            name="areaFilter"
+                            aria-label="تصفية حسب المنطقة"
                             className="h-11 bg-white/60 backdrop-blur-md border-slate-200 rounded-2xl shadow-sm font-bold text-slate-700"
                             value={selectedAreaId}
                             onChange={e => setSelectedAreaId(e.target.value)}

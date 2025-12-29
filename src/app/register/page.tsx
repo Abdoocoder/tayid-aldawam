@@ -128,10 +128,12 @@ export default function RegisterPage() {
                         {/* Registration Form */}
                         <form onSubmit={handleRegister} className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">الاسم الكامل</label>
+                                <label htmlFor="name" className="text-sm font-medium text-gray-700">الاسم الكامل</label>
                                 <div className="relative">
                                     <UserIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                     <Input
+                                        id="name"
+                                        name="name"
                                         type="text"
                                         placeholder="أدخل اسمك الكامل"
                                         value={name}
@@ -144,10 +146,12 @@ export default function RegisterPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">البريد الإلكتروني</label>
+                                <label htmlFor="email" className="text-sm font-medium text-gray-700">البريد الإلكتروني</label>
                                 <div className="relative">
                                     <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                     <Input
+                                        id="email"
+                                        name="email"
                                         type="email"
                                         placeholder="example@domain.com"
                                         value={email}
@@ -160,8 +164,10 @@ export default function RegisterPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">الدور الوظيفي</label>
+                                <label htmlFor="role" className="text-sm font-medium text-gray-700">الدور الوظيفي</label>
                                 <Select
+                                    id="role"
+                                    name="role"
                                     value={role}
                                     onChange={(e) => setRole(e.target.value as UserRole)}
                                     disabled={loading || isLoading}
@@ -179,10 +185,12 @@ export default function RegisterPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">كلمة المرور</label>
+                                <label htmlFor="password" className="text-sm font-medium text-gray-700">كلمة المرور</label>
                                 <div className="relative">
                                     <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                     <Input
+                                        id="password"
+                                        name="password"
                                         type="password"
                                         placeholder="••••••••"
                                         value={password}
@@ -195,10 +203,12 @@ export default function RegisterPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">تأكيد كلمة المرور</label>
+                                <label htmlFor="confirm-password" className="text-sm font-medium text-gray-700">تأكيد كلمة المرور</label>
                                 <div className="relative">
                                     <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                     <Input
+                                        id="confirm-password"
+                                        name="confirmPassword"
                                         type="password"
                                         placeholder="••••••••"
                                         value={confirmPassword}

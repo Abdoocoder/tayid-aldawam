@@ -181,6 +181,9 @@ export function PayrollView() {
                     <div className="relative flex-1">
                         <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <Input
+                            id="payroll-search"
+                            name="payrollSearch"
+                            aria-label="بحث في السجلات"
                             placeholder="بحث..."
                             className="pr-12 h-12 bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl shadow-sm"
                             value={searchTerm}
@@ -188,6 +191,9 @@ export function PayrollView() {
                         />
                     </div>
                     <select
+                        id="payroll-status-filter"
+                        name="payrollStatusFilter"
+                        aria-label="تصفية حسب حالة الصرف"
                         className="h-12 bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl shadow-sm px-4 font-bold text-slate-700"
                         value={statusFilter}
                         onChange={e => setStatusFilter(e.target.value as 'PENDING_PAYROLL' | 'APPROVED')}
