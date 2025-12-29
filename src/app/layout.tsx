@@ -40,8 +40,15 @@ export default function RootLayout({
           <ServiceWorkerCleaner />
           <main className="min-h-screen print:min-h-0 print:h-auto">
             {children}
-            <SpeedInsights />   {/* For performance monitoring */}
-            <Analytics /> {/* For analytics */}
+            {/* Only load Vercel insights/analytics in non-local production environments */}
+            {process.env.NODE_ENV === "production" &&
+              typeof window !== "undefined" &&
+              !window.location.hostname.includes("localhost") && (
+                <>
+                  <SpeedInsights />
+                  <Analytics />
+                </>
+              )}
           </main>
         </Providers>
       </body>

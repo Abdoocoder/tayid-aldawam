@@ -18,7 +18,7 @@ interface SupervisorSectionProps {
     onAdd: () => void;
 }
 
-export function SupervisorSection({ supervisors, areas, searchTerm, onEdit, onDelete, onActivate, onAdd }: SupervisorSectionProps) {
+export const SupervisorSection = React.memo(function SupervisorSection({ supervisors, areas, searchTerm, onEdit, onDelete, onActivate, onAdd }: SupervisorSectionProps) {
     const filteredSupervisors = supervisors.filter(s => {
         const areaName = s.areaId === 'ALL' ? 'كل المناطق' : (areas.find(a => a.id === s.areaId)?.name || "");
         const roleLabel = {
@@ -149,4 +149,4 @@ export function SupervisorSection({ supervisors, areas, searchTerm, onEdit, onDe
             </CardContent>
         </Card>
     );
-}
+});

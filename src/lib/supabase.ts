@@ -90,13 +90,16 @@ export const workersAPI = {
         return data || [];
     },
 
-    async getByAreaId(areaId: string): Promise<Worker[]> {
-        const { data, error } = await supabase
-            .from('workers')
-            .select('*')
-            .eq('area_id', areaId)
-            .order('name', { ascending: true });
-
+    async getByAreaId(areaId: string | string[]): Promise<Worker[]> {
+        let query = supabase.from('workers').select('*');
+        if (areaId !== 'ALL') {
+            if (Array.isArray(areaId)) {
+                query = query.in('area_id', areaId);
+            } else {
+                query = query.eq('area_id', areaId);
+            }
+        }
+        const { data, error } = await query.order('name', { ascending: true });
         if (error) throw error;
         return data || [];
     },
@@ -158,12 +161,32 @@ export const attendanceAPI = {
         return data || [];
     },
 
-    async getByPeriod(month: number, year: number): Promise<AttendanceRecord[]> {
-        const { data, error } = await supabase
+    async getByPeriod(month: number, year: number, areaId?: string | string[]): Promise<AttendanceRecord[]> {
+        let query = supabase
             .from('attendance_records')
             .select('*')
             .eq('month', month)
             .eq('year', year);
+
+        if (areaId && areaId !== 'ALL') {
+            // Filter by workers in the specified area(s)
+            let workerQuery = supabase.from('workers').select('id');
+            if (Array.isArray(areaId)) {
+                workerQuery = workerQuery.in('area_id', areaId);
+            } else {
+                workerQuery = workerQuery.eq('area_id', areaId);
+            }
+
+            const { data: workerIds } = await workerQuery;
+            if (workerIds && workerIds.length > 0) {
+                query = query.in('worker_id', workerIds.map(w => w.id));
+            } else {
+                return []; // No workers in this area
+            }
+        }
+
+        const { data, error } = await query
+            .order('worker_id', { ascending: true });
 
         if (error) throw error;
         return data || [];

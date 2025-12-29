@@ -16,7 +16,7 @@ interface WorkerSectionProps {
     onDelete: (id: string) => void;
 }
 
-export function WorkerSection({ workers, areas, searchTerm, onEdit, onDelete }: WorkerSectionProps) {
+export const WorkerSection = React.memo(function WorkerSection({ workers, areas, searchTerm, onEdit, onDelete }: WorkerSectionProps) {
     const filteredWorkers = workers.filter(w => {
         const areaName = areas.find(a => a.id === w.areaId)?.name || "";
         return w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -97,4 +97,4 @@ export function WorkerSection({ workers, areas, searchTerm, onEdit, onDelete }: 
             </CardContent>
         </Card>
     );
-}
+});

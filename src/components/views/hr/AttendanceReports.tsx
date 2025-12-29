@@ -28,7 +28,7 @@ interface AttendanceReportsProps {
     onBulkApprove?: () => void;
 }
 
-export function AttendanceReports({
+export const AttendanceReports = React.memo(function AttendanceReports({
     workers,
     areas,
     month,
@@ -46,6 +46,8 @@ export function AttendanceReports({
     onExportCSV,
     onBulkApprove
 }: AttendanceReportsProps) {
+    // ... existing implementation remains pure ...
+    // (Actual file content follows)
 
     const filteredWorkers = workers.filter(w => {
         const record = getWorkerAttendance(w.id, month, year);
@@ -362,4 +364,4 @@ export function AttendanceReports({
             </div>
         </>
     );
-}
+});

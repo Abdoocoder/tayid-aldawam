@@ -2,17 +2,48 @@
 
 import { useAttendance } from "@/context/AttendanceContext";
 import { Header } from "@/components/layout/Header";
-import { SupervisorView } from "@/components/views/SupervisorView";
-import { HRView } from "@/components/views/HRView";
-import { FinanceView } from "@/components/views/FinanceView";
-import { GeneralSupervisorView } from "@/components/views/GeneralSupervisorView";
-import { AdminView } from "@/components/views/AdminView";
-import { MayorView } from "@/components/views/MayorView";
-import { HealthDirectorView } from "@/components/views/HealthDirectorView";
-import { InternalAuditView } from "@/components/views/InternalAuditView";
-import { PayrollView } from "@/components/views/PayrollView";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import dynamic from "next/dynamic";
+import { Loader2 } from "lucide-react";
+
+// Optimized Dynamic Imports
+const SupervisorView = dynamic(() => import("@/components/views/SupervisorView").then(mod => mod.SupervisorView), {
+    loading: () => <ViewLoadingSkeleton />
+});
+const HRView = dynamic(() => import("@/components/views/HRView").then(mod => mod.HRView), {
+    loading: () => <ViewLoadingSkeleton />
+});
+const FinanceView = dynamic(() => import("@/components/views/FinanceView").then(mod => mod.FinanceView), {
+    loading: () => <ViewLoadingSkeleton />
+});
+const GeneralSupervisorView = dynamic(() => import("@/components/views/GeneralSupervisorView").then(mod => mod.GeneralSupervisorView), {
+    loading: () => <ViewLoadingSkeleton />
+});
+const AdminView = dynamic(() => import("@/components/views/AdminView").then(mod => mod.AdminView), {
+    loading: () => <ViewLoadingSkeleton />
+});
+const MayorView = dynamic(() => import("@/components/views/MayorView").then(mod => mod.MayorView), {
+    loading: () => <ViewLoadingSkeleton />
+});
+const HealthDirectorView = dynamic(() => import("@/components/views/HealthDirectorView").then(mod => mod.HealthDirectorView), {
+    loading: () => <ViewLoadingSkeleton />
+});
+const InternalAuditView = dynamic(() => import("@/components/views/InternalAuditView").then(mod => mod.InternalAuditView), {
+    loading: () => <ViewLoadingSkeleton />
+});
+const PayrollView = dynamic(() => import("@/components/views/PayrollView").then(mod => mod.PayrollView), {
+    loading: () => <ViewLoadingSkeleton />
+});
+
+function ViewLoadingSkeleton() {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4 animate-in fade-in duration-500">
+            <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
+            <p className="text-slate-500 font-bold">جاري تحميل الواجهة...</p>
+        </div>
+    );
+}
 
 export default function DashboardPage() {
     const { currentUser } = useAttendance();
@@ -25,7 +56,12 @@ export default function DashboardPage() {
     }, [currentUser, router]);
 
     if (!currentUser) {
-        return <div className="p-10 text-center">جاري التحميل...</div>;
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+                <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
+                <p className="text-slate-500 font-black">جاري التحقق من الصلاحيات...</p>
+            </div>
+        );
     }
 
     return (

@@ -82,9 +82,11 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
     // --- Loading Functions ---
 
-    const loadWorkers = useCallback(async () => {
+    const loadWorkers = useCallback(async (areaId?: string | string[]) => {
         try {
-            const dbWorkers = await workersAPI.getAll();
+            const dbWorkers = areaId && areaId !== 'ALL'
+                ? await workersAPI.getByAreaId(areaId)
+                : await workersAPI.getAll();
             const frontendWorkers = dbWorkers.map(workerFromDb);
             setWorkers(frontendWorkers);
         } catch (err) {
@@ -93,9 +95,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     }, []);
 
-    const loadAttendance = useCallback(async () => {
+    const loadAttendance = useCallback(async (month: number, year: number, areaId?: string | string[]) => {
         try {
-            const dbRecords = await attendanceAPI.getAll();
+            const dbRecords = await attendanceAPI.getByPeriod(month, year, areaId);
             const frontendRecords = dbRecords.map(attendanceFromDb);
             setAttendanceRecords(frontendRecords);
         } catch (err) {
@@ -157,9 +159,18 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
                 return;
             }
 
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+
+            // Collect all assigned areas
+            const areaIds = appUser.areas && appUser.areas.length > 0
+                ? appUser.areas.map(a => a.id)
+                : (appUser.areaId ? [appUser.areaId] : undefined);
+
             const promises: Promise<unknown>[] = [
-                loadWorkers(),
-                loadAttendance(),
+                loadWorkers(areaIds),
+                loadAttendance(currentMonth, currentYear, areaIds),
                 loadAreas(),
             ];
 
@@ -175,7 +186,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         } finally {
             setIsLoading(false);
         }
-    }, [appUser?.role, appUser?.isActive, loadWorkers, loadAttendance, loadAreas, loadUsers, loadAuditLogs]);
+    }, [appUser?.role, appUser?.isActive, appUser?.areaId, appUser?.areas, loadWorkers, loadAttendance, loadAreas, loadUsers, loadAuditLogs]);
 
     const refreshData = useCallback(async () => {
         await loadData();
@@ -188,17 +199,26 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
         loadData();
 
+        const now = new Date();
+        const m = now.getMonth() + 1;
+        const y = now.getFullYear();
+
+        // Collect all assigned areas for real-time refresh
+        const areaIds = appUser.areas && appUser.areas.length > 0
+            ? appUser.areas.map(a => a.id)
+            : (appUser.areaId ? [appUser.areaId] : undefined);
+
         const attendanceSubscription = supabase
             .channel('attendance_changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, () => {
-                loadAttendance();
+                loadAttendance(m, y, areaIds);
             })
             .subscribe();
 
         const workersSubscription = supabase
             .channel('workers_changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'workers' }, () => {
-                loadWorkers();
+                loadWorkers(areaIds);
             })
             .subscribe();
 
@@ -356,12 +376,18 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
                 .update({ status: nextStatus })
                 .eq('id', recordId);
             if (error) throw error;
-            await loadAttendance();
+
+            const now = new Date();
+            const areaIds = appUser?.areas && appUser.areas.length > 0
+                ? appUser.areas.map(a => a.id)
+                : (appUser?.areaId ? [appUser.areaId] : undefined);
+
+            await loadAttendance(now.getMonth() + 1, now.getFullYear(), areaIds);
         } catch (err) {
             console.error('Failed to approve attendance:', err);
             throw err;
         }
-    }, [loadAttendance]);
+    }, [loadAttendance, appUser?.areaId, appUser?.areas]);
 
     const rejectAttendance = useCallback(async (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE') => {
         try {
@@ -371,12 +397,18 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
                 .eq('id', recordId);
 
             if (error) throw error;
-            await loadAttendance();
+
+            const now = new Date();
+            const areaIds = appUser?.areas && appUser.areas.length > 0
+                ? appUser.areas.map(a => a.id)
+                : (appUser?.areaId ? [appUser.areaId] : undefined);
+
+            await loadAttendance(now.getMonth() + 1, now.getFullYear(), areaIds);
         } catch (err) {
             console.error('Failed to reject attendance:', err);
             throw err;
         }
-    }, [loadAttendance]);
+    }, [loadAttendance, appUser?.areaId, appUser?.areas]);
 
     return (
         <AttendanceContext.Provider value={{
