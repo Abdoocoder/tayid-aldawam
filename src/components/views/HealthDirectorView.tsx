@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useAttendance } from "@/context/AttendanceContext";
 import { MonthYearPicker } from "../ui/month-year-picker";
 import { Button } from "../ui/button";
@@ -30,7 +30,7 @@ import { Select } from "../ui/select";
 type TabType = 'pending' | 'hr_forwarded' | 'gs_stage' | 'cost_analysis' | 'anomalies';
 
 export function HealthDirectorView() {
-    const { currentUser, workers, attendanceRecords, areas, approveAttendance, rejectAttendance, isLoading, users } = useAttendance();
+    const { currentUser, workers, attendanceRecords, areas, approveAttendance, rejectAttendance, loadAttendance, isLoading, users } = useAttendance();
     const [activeTab, setActiveTab] = useState<TabType>('pending');
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
@@ -51,8 +51,22 @@ export function HealthDirectorView() {
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
     const [isBulkApproving, setIsBulkApproving] = useState(false);
+    const [statusFilter, setStatusFilter] = useState<string>('PENDING_HEALTH'); // Default to health pending
 
     const supervisors = useMemo(() => users.filter(u => u.role === 'SUPERVISOR'), [users]);
+
+    // Dynamic data loading for the selected period
+    useEffect(() => {
+        if (!currentUser) return;
+
+        // Load current month
+        loadAttendance(month, year);
+
+        // Load previous month for analytics (cost comparison)
+        const prevMonth = month === 1 ? 12 : month - 1;
+        const prevYear = month === 1 ? year - 1 : year;
+        loadAttendance(prevMonth, prevYear);
+    }, [month, year, loadAttendance, currentUser]);
 
     // Analytics: Stage tracking
     const analytics = useMemo(() => {
@@ -90,7 +104,8 @@ export function HealthDirectorView() {
             else if (r.status === 'PENDING_HR') stats.hrForwarded++;
             else stats.completed++;
 
-            if (r.totalCalculatedDays > 30 || r.overtimeNormalDays > 15 || r.overtimeHolidayDays > 10) {
+            const isAnomaly = r.totalCalculatedDays > 32 || r.overtimeNormalDays > 18 || r.overtimeHolidayDays > 12 || (r.overtimeEidDays && r.overtimeEidDays > 3);
+            if (isAnomaly) {
                 stats.anomalies++;
             }
         });
@@ -105,18 +120,14 @@ export function HealthDirectorView() {
 
             const isCorrectPeriod = r.month === month && r.year === year;
 
-            // Tab-based status filtering
-            let matchesTab = false;
-            if (activeTab === 'pending') {
-                matchesTab = r.status === 'PENDING_HEALTH';
-            } else if (activeTab === 'hr_forwarded') {
-                matchesTab = r.status === 'PENDING_HR';
-            } else if (activeTab === 'gs_stage') {
-                matchesTab = r.status === 'PENDING_GS';
-            } else if (activeTab === 'anomalies') {
-                matchesTab = true; // Show all for anomalies tab, will filter by anomaly condition
-            } else if (activeTab === 'cost_analysis') {
-                matchesTab = true; // Show all for cost analysis
+            // Unified status filter
+            let matchesStatus = false;
+            if (activeTab === 'anomalies' || activeTab === 'cost_analysis') {
+                matchesStatus = true; // Show all for these tabs
+            } else if (statusFilter === 'all') {
+                matchesStatus = true;
+            } else {
+                matchesStatus = r.status === statusFilter;
             }
 
             // Hierarchy filter
@@ -128,15 +139,15 @@ export function HealthDirectorView() {
             const matchesSearch = worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 worker.id.includes(searchTerm);
 
-            const isAnomaly = r.totalCalculatedDays > 30 || r.overtimeNormalDays > 15 || r.overtimeHolidayDays > 10;
+            const isAnomaly = r.totalCalculatedDays > 32 || r.overtimeNormalDays > 18 || r.overtimeHolidayDays > 12 || (r.overtimeEidDays && r.overtimeEidDays > 3);
             const matchesAnomaly = !showAnomaliesOnly || isAnomaly;
 
             // For anomalies tab, only show anomalies
             const matchesAnomalyTab = activeTab !== 'anomalies' || isAnomaly;
 
-            return isCorrectPeriod && matchesTab && matchesArea && matchesSupervisor && matchesSearch && matchesAnomaly && matchesAnomalyTab;
+            return isCorrectPeriod && matchesStatus && matchesArea && matchesSupervisor && matchesSearch && matchesAnomaly && matchesAnomalyTab;
         });
-    }, [attendanceRecords, workers, month, year, activeTab, selectedAreaId, selectedSupervisorId, searchTerm, showAnomaliesOnly, supervisors]);
+    }, [attendanceRecords, workers, month, year, activeTab, selectedAreaId, selectedSupervisorId, searchTerm, showAnomaliesOnly, supervisors, statusFilter]);
 
     const recentlyApproved = useMemo(() => {
         return attendanceRecords
@@ -234,10 +245,10 @@ export function HealthDirectorView() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => window.print()}
-                                className="hidden md:flex gap-2 text-emerald-600 hover:bg-emerald-50 rounded-xl font-black border border-emerald-100"
+                                className="flex gap-2 text-emerald-600 hover:bg-emerald-50 rounded-xl font-black border border-emerald-100 h-10 px-3 md:px-6 transition-all active:scale-95"
                             >
                                 <Printer className="h-4 w-4" />
-                                <span className="text-xs">تقرير إحصائي</span>
+                                <span className="text-xs hidden md:inline">تقرير إحصائي</span>
                             </Button>
 
                             <div className="hidden md:block">
@@ -247,7 +258,7 @@ export function HealthDirectorView() {
                             {/* Mobile Menu Trigger */}
                             <button
                                 onClick={() => setIsMobileNavOpen(true)}
-                                className="md:hidden p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
+                                className="p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
                             >
                                 <Menu className="h-6 w-6" />
                             </button>
@@ -265,46 +276,70 @@ export function HealthDirectorView() {
                 {/* Enhanced KPI Dashboard - Optimized for Mobile Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 px-1">
                     {[
-                        { label: 'بانتظار اعتمادك', value: analytics.health, color: 'emerald', icon: Activity, desc: 'تحت المراجعة', gradient: 'from-emerald-50 to-emerald-100/30', text: 'emerald', border: 'emerald' },
-                        { label: 'التحويل للموارد', value: analytics.completed, color: 'indigo', icon: CheckCircle2, desc: 'سجلات معتمدة', gradient: 'from-indigo-50 to-indigo-100/30', text: 'indigo', border: 'indigo' },
-                        { label: 'المراقب العام', value: analytics.general, color: 'violet', icon: ShieldCheck, desc: 'سجلات مدققة', gradient: 'from-violet-50 to-violet-100/30', text: 'violet', border: 'violet' },
                         {
-                            label: 'التكلفة التقديرية',
-                            value: `${analytics.totalCost.toLocaleString()} د.أ`,
-                            color: 'amber',
-                            icon: Coins,
-                            gradient: 'from-amber-50 to-amber-100/30',
-                            text: 'amber',
-                            border: 'amber',
-                            desc: analytics.costDiff !== 0 ? (
-                                <span className={`flex items-center gap-1 ${analytics.costDiff > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                    {analytics.costDiff > 0 ? <TrendingUp className="h-2 w-2" /> : <TrendingDown className="h-2 w-2" />}
-                                    {Math.abs(analytics.costDiff).toFixed(1)}%
-                                </span>
-                            ) : 'لا يوجد بيانات'
+                            label: 'بانتظار اعتمادك',
+                            value: analytics.health,
+                            icon: Activity,
+                            desc: 'سجلات تحتاج قراراً فورياً',
+                            gradient: 'from-emerald-600 to-emerald-800',
+                            shadow: 'shadow-emerald-200'
                         },
                         {
-                            label: 'الرقابة البيئية',
-                            value: analytics.anomalies === 0 ? 'مستقر' : 'تنبيهات',
-                            color: analytics.anomalies > 0 ? 'rose' : 'emerald',
+                            label: 'مرحلة الموارد',
+                            value: analytics.hrForwarded,
+                            icon: CheckCircle2,
+                            desc: 'بانتظار الموارد البشرية',
+                            gradient: 'from-blue-600 to-blue-800',
+                            shadow: 'shadow-blue-200'
+                        },
+                        {
+                            label: 'المراقب العام',
+                            value: analytics.general,
+                            icon: ShieldCheck,
+                            desc: 'قيد التدقيق الأولي',
+                            gradient: 'from-violet-600 to-violet-800',
+                            shadow: 'shadow-violet-200'
+                        },
+                        {
+                            label: 'التكلفة الشهرية',
+                            value: analytics.totalCost.toLocaleString(),
+                            unit: 'د.أ',
+                            icon: Coins,
+                            gradient: 'from-amber-600 to-amber-800',
+                            shadow: 'shadow-amber-200',
+                            desc: analytics.costDiff !== 0 ? (
+                                <span className={`flex items-center gap-1 ${analytics.costDiff > 0 ? 'text-rose-200' : 'text-emerald-200'}`}>
+                                    {analytics.costDiff > 0 ? <TrendingUp className="h-2 w-2" /> : <TrendingDown className="h-2 w-2" />}
+                                    {Math.abs(analytics.costDiff).toFixed(1)}% عن السابق
+                                </span>
+                            ) : 'مستقر'
+                        },
+                        {
+                            label: 'تنبيهات النظام',
+                            value: analytics.anomalies,
                             icon: AlertTriangle,
-                            gradient: analytics.anomalies > 0 ? 'from-rose-50 to-rose-100/30' : 'from-emerald-50 to-emerald-100/30',
-                            text: analytics.anomalies > 0 ? 'rose' : 'emerald',
-                            border: analytics.anomalies > 0 ? 'rose' : 'emerald',
-                            desc: 'مؤشر السلامة العامة'
+                            gradient: analytics.anomalies > 0 ? 'from-rose-600 to-rose-800' : 'from-slate-600 to-slate-800',
+                            shadow: analytics.anomalies > 0 ? 'shadow-rose-200' : 'shadow-slate-200',
+                            desc: analytics.anomalies > 0 ? 'سجلات تتطلب تدقيقاً خاصاً' : 'لا توجد مخالفات'
                         }
                     ].map((stat, i) => (
-                        <div key={i} className={`relative border-none shadow-md bg-gradient-to-br ${stat.gradient.replace('50', '600').replace('100/30', '700')} ring-1 ring-white/20 rounded-2xl overflow-hidden group p-4 flex flex-col items-center text-center gap-2 min-h-[140px] justify-center transition-all duration-300 hover:shadow-xl hover:scale-[1.02]`}>
-                            {/* Background Watermark Icon */}
-                            <stat.icon className="absolute -bottom-2 -right-2 h-20 w-20 opacity-[0.15] text-white rotate-12 group-hover:scale-110 transition-transform duration-500" />
+                        <div key={i} className={`relative bg-gradient-to-br ${stat.gradient} rounded-2xl overflow-hidden group p-5 flex flex-col justify-between min-h-[140px] shadow-lg ${stat.shadow} transition-all duration-300 hover:scale-[1.03]`}>
+                            <stat.icon className="absolute -bottom-4 -right-4 h-24 w-24 text-white/10 -rotate-12 group-hover:scale-110 transition-transform duration-700" />
 
-                            <div className="relative z-10 bg-white/20 backdrop-blur-md p-3 rounded-xl text-white shadow-sm border border-white/20 group-hover:scale-110 transition-transform">
-                                <stat.icon className="h-6 w-6" />
+                            <div className="flex justify-between items-start">
+                                <div className="bg-white/20 backdrop-blur-md p-2 rounded-xl text-white border border-white/20">
+                                    <stat.icon className="h-5 w-5" />
+                                </div>
+                                {'unit' in stat && <span className="text-[10px] font-black text-white/60 bg-white/10 px-2 py-1 rounded-lg border border-white/10 uppercase">{stat.unit}</span>}
                             </div>
-                            <div className="relative z-10 space-y-1">
-                                <p className="text-xs text-white/80 font-black uppercase tracking-widest">{stat.label}</p>
-                                <p className="text-2xl font-black text-white leading-tight drop-shadow-sm">{stat.value}</p>
-                                <div className="text-[11px] text-white font-bold mt-1 px-3 py-1 bg-black/10 rounded-full inline-block backdrop-blur-sm border border-white/10">
+
+                            <div className="mt-4">
+                                <p className="text-[10px] text-white/70 font-black uppercase tracking-widest">{stat.label}</p>
+                                <div className="flex items-baseline gap-1 mt-1">
+                                    <span className="text-2xl font-black text-white tracking-tighter">{stat.value}</span>
+                                </div>
+                                <div className="text-[9px] text-white/50 font-bold mt-2 flex items-center gap-1.5 uppercase">
+                                    <div className="w-1 h-1 rounded-full bg-white/40 animate-pulse" />
                                     {stat.desc}
                                 </div>
                             </div>
@@ -402,6 +437,21 @@ export function HealthDirectorView() {
                                     {areas.map(area => (
                                         <option key={area.id} value={area.id}>{area.name}</option>
                                     ))}
+                                </Select>
+                                <Select
+                                    className="h-12 flex-1 md:min-w-[180px] border-slate-200 bg-white/80 rounded-xl font-bold text-xs shadow-sm"
+                                    value={statusFilter}
+                                    onChange={e => setStatusFilter(e.target.value)}
+                                >
+                                    <option value="all">🔍 جميع الحالات</option>
+                                    <option value="PENDING_SUPERVISOR">📋 عند المراقب</option>
+                                    <option value="PENDING_GS">👤 المراقب العام</option>
+                                    <option value="PENDING_HEALTH">🏥 الصحة (أنت)</option>
+                                    <option value="PENDING_HR">👥 الموارد البشرية</option>
+                                    <option value="PENDING_AUDIT">🛡️ الرقابة الداخلية</option>
+                                    <option value="PENDING_FINANCE">💰 المالية</option>
+                                    <option value="PENDING_PAYROLL">💳 الرواتب</option>
+                                    <option value="APPROVED">✅ معتمد نهائياً</option>
                                 </Select>
                             </div>
                             <Button
@@ -528,14 +578,14 @@ export function HealthDirectorView() {
                                         <th className="p-3 md:p-4 border-b text-center">إضافي عطل (x1.0)</th>
                                         <th className="p-3 md:p-4 border-b text-center">أيام أعياد (x1.0)</th>
                                         <th className="p-3 md:p-4 border-b text-center">الإجمالي</th>
-                                        <th className="p-6 text-center">حالة التدقيق</th>
+                                        <th className="p-6 text-center">الحالة</th>
                                         <th className="p-6 text-center">القرار الإداري</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
                                     {filteredRecords.length === 0 ? (
                                         <tr>
-                                            <td colSpan={7} className="p-32 text-center">
+                                            <td colSpan={9} className="p-32 text-center">
                                                 <div className="flex flex-col items-center gap-6 group">
                                                     <div className="bg-slate-50 p-8 rounded-2xl group-hover:scale-110 transition-transform duration-500">
                                                         <ShieldCheck className="h-20 w-20 text-slate-200" />
@@ -555,8 +605,8 @@ export function HealthDirectorView() {
                                                 <tr key={record.id} className="hover:bg-emerald-50/30 transition-all group/row">
                                                     <td className="p-6">
                                                         <div className="flex items-center gap-3">
-                                                            {(record.totalCalculatedDays > 30 || record.overtimeNormalDays > 15 || record.overtimeHolidayDays > 10) && (
-                                                                <div className="bg-rose-100 p-2 rounded-full animate-pulse shadow-sm shadow-rose-200">
+                                                            {(record.totalCalculatedDays > 32 || record.overtimeNormalDays > 18 || record.overtimeHolidayDays > 12 || (record.overtimeEidDays && record.overtimeEidDays > 3)) && (
+                                                                <div className="bg-rose-100 p-2 rounded-full animate-pulse shadow-sm shadow-rose-200" title="تنبيه: سجل غير اعتيادي">
                                                                     <AlertTriangle className="h-5 w-5 text-rose-600" />
                                                                 </div>
                                                             )}
@@ -570,7 +620,10 @@ export function HealthDirectorView() {
                                                                     </span>
                                                                     <span className="text-[9px] font-bold text-slate-500 flex items-center gap-1">
                                                                         <UserIcon className="h-3 w-3" />
-                                                                        المراقب: {supervisors.find(u => u.role === 'SUPERVISOR' && (u.areaId === worker?.areaId || u.areas?.some(a => a.id === worker?.areaId)))?.name || 'غير محدد'}
+                                                                        {(() => {
+                                                                            const supervisor = supervisors.find(u => u.role === 'SUPERVISOR' && (u.areaId === worker?.areaId || u.areas?.some(a => a.id === worker?.areaId)));
+                                                                            return supervisor ? `المراقب: ${supervisor.name}` : 'إدخال المراقب العام (شاغر)';
+                                                                        })()}
                                                                     </span>
                                                                 </div>
                                                             </div>
@@ -610,47 +663,71 @@ export function HealthDirectorView() {
                                                     </td>
                                                     <td className="p-6 text-center">
                                                         <div className="flex flex-col items-center gap-1">
-                                                            <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 font-black px-3 py-1 rounded-xl flex gap-1 items-center">
-                                                                <ShieldCheck className="h-3 w-3" />
-                                                                دققها المراقب العام
+                                                            <Badge
+                                                                className={`font-black text-[10px] px-2 py-1 ${record.status === 'PENDING_SUPERVISOR' ? 'bg-slate-100 text-slate-700' :
+                                                                    record.status === 'PENDING_GS' ? 'bg-blue-100 text-blue-700' :
+                                                                        record.status === 'PENDING_HEALTH' ? 'bg-emerald-100 text-emerald-700' :
+                                                                            record.status === 'PENDING_HR' ? 'bg-purple-100 text-purple-700' :
+                                                                                record.status === 'PENDING_AUDIT' ? 'bg-rose-100 text-rose-700' :
+                                                                                    record.status === 'PENDING_FINANCE' ? 'bg-emerald-100 text-emerald-700' :
+                                                                                        record.status === 'PENDING_PAYROLL' ? 'bg-cyan-100 text-cyan-700' :
+                                                                                            'bg-green-100 text-green-700'
+                                                                    }`}
+                                                            >
+                                                                {record.status === 'PENDING_SUPERVISOR' ? '📋 مراقب' :
+                                                                    record.status === 'PENDING_GS' ? '👤 م.عام' :
+                                                                        record.status === 'PENDING_HEALTH' ? '🏥 صحة' :
+                                                                            record.status === 'PENDING_HR' ? '👥 م.ب' :
+                                                                                record.status === 'PENDING_AUDIT' ? '🛡️ رقابة' :
+                                                                                    record.status === 'PENDING_FINANCE' ? '💰 مالية' :
+                                                                                        record.status === 'PENDING_PAYROLL' ? '💳 رواتب' :
+                                                                                            '✅ معتمد'}
                                                             </Badge>
                                                             <span className="text-[9px] font-bold text-slate-400 flex items-center gap-1 mt-1">
                                                                 <History className="h-3 w-3" />
-                                                                {new Date(record.updatedAt).toLocaleTimeString('ar-JO', { hour: '2-digit', minute: '2-digit' })} - {new Date(record.updatedAt).toLocaleDateString('ar-JO')}
+                                                                {new Date(record.updatedAt).toLocaleTimeString('ar-JO', { hour: '2-digit', minute: '2-digit' })}
                                                             </span>
                                                         </div>
                                                     </td>
                                                     <td className="p-6 text-center">
                                                         <div className="flex justify-center gap-3">
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() => handleApprove(record.id)}
-                                                                disabled={approvingIds.has(record.id)}
-                                                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-black h-12 px-6 rounded-2xl shadow-xl shadow-emerald-200 transition-all hover:scale-105 active:scale-95"
-                                                            >
-                                                                {approvingIds.has(record.id) ? (
-                                                                    <Loader2 className="h-5 w-5 animate-spin" />
-                                                                ) : (
-                                                                    <div className="flex items-center gap-2">
-                                                                        <CheckCircle2 className="h-5 w-5" />
-                                                                        اعتماد الإدارة
-                                                                    </div>
-                                                                )}
-                                                            </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="ghost"
-                                                                onClick={() => handleReject(record.id)}
-                                                                disabled={rejectingIds.has(record.id) || approvingIds.has(record.id)}
-                                                                className="h-12 w-12 p-0 text-rose-500 hover:bg-rose-50 hover:text-rose-700 font-bold rounded-2xl transition-colors"
-                                                                title="رفض وإعادة للمراقب العام"
-                                                            >
-                                                                {rejectingIds.has(record.id) ? (
-                                                                    <Loader2 className="h-5 w-5 animate-spin text-rose-500" />
-                                                                ) : (
-                                                                    <XCircle className="h-6 w-6" />
-                                                                )}
-                                                            </Button>
+                                                            {record.status === 'PENDING_HEALTH' ? (
+                                                                <>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        onClick={() => handleApprove(record.id)}
+                                                                        disabled={approvingIds.has(record.id)}
+                                                                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-black h-12 px-6 rounded-2xl shadow-xl shadow-emerald-200 transition-all hover:scale-105 active:scale-95"
+                                                                    >
+                                                                        {approvingIds.has(record.id) ? (
+                                                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                                                        ) : (
+                                                                            <div className="flex items-center gap-2">
+                                                                                <CheckCircle2 className="h-5 w-5" />
+                                                                                اعتماد الإدارة
+                                                                            </div>
+                                                                        )}
+                                                                    </Button>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="ghost"
+                                                                        onClick={() => handleReject(record.id)}
+                                                                        disabled={rejectingIds.has(record.id) || approvingIds.has(record.id)}
+                                                                        className="h-12 w-12 p-0 text-rose-500 hover:bg-rose-50 hover:text-rose-700 font-bold rounded-2xl transition-colors"
+                                                                        title="رفض وإعادة للمراقب العام"
+                                                                    >
+                                                                        {rejectingIds.has(record.id) ? (
+                                                                            <Loader2 className="h-5 w-5 animate-spin text-rose-500" />
+                                                                        ) : (
+                                                                            <XCircle className="h-6 w-6" />
+                                                                        )}
+                                                                    </Button>
+                                                                </>
+                                                            ) : (
+                                                                <Badge variant="outline" className="text-slate-500 text-[10px] py-2 px-4 rounded-xl border-slate-200">
+                                                                    {record.status === 'APPROVED' ? '✅ معتمد نهائياً' : '⏳ في مرحلة أخرى'}
+                                                                </Badge>
+                                                            )}
                                                         </div>
                                                     </td>
                                                 </tr>

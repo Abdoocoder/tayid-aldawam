@@ -13,7 +13,8 @@ import {
     TrendingUp,
     FileCheck,
     AlertTriangle,
-    Filter
+    Filter,
+    Printer
 } from "lucide-react";
 import { useAttendance } from "@/context/AttendanceContext";
 import { useAuth } from "@/context/AuthContext";
@@ -29,6 +30,7 @@ export function InternalAuditView() {
         workers,
         areas,
         getWorkerAttendance,
+        loadAttendance,
         approveAttendance,
         rejectAttendance,
         isLoading,
@@ -55,7 +57,14 @@ export function InternalAuditView() {
     const navItems = [
         { id: 'audit', label: 'تدقيق المستحقات', icon: ShieldCheck },
         { id: 'logs', label: 'سجل العمليات', icon: History },
+        { id: 'print', label: 'طباعة التقرير', icon: Printer },
     ];
+
+    // Dynamic data loading for the selected period
+    React.useEffect(() => {
+        if (!appUser) return;
+        loadAttendance(month, year);
+    }, [month, year, loadAttendance, appUser]);
 
     // Risk calculation function
     const calculateRisk = (record: { totalCalculatedDays: number; normalDays: number }): 'low' | 'medium' | 'high' => {
@@ -152,7 +161,7 @@ export function InternalAuditView() {
                 onClose={() => setIsMobileNavOpen(false)}
                 items={navItems}
                 activeTab={activeTab}
-                onTabChange={(id) => setActiveTab(id as 'audit' | 'logs')}
+                onTabChange={(id) => id === 'print' ? window.print() : setActiveTab(id as 'audit' | 'logs')}
                 user={{ name: appUser?.name || "مدقق الرقابة", role: "قسم الرقابة الداخلية" }}
             />
 
@@ -170,13 +179,24 @@ export function InternalAuditView() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3">
-                            <div className="hidden md:block">
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => window.print()}
+                                className="flex gap-2 text-rose-600 hover:bg-rose-50 rounded-xl font-black border border-rose-100 h-10 px-3 md:px-6"
+                            >
+                                <Printer className="h-4 w-4" />
+                                <span className="hidden md:inline">طباعة تقرير التدقيق</span>
+                            </Button>
+
+                            <div className="hidden sm:block">
                                 <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                             </div>
+
                             <button
                                 onClick={() => setIsMobileNavOpen(true)}
-                                className="md:hidden p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm"
+                                className="p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm hover:bg-slate-50 transition-colors"
                             >
                                 <Menu className="h-6 w-6" />
                             </button>
@@ -463,6 +483,103 @@ export function InternalAuditView() {
                         </div>
                     </div>
                 )}
+            </div>
+
+            {/* Formal Report View (Print Only) */}
+            <div className="hidden print:block p-12 bg-white text-slate-900" dir="rtl">
+                <div className="text-center mb-12 border-b-4 border-slate-900 pb-8 relative">
+                    <div className="flex justify-between items-start mb-6">
+                        <div className="text-right">
+                            <h2 className="text-2xl font-black">المملكة الأردنية الهاشمية</h2>
+                            <h3 className="text-xl font-bold">بلدية الزرقاء</h3>
+                            <p className="text-gray-600 text-sm mt-1">قسم الرقابة والتدقيق الداخلي</p>
+                        </div>
+                        <div className="bg-slate-100 p-4 rounded-full">
+                            <ShieldCheck className="h-12 w-12 text-slate-900" />
+                        </div>
+                        <div className="text-left text-sm font-bold text-slate-500">
+                            <p>التاريخ: {new Date().toLocaleDateString('ar-JO')}</p>
+                            <p>الرقم: AUD-INT-{year}-{month}</p>
+                        </div>
+                    </div>
+
+                    <h1 className="text-3xl font-black mt-4">تقرير الرقابة والتدقيق الداخلي للرواتب</h1>
+                    <p className="text-slate-500 font-bold mt-2 underline underline-offset-4">للفترة: {month} / {year}</p>
+                </div>
+
+                {/* Audit Summary Cards (Print version) */}
+                <div className="grid grid-cols-4 gap-4 mb-12">
+                    <div className="border-2 border-slate-200 p-6 rounded-2xl text-center">
+                        <p className="text-xs font-black text-slate-500 mb-1">إجمالي السجلات</p>
+                        <p className="text-2xl font-black">{analytics.total}</p>
+                    </div>
+                    <div className="border-2 border-emerald-200 bg-emerald-50/30 p-6 rounded-2xl text-center">
+                        <p className="text-xs font-black text-emerald-600 mb-1">منخفضة المخاطر</p>
+                        <p className="text-2xl font-black">{analytics.lowRisk}</p>
+                    </div>
+                    <div className="border-2 border-amber-200 bg-amber-50/30 p-6 rounded-2xl text-center">
+                        <p className="text-xs font-black text-amber-600 mb-1">متوسطة المخاطر</p>
+                        <p className="text-2xl font-black">{analytics.mediumRisk}</p>
+                    </div>
+                    <div className="border-2 border-rose-200 bg-rose-50/30 p-6 rounded-2xl text-center">
+                        <p className="text-xs font-black text-rose-600 mb-1">عالية المخاطر</p>
+                        <p className="text-2xl font-black">{analytics.highRisk}</p>
+                    </div>
+                </div>
+
+                <table className="w-full border-collapse mb-12">
+                    <thead>
+                        <tr className="bg-slate-100">
+                            <th className="border-2 border-slate-900 p-3 text-right">#</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">الموظف</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">المنطقة</th>
+                            <th className="border-2 border-slate-900 p-3 text-center">الأيام</th>
+                            <th className="border-2 border-slate-900 p-3 text-center">إضافي</th>
+                            <th className="border-2 border-slate-900 p-3 text-center">المستوى</th>
+                            <th className="border-2 border-slate-900 p-3 text-center">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredRecords.map((item, index) => (
+                            <tr key={item.worker.id}>
+                                <td className="border border-slate-300 p-3 text-center font-bold">{index + 1}</td>
+                                <td className="border border-slate-300 p-3 font-black text-sm">{item.worker.name}</td>
+                                <td className="border border-slate-300 p-3 text-sm">{item.areaName}</td>
+                                <td className="border border-slate-300 p-3 text-center font-bold">{item.record?.normalDays}</td>
+                                <td className="border border-slate-300 p-3 text-center font-bold">
+                                    {(item.record?.overtimeNormalDays || 0) + (item.record?.overtimeHolidayDays || 0)}
+                                </td>
+                                <td className="border border-slate-300 p-3 text-center font-black">
+                                    {item.risk === 'high' ? '🔴 عالٍ' : item.risk === 'medium' ? '🟡 متوسط' : '🟢 منخفض'}
+                                </td>
+                                <td className="border border-slate-300 p-3 text-center text-xs font-bold">
+                                    {item.record?.status === 'APPROVED' ? '✅ معتمد' : '⏳ قيد التدقيق'}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+
+                <div className="grid grid-cols-3 gap-12 mt-24">
+                    <div className="text-center space-y-20">
+                        <p className="font-black border-b-2 border-slate-900 pb-2 inline-block px-12 text-lg">مدقق الرقابة الداخلية</p>
+                        <p className="text-slate-400 font-bold">الاسم والتوقيع</p>
+                    </div>
+                    <div className="text-center space-y-20">
+                        <p className="font-black border-b-2 border-slate-900 pb-2 inline-block px-12 text-lg">مدير الرقابة الداخلية</p>
+                        <p className="text-slate-400 font-bold">الاسم والتوقيع</p>
+                    </div>
+                    <div className="text-center space-y-20">
+                        <p className="font-black border-b-2 border-slate-900 pb-2 inline-block px-12 text-lg">عطوفة رئيس البلدية</p>
+                        <p className="text-slate-400 font-bold">التنسيب بالصرف</p>
+                    </div>
+                </div>
+
+                <div className="mt-32 pt-8 border-t-2 border-slate-100 text-center">
+                    <p className="text-[10px] text-slate-400 font-mono tracking-widest uppercase">
+                        TAYID-ALDAWAM SMART SYSTEM - AUDIT REPORT ID: {Math.random().toString(36).substring(7).toUpperCase()}
+                    </p>
+                </div>
             </div>
         </>
     );

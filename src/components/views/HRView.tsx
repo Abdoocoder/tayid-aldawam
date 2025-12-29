@@ -100,6 +100,12 @@ export function HRView() {
         return totalWorkersCount > 0 ? Math.round((currentMonthEntries / totalWorkersCount) * 100) : 0;
     }, [workers, month, year, getWorkerAttendance, totalWorkersCount]);
 
+    const orphanedAreasCount = useMemo(() => {
+        return areas.filter(area => !users.some(u =>
+            u.role === 'SUPERVISOR' && (u.areaId === area.id || u.areas?.some(a => a.id === area.id))
+        )).length;
+    }, [areas, users]);
+
     const navItems: NavItem<'reports' | 'supervisors' | 'workers' | 'areas'>[] = [
         { id: 'reports', label: 'التقارير والاستحقاقات', icon: FileText },
         { id: 'supervisors', label: 'إدارة المراقبين', icon: ShieldCheck },
@@ -464,6 +470,26 @@ export function HRView() {
                         </div>
                     ))}
                 </div>
+
+                {/* Supervision Gap Alert */}
+                {orphanedAreasCount > 0 && (
+                    <div className="px-1 animate-in fade-in slide-in-from-right-4 duration-700 delay-300">
+                        <div className="bg-gradient-to-r from-amber-500/10 to-transparent border-r-4 border-amber-500 p-4 rounded-xl flex items-center justify-between group">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-amber-100 p-2.5 rounded-xl text-amber-600 group-hover:scale-110 transition-transform">
+                                    <AlertCircle className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-black text-slate-900">يوجد {orphanedAreasCount} مناطق بدون مراقب ميداني</p>
+                                    <p className="text-[11px] text-slate-500 font-bold">يمكن للمراقب العام إدخال البيانات لهم مؤقتاً، ولكن يفضل تعيين مراقب.</p>
+                                </div>
+                            </div>
+                            <Button variant="outline" size="sm" onClick={() => setActiveTab('areas')} className="h-9 px-4 border-amber-200 text-amber-700 hover:bg-amber-50 font-black rounded-xl">
+                                معالجة الفجوة
+                            </Button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Editing/Adding Form Overlay (Simple inline version) */}
                 {editingItem && (

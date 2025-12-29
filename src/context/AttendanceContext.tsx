@@ -64,6 +64,7 @@ interface AttendanceContextType {
     updateArea: (id: string, name: string) => Promise<void>;
     deleteArea: (id: string) => Promise<void>;
     refreshData: () => Promise<void>;
+    loadAttendance: (month: number, year: number, areaId?: string | string[]) => Promise<void>;
     approveAttendance: (recordId: string, nextStatus: 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'PENDING_PAYROLL' | 'APPROVED') => Promise<void>;
     rejectAttendance: (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE') => Promise<void>;
 }
@@ -99,7 +100,12 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         try {
             const dbRecords = await attendanceAPI.getByPeriod(month, year, areaId);
             const frontendRecords = dbRecords.map(attendanceFromDb);
-            setAttendanceRecords(frontendRecords);
+            setAttendanceRecords(prev => {
+                // Merge records: Update existing, add new ones
+                const recordMap = new Map(prev.map(r => [r.id, r]));
+                frontendRecords.forEach(r => recordMap.set(r.id, r));
+                return Array.from(recordMap.values());
+            });
         } catch (err) {
             console.error('Failed to load attendance:', err);
             throw err;
@@ -249,8 +255,16 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     const saveAttendance = useCallback(async (input: Omit<AttendanceRecord, "id" | "updatedAt" | "totalCalculatedDays">) => {
         try {
             setError(null);
+
+            // Smart Logic: If current user is GS, promote status immediately to skip self-approval
+            let initialStatus = input.status || 'PENDING_GS';
+            if (appUser?.role === 'GENERAL_SUPERVISOR' && initialStatus === 'PENDING_GS') {
+                initialStatus = 'PENDING_HEALTH';
+            }
+
             const dbRecord = attendanceToDb({
                 ...input,
+                status: initialStatus,
                 id: `${input.workerId}-${input.month}-${input.year}`,
                 totalCalculatedDays: 0,
                 updatedAt: new Date().toISOString(),
@@ -268,7 +282,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             setError(err instanceof Error ? err.message : 'فشل حفظ البيانات');
             throw err;
         }
-    }, []);
+    }, [appUser?.role]);
 
     const addWorker = useCallback(async (worker: Worker) => {
         try {
@@ -431,6 +445,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             updateArea,
             deleteArea,
             refreshData,
+            loadAttendance,
             approveAttendance,
             rejectAttendance
         }}>

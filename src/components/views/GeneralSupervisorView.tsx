@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useAttendance, type Worker, type User, type AttendanceRecord } from "@/context/AttendanceContext";
 import { MonthYearPicker } from "../ui/month-year-picker";
 import { Button } from "../ui/button";
@@ -18,8 +18,11 @@ import {
     Activity,
     Users,
     Shield,
-    MapPin
+    MapPin,
+    AlertTriangle,
+    ExternalLink
 } from "lucide-react";
+import Link from "next/link";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 import Image from "next/image";
@@ -27,7 +30,7 @@ import Image from "next/image";
 type ViewTab = 'requests' | 'history' | 'areas' | 'workers' | 'supervisors';
 
 export function GeneralSupervisorView() {
-    const { currentUser, workers, users, attendanceRecords, areas, approveAttendance, rejectAttendance, isLoading } = useAttendance();
+    const { currentUser, workers, users, attendanceRecords, areas, approveAttendance, rejectAttendance, loadAttendance, isLoading } = useAttendance();
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -48,6 +51,12 @@ export function GeneralSupervisorView() {
         currentUser?.areas?.some(a => a.id === areaId), [currentUser]);
 
     const supervisorAreas = useMemo(() => areas.filter(a => isResponsibleForArea(a.id)), [areas, isResponsibleForArea]);
+
+    // Dynamic data loading for the selected period
+    useEffect(() => {
+        if (!currentUser) return;
+        loadAttendance(month, year);
+    }, [month, year, loadAttendance, currentUser]);
 
     // Derived Data
     const { pendingRecords, historyRecords, areaProgress, responsibleSupervisors, responsibleWorkers } = useMemo(() => {
@@ -454,52 +463,77 @@ export function GeneralSupervisorView() {
                                                         <td className="p-5 text-center font-black text-indigo-600">{record?.overtimeNormalDays || 0}</td>
                                                         <td className="p-5 text-center font-black text-amber-600">{record?.overtimeHolidayDays || 0}</td>
                                                         <td className="p-5 text-center font-black text-rose-600">{record?.overtimeEidDays || 0}</td>
-                                                        {activeTab !== 'workers' && (
-                                                            <td className="p-5 text-center">
+                                                        <td className="p-5 text-center">
+                                                            {activeTab === 'workers' ? (
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    <div className="inline-flex items-center justify-center min-w-[3rem] h-10 px-3 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 text-indigo-700 font-black text-lg border border-indigo-100/30">
+                                                                        {record?.totalCalculatedDays || 0}
+                                                                    </div>
+                                                                    {record && (
+                                                                        <span className="text-[9px] font-black text-slate-400">
+                                                                            {record.status === 'PENDING_SUPERVISOR' ? 'عند المراقب' :
+                                                                                record.status === 'PENDING_GS' ? 'بانتظارك' : 'مرحلة متقدمة'}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            ) : (
                                                                 <div className="inline-flex items-center justify-center min-w-[3rem] h-10 px-3 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 text-indigo-700 font-black text-lg border border-indigo-100/30">
                                                                     {record?.totalCalculatedDays || 0}
                                                                 </div>
-                                                            </td>
-                                                        )}
-                                                        {activeTab !== 'workers' && (
-                                                            <td className="p-5">
-                                                                <div className="flex items-center justify-center gap-2">
-                                                                    {activeTab === 'requests' ? (
-                                                                        <>
-                                                                            <Button
-                                                                                size="sm"
-                                                                                onClick={() => handleApprove(record!.id)}
-                                                                                disabled={approvingIds.has(record!.id)}
-                                                                                className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl shadow-lg shadow-emerald-200 transition-all active:scale-95"
-                                                                            >
-                                                                                {approvingIds.has(record!.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : "اعتماد"}
+                                                            )}
+                                                        </td>
+                                                        <td className="p-5">
+                                                            <div className="flex items-center justify-center gap-2">
+                                                                {activeTab === 'workers' ? (
+                                                                    <div className="flex items-center gap-2">
+                                                                        {!users.some(u => u.role === 'SUPERVISOR' && (u.areaId === worker?.areaId || u.areas?.some(a => a.id === worker?.areaId))) && (
+                                                                            <div className="flex items-center gap-1 text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100" title="لا يوجد مراقب مباشر لهذه المنطقة">
+                                                                                <AlertTriangle className="h-3 w-3" />
+                                                                                بدون مراقب
+                                                                            </div>
+                                                                        )}
+                                                                        <Link href={`/dashboard/entry/${worker?.id}?month=${month}&year=${year}`}>
+                                                                            <Button size="sm" variant="outline" className="h-9 px-4 text-indigo-600 border-indigo-200 hover:bg-indigo-50 font-black rounded-xl flex gap-1 items-center">
+                                                                                {record ? 'تعديل' : 'إدخال'}
+                                                                                <ExternalLink className="h-3 w-3" />
                                                                             </Button>
-                                                                            <Button
-                                                                                size="sm"
-                                                                                variant="ghost"
-                                                                                onClick={() => handleReject(record!.id)}
-                                                                                disabled={rejectingIds.has(record!.id) || approvingIds.has(record!.id)}
-                                                                                className="h-9 px-3 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-bold rounded-xl"
-                                                                            >
-                                                                                {rejectingIds.has(record!.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : "رفض"}
-                                                                            </Button>
-                                                                        </>
-                                                                    ) : (
-                                                                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-black text-[10px] ${record!.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                                            record!.status.startsWith('PENDING') ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                                                                'bg-slate-50 text-slate-500 border-slate-100'
-                                                                            }`}>
-                                                                            {record!.status === 'APPROVED' ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
-                                                                            {record!.status === 'APPROVED' ? 'تم الاعتماد النهائي' :
-                                                                                record!.status === 'PENDING_HEALTH' ? 'عند مدير الصحة' :
-                                                                                    record!.status === 'PENDING_HR' ? 'عند شؤون الموظفين' :
-                                                                                        record!.status === 'PENDING_AUDIT' ? 'عند الرقابة الداخلية' :
-                                                                                            record!.status === 'PENDING_FINANCE' ? 'عند المالية' : 'قيد المعالجة'}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </td>
-                                                        )}
+                                                                        </Link>
+                                                                    </div>
+                                                                ) : activeTab === 'requests' ? (
+                                                                    <>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            onClick={() => handleApprove(record!.id)}
+                                                                            disabled={approvingIds.has(record!.id)}
+                                                                            className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl shadow-lg shadow-emerald-200 transition-all active:scale-95"
+                                                                        >
+                                                                            {approvingIds.has(record!.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : "اعتماد"}
+                                                                        </Button>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="ghost"
+                                                                            onClick={() => handleReject(record!.id)}
+                                                                            disabled={rejectingIds.has(record!.id) || approvingIds.has(record!.id)}
+                                                                            className="h-9 px-3 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-bold rounded-xl"
+                                                                        >
+                                                                            {rejectingIds.has(record!.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : "رفض"}
+                                                                        </Button>
+                                                                    </>
+                                                                ) : (
+                                                                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-black text-[10px] ${record!.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                                        record!.status.startsWith('PENDING') ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                                            'bg-slate-50 text-slate-500 border-slate-100'
+                                                                        }`}>
+                                                                        {record!.status === 'APPROVED' ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                                                                        {record!.status === 'APPROVED' ? 'تم الاعتماد النهائي' :
+                                                                            record!.status === 'PENDING_HEALTH' ? 'عند مدير الصحة' :
+                                                                                record!.status === 'PENDING_HR' ? 'عند شؤون الموظفين' :
+                                                                                    record!.status === 'PENDING_AUDIT' ? 'عند الرقابة الداخلية' :
+                                                                                        record!.status === 'PENDING_FINANCE' ? 'عند المالية' : 'قيد المعالجة'}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </td>
                                                     </tr>
                                                 );
                                             })

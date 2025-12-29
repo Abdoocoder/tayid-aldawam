@@ -26,7 +26,7 @@ import { Input } from "@/components/ui/input";
 import { MobileNav } from "../ui/mobile-nav";
 
 export function FinanceView() {
-    const { currentUser, workers, getWorkerAttendance, isLoading, error, areas, approveAttendance, rejectAttendance } = useAttendance();
+    const { currentUser, workers, getWorkerAttendance, loadAttendance, isLoading, error, areas, approveAttendance, rejectAttendance } = useAttendance();
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [searchTerm, setSearchTerm] = useState("");
@@ -38,6 +38,12 @@ export function FinanceView() {
 
     // Budget Configuration (in a real app, this would be fetched from database)
     const [monthlyBudget] = useState(500000); // Example budget in dinars
+
+    // Dynamic data loading for the selected period
+    React.useEffect(() => {
+        if (!currentUser) return;
+        loadAttendance(month, year);
+    }, [month, year, loadAttendance, currentUser]);
 
     // Filter workers based on search and area
     const approvedPayrolls = workers.map(w => {
@@ -155,6 +161,8 @@ export function FinanceView() {
     const navItems = [
         { id: 'PENDING_FINANCE', label: 'بانتظار الاعتماد المالي', icon: Clock },
         { id: 'APPROVED', label: 'الكشوف المعتمدة', icon: CheckCircle },
+        { id: 'print', label: 'طباعة التقرير', icon: Printer },
+        { id: 'export', label: 'تصدير Excel', icon: Download },
     ];
 
     const handleExportCSV = () => {
@@ -220,7 +228,11 @@ export function FinanceView() {
                 onClose={() => setIsMobileNavOpen(false)}
                 items={navItems}
                 activeTab="overview"
-                onTabChange={(id) => id === 'report' ? window.print() : null}
+                onTabChange={(id) => {
+                    if (id === 'print') window.print();
+                    else if (id === 'export') handleExportCSV();
+                    else setStatusFilter(id);
+                }}
                 user={{ name: currentUser?.name || "المدير المالي", role: "المدير المالي" }}
             />
 
@@ -242,15 +254,33 @@ export function FinanceView() {
                         </div>
 
                         {/* Desktop & Mobile Control */}
-                        <div className="flex items-center gap-3">
-                            <div className="hidden md:block bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner">
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => window.print()}
+                                className="h-10 px-3 md:px-6 text-blue-600 hover:bg-blue-50/80 rounded-2xl font-black gap-2 border border-blue-200 shadow-sm transition-all active:scale-95"
+                            >
+                                <Printer className="h-4 w-4" />
+                                <span className="hidden md:inline">نسخة ورقية</span>
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleExportCSV}
+                                className="h-10 px-3 md:px-6 text-emerald-600 hover:bg-emerald-50/80 rounded-2xl font-black gap-2 border border-emerald-200 shadow-sm transition-all active:scale-95"
+                            >
+                                <Download className="h-4 w-4" />
+                                <span className="hidden md:inline">تصدير Excel</span>
+                            </Button>
+
+                            <div className="hidden sm:block">
                                 <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                             </div>
 
-                            {/* Mobile Menu Trigger */}
                             <button
                                 onClick={() => setIsMobileNavOpen(true)}
-                                className="md:hidden p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
+                                className="p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
                             >
                                 <Menu className="h-6 w-6" />
                             </button>
@@ -431,13 +461,13 @@ export function FinanceView() {
                                             <td className="p-5 text-center">
                                                 <Badge
                                                     className={`font-black text-[10px] px-2 py-1 ${p.record?.status === 'PENDING_SUPERVISOR' ? 'bg-slate-100 text-slate-700' :
-                                                            p.record?.status === 'PENDING_GS' ? 'bg-blue-100 text-blue-700' :
-                                                                p.record?.status === 'PENDING_HEALTH' ? 'bg-teal-100 text-teal-700' :
-                                                                    p.record?.status === 'PENDING_HR' ? 'bg-purple-100 text-purple-700' :
-                                                                        p.record?.status === 'PENDING_AUDIT' ? 'bg-rose-100 text-rose-700' :
-                                                                            p.record?.status === 'PENDING_FINANCE' ? 'bg-emerald-100 text-emerald-700' :
-                                                                                p.record?.status === 'PENDING_PAYROLL' ? 'bg-cyan-100 text-cyan-700' :
-                                                                                    'bg-green-100 text-green-700'
+                                                        p.record?.status === 'PENDING_GS' ? 'bg-blue-100 text-blue-700' :
+                                                            p.record?.status === 'PENDING_HEALTH' ? 'bg-teal-100 text-teal-700' :
+                                                                p.record?.status === 'PENDING_HR' ? 'bg-purple-100 text-purple-700' :
+                                                                    p.record?.status === 'PENDING_AUDIT' ? 'bg-rose-100 text-rose-700' :
+                                                                        p.record?.status === 'PENDING_FINANCE' ? 'bg-emerald-100 text-emerald-700' :
+                                                                            p.record?.status === 'PENDING_PAYROLL' ? 'bg-cyan-100 text-cyan-700' :
+                                                                                'bg-green-100 text-green-700'
                                                         }`}
                                                 >
                                                     {p.record?.status === 'PENDING_SUPERVISOR' ? '📋 مراقب' :
