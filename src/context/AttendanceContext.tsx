@@ -115,17 +115,14 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     const loadUsers = useCallback(async () => {
         try {
             const dbUsers = await usersAPI.getAll();
-            const formattedUsers: User[] = await Promise.all(dbUsers.map(async u => {
-                const userAreas = await usersAPI.getUserAreas(u.id);
-                return {
-                    id: u.id,
-                    username: u.username,
-                    name: u.name,
-                    role: u.role as UserRole,
-                    areaId: u.area_id || undefined,
-                    areas: userAreas,
-                    isActive: u.is_active
-                };
+            const formattedUsers: User[] = dbUsers.map(u => ({
+                id: u.id,
+                username: u.username,
+                name: u.name,
+                role: u.role as UserRole,
+                areaId: u.area_id || undefined,
+                areas: u.user_areas?.map(ua => ua.areas) || [],
+                isActive: u.is_active
             }));
             setUsers(formattedUsers);
         } catch (err) {

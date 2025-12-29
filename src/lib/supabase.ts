@@ -232,10 +232,15 @@ export const attendanceAPI = {
 
 // Users API
 export const usersAPI = {
-    async getAll(): Promise<User[]> {
+    async getAll(): Promise<(User & { user_areas: { areas: Area }[] })[]> {
         const { data, error } = await supabase
             .from('users')
-            .select('*')
+            .select(`
+                *,
+                user_areas (
+                    areas (*)
+                )
+            `)
             .order('role', { ascending: true });
 
         if (error) throw error;
