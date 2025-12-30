@@ -208,9 +208,9 @@ export const AdminView = () => {
                 user={{ name: appUser?.name || "مدير النظام", role: "الإدارة التقنية (IT Admin)" }}
             />
 
-            <div className="space-y-8 pb-24 animate-in fade-in duration-700 print:hidden">
+            <div className="space-y-8 pb-24 min-h-screen print:hidden">
                 {/* Header section - Sticky & Premium Glass */}
-                <div className="sticky top-0 z-30 -mx-4 px-4 py-4 bg-white/40 backdrop-blur-2xl border-b border-white/20 shadow-sm animate-in fade-in slide-in-from-top-4 duration-700 print:hidden">
+                <div className="sticky top-0 z-30 -mx-4 px-4 py-4 bg-white/40 backdrop-blur-2xl border-b border-white/20 shadow-sm print:hidden">
                     <div className="max-w-7xl mx-auto flex justify-between items-center">
                         <div className="flex items-center gap-4">
                             <div className="relative group">

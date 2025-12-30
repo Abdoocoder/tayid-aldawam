@@ -224,9 +224,9 @@ export function HealthDirectorView() {
                 user={{ name: currentUser?.name || "مدير الصحة", role: "مديرية الشؤون الصحية والبيئة" }}
             />
 
-            <div className="space-y-8 pb-12 animate-in fade-in duration-700 print:hidden">
+            <div className="space-y-8 pb-12 min-h-screen print:hidden">
                 {/* Header Section with Glassmorphism */}
-                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm">
                     <div className="max-w-7xl mx-auto flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <div className="bg-gradient-to-br from-emerald-600 to-teal-600 p-2.5 rounded-2xl text-white shadow-lg shadow-emerald-500/20 ring-4 ring-emerald-50">

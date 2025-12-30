@@ -126,9 +126,9 @@ export function MayorView() {
                 user={{ name: currentUser?.name || "عطوفة العمدة", role: "رئاسة البلدية" }}
             />
 
-            <div className="space-y-6 pb-24 print:hidden">
+            <div className="space-y-6 pb-24 min-h-screen print:hidden">
                 {/* Executive Header - Ultra Premium Glass */}
-                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm">
                     <div className="max-w-7xl mx-auto flex justify-between items-center">
                         <div className="flex items-center gap-4">
                             <div className="bg-gradient-to-br from-fuchsia-600 to-purple-700 p-2.5 rounded-2xl text-white shadow-xl shadow-fuchsia-500/20 ring-1 ring-white/30">

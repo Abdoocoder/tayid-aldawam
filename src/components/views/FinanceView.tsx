@@ -238,9 +238,9 @@ export function FinanceView() {
                 user={{ name: currentUser?.name || "المدير المالي", role: "المدير المالي" }}
             />
 
-            <div className="space-y-6 pb-24 print:hidden">
+            <div className="space-y-6 pb-24 min-h-screen print:hidden">
                 {/* Header section - Sticky & Premium Glass */}
-                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm">
                     <div className="max-w-7xl mx-auto flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <div className="bg-gradient-to-br from-amber-600 to-yellow-600 p-2.5 rounded-2xl text-white shadow-lg shadow-amber-500/20">
