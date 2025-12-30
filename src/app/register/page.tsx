@@ -301,9 +301,19 @@ export default function RegisterPage() {
                 </Card>
 
                 {/* Footer */}
-                <p className="text-center text-sm text-gray-400">
-                    © 2025 نظام تأييد الدوام الذكي - جميع الحقوق محفوظة
-                </p>
+                <div className="text-center text-sm text-gray-400 space-y-1">
+                    <p>
+                        <a
+                            href="https://abdoocoder.github.io/Portfolio"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-purple-600 transition-colors"
+                        >
+                            تطوير وإشراف: فريق التحول الرقمي
+                        </a>
+                    </p>
+                    <p>جميع الحقوق محفوظة لعبدالله ابوصغيرة - 2025</p>
+                </div>
             </div>
         </div>
     );
