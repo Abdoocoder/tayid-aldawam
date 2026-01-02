@@ -5,6 +5,7 @@ import { useAttendance, type Worker, type User, type AttendanceRecord } from "@/
 import { MonthYearPicker } from "../ui/month-year-picker";
 import { Button } from "../ui/button";
 import { MobileNav } from "../ui/mobile-nav";
+import { BatchEntryTable } from "./BatchEntryTable";
 import {
     Search,
     Printer,
@@ -20,7 +21,8 @@ import {
     Shield,
     MapPin,
     AlertTriangle,
-    ExternalLink
+    ExternalLink,
+    Edit3
 } from "lucide-react";
 import Link from "next/link";
 import { Input } from "../ui/input";
@@ -28,7 +30,7 @@ import { Select } from "../ui/select";
 import Image from "next/image";
 import { resolveAreaNames } from "@/lib/utils";
 
-type ViewTab = 'requests' | 'history' | 'areas' | 'workers' | 'supervisors';
+type ViewTab = 'requests' | 'history' | 'areas' | 'workers' | 'supervisors' | 'batch_entry';
 
 export function GeneralSupervisorView() {
     const { currentUser, workers, users, attendanceRecords, areas, approveAttendance, rejectAttendance, loadAttendance, isLoading } = useAttendance();
@@ -118,6 +120,18 @@ export function GeneralSupervisorView() {
             responsibleWorkers: resWorkers
         };
     }, [attendanceRecords, workers, users, month, year, supervisorAreas, isResponsibleForArea]);
+
+    const unsupervisedAreaIds = useMemo(() => {
+        const assignedAreaIds = new Set<string>();
+        users.filter(u => u.role === 'SUPERVISOR').forEach(u => {
+            if (u.areaId) assignedAreaIds.add(u.areaId);
+            u.areas?.forEach(a => assignedAreaIds.add(a.id));
+        });
+
+        return supervisorAreas
+            .filter(a => !assignedAreaIds.has(a.id))
+            .map(a => a.id);
+    }, [users, supervisorAreas]);
 
     const filteredRecords = useMemo(() => {
         if (activeTab === 'workers') {
@@ -249,6 +263,12 @@ export function GeneralSupervisorView() {
                             </button>
                         </div>
                     </div>
+                    {/* Mobile Date Picker Bar */}
+                    <div className="md:hidden mt-3 px-1">
+                        <div className="bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner w-full">
+                            <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
+                        </div>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 px-1">
@@ -323,6 +343,7 @@ export function GeneralSupervisorView() {
                             { id: 'areas', label: 'المناطق', icon: MapPin },
                             { id: 'workers', label: 'العمال', icon: Users },
                             { id: 'supervisors', label: 'المراقبين', icon: Shield },
+                            { id: 'batch_entry', label: 'إدخال جماعي', icon: Edit3 },
                         ].map(tab => (
                             <button
                                 key={tab.id}
@@ -381,6 +402,18 @@ export function GeneralSupervisorView() {
                     </div>
                 )}
 
+                {activeTab === 'batch_entry' && (
+                    <BatchEntryTable
+                        month={month}
+                        year={year}
+                        workers={workers}
+                        attendanceRecords={attendanceRecords}
+                        areas={areas}
+                        responsibleAreasIds={supervisorAreas.map(a => a.id)}
+                        unsupervisedAreaIds={unsupervisedAreaIds}
+                    />
+                )}
+
                 <div className="px-1 animate-in fade-in duration-700">
                     {activeTab === 'areas' ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -428,7 +461,93 @@ export function GeneralSupervisorView() {
                                 </div>
                             ))}
                         </div>
-                    ) : (activeTab === 'workers' || activeTab === 'requests' || activeTab === 'history') ? (
+
+                    ) : activeTab === 'workers' ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-in fade-in zoom-in-95 duration-500">
+                            {(filteredRecords as Worker[]).map((worker) => {
+                                const record = attendanceRecords.find(r => r.workerId === worker.id && r.month === month && r.year === year);
+                                const isFilled = !!record;
+                                const areaName = resolveAreaNames(worker.areaId, areas);
+                                // Check if this worker is in an area managed by a specific supervisor
+                                const assignedSupervisor = users.find(u =>
+                                    u.role === 'SUPERVISOR' &&
+                                    (u.areaId === worker.areaId || u.areas?.some(a => a.id === worker.areaId))
+                                );
+
+                                return (
+                                    <div key={worker.id} className={`group hover:shadow-2xl transition-all duration-300 relative overflow-hidden ring-1 rounded-2xl ${isFilled ? 'bg-gradient-to-br from-emerald-50 to-emerald-100/20 ring-emerald-100 shadow-lg shadow-emerald-500/5' : 'bg-white ring-slate-100 shadow-xl shadow-slate-200/50'}`}>
+                                        <div className="p-5 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`p-3 rounded-2xl transition-all duration-300 ${isFilled ? 'bg-white shadow-sm text-emerald-600' : 'bg-indigo-50 text-indigo-600'}`}>
+                                                    <Users className="h-5 w-5" />
+                                                </div>
+                                                <div className="text-right">
+                                                    <h4 className="text-base font-black text-slate-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{worker.name}</h4>
+                                                    <div className="flex flex-col gap-1 mt-1 text-right">
+                                                        <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
+                                                            <MapPin className="h-2.5 w-2.5" />
+                                                            {areaName}
+                                                        </span>
+                                                        {!assignedSupervisor && (
+                                                            <span className="text-[9px] font-black text-amber-600 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded-md w-fit flex items-center gap-1">
+                                                                <AlertTriangle className="h-2.5 w-2.5" />
+                                                                بدون مراقب (إدخال مباشر)
+                                                            </span>
+                                                        )}
+                                                        {assignedSupervisor && (
+                                                            <span className="text-[9px] font-bold text-slate-400 flex items-center gap-1">
+                                                                <Shield className="h-2.5 w-2.5" />
+                                                                {assignedSupervisor.name}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {isFilled && (
+                                                <div className="bg-emerald-500 rounded-full p-1 shadow-lg shadow-emerald-500/20">
+                                                    <CheckCircle className="h-4 w-4 text-white" />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="px-5 pb-5">
+                                            <div className={`flex items-center justify-between gap-3 p-2.5 rounded-2xl border transition-colors ${isFilled ? 'bg-white/80 border-emerald-100' : 'bg-slate-50/50 border-slate-100'}`}>
+                                                <div className="flex flex-col text-right">
+                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">الحالة</span>
+                                                    <span className={`text-[11px] font-black ${isFilled ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                        {isFilled ? (
+                                                            record?.status === 'PENDING_GS' ? "بانتظارك للاعتماد" :
+                                                                record?.status === 'PENDING_SUPERVISOR' ? "عند المراقب" :
+                                                                    "مرحلة متقدمة"
+                                                        ) : "بانتظار الإدخال"}
+                                                    </span>
+                                                </div>
+                                                <Link href={`/dashboard/entry/${worker.id}?month=${month}&year=${year}`}>
+                                                    <Button size="sm" className={`h-9 px-5 rounded-xl font-black shadow-lg transition-all active:scale-95 ${!isFilled ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200 text-white' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-100'}`}>
+                                                        {isFilled ? "تعديل" : "إدخال"}
+                                                        <ExternalLink className="h-3 w-3 mr-1" />
+                                                    </Button>
+                                                </Link>
+                                            </div>
+
+                                            {isFilled && (
+                                                <div className="grid grid-cols-2 gap-2 mt-3">
+                                                    <div className="bg-white/60 p-2 rounded-xl border border-emerald-50 flex flex-col items-center">
+                                                        <span className="text-[8px] font-black text-slate-400 uppercase">أيام عادية</span>
+                                                        <span className="text-sm font-black text-slate-900">{record?.normalDays}</span>
+                                                    </div>
+                                                    <div className="bg-white/60 p-2 rounded-xl border border-emerald-50 flex flex-col items-center">
+                                                        <span className="text-[8px] font-black text-slate-400 uppercase">الإجمالي</span>
+                                                        <span className="text-sm font-black text-indigo-600">{record?.totalCalculatedDays}</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (activeTab === 'requests' || activeTab === 'history') ? (
                         <div className="bg-white/40 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/50 border border-white/60 overflow-hidden">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-right border-collapse">
@@ -440,21 +559,21 @@ export function GeneralSupervisorView() {
                                             <th className="p-5 text-center">إضافي (ع)</th>
                                             <th className="p-5 text-center">إضافي (ع/ج)</th>
                                             <th className="p-5 text-center">أعياد</th>
-                                            {activeTab !== 'workers' && <th className="p-5 text-center">الإجمالي</th>}
-                                            {activeTab !== 'workers' && <th className="p-5 text-center">{activeTab === 'requests' ? 'الاعتماد' : 'الحالة'}</th>}
+                                            <th className="p-5 text-center">الإجمالي</th>
+                                            <th className="p-5 text-center">{activeTab === 'requests' ? 'الاعتماد' : 'الحالة'}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {filteredRecords.length === 0 ? (
                                             <tr>
-                                                <td colSpan={activeTab === 'workers' ? 6 : 8} className="p-20 text-center text-slate-400 font-bold">
+                                                <td colSpan={8} className="p-20 text-center text-slate-400 font-bold">
                                                     لا توجد بيانات مطابقة للبحث
                                                 </td>
                                             </tr>
                                         ) : (
-                                            (filteredRecords as (Worker | AttendanceRecord)[]).map((item) => {
-                                                const worker = activeTab === 'workers' ? (item as Worker) : workers.find(w => w.id === (item as AttendanceRecord).workerId);
-                                                const record = activeTab === 'workers' ? attendanceRecords.find(r => r.workerId === (item as Worker).id && r.month === month && r.year === year) : (item as AttendanceRecord);
+                                            (filteredRecords as AttendanceRecord[]).map((item) => {
+                                                const worker = workers.find(w => w.id === item.workerId);
+                                                const record = item;
                                                 const areaName = resolveAreaNames(worker?.areaId, areas);
 
                                                 return (
@@ -473,42 +592,13 @@ export function GeneralSupervisorView() {
                                                         <td className="p-5 text-center font-black text-amber-600">{record?.overtimeHolidayDays || 0}</td>
                                                         <td className="p-5 text-center font-black text-rose-600">{record?.overtimeEidDays || 0}</td>
                                                         <td className="p-5 text-center">
-                                                            {activeTab === 'workers' ? (
-                                                                <div className="flex flex-col items-center gap-1">
-                                                                    <div className="inline-flex items-center justify-center min-w-[3rem] h-10 px-3 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 text-indigo-700 font-black text-lg border border-indigo-100/30">
-                                                                        {record?.totalCalculatedDays || 0}
-                                                                    </div>
-                                                                    {record && (
-                                                                        <span className="text-[9px] font-black text-slate-400">
-                                                                            {record.status === 'PENDING_SUPERVISOR' ? 'عند المراقب' :
-                                                                                record.status === 'PENDING_GS' ? 'بانتظارك' : 'مرحلة متقدمة'}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            ) : (
-                                                                <div className="inline-flex items-center justify-center min-w-[3rem] h-10 px-3 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 text-indigo-700 font-black text-lg border border-indigo-100/30">
-                                                                    {record?.totalCalculatedDays || 0}
-                                                                </div>
-                                                            )}
+                                                            <div className="inline-flex items-center justify-center min-w-[3rem] h-10 px-3 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 text-indigo-700 font-black text-lg border border-indigo-100/30">
+                                                                {record?.totalCalculatedDays || 0}
+                                                            </div>
                                                         </td>
                                                         <td className="p-5">
                                                             <div className="flex items-center justify-center gap-2">
-                                                                {activeTab === 'workers' ? (
-                                                                    <div className="flex items-center gap-2">
-                                                                        {!users.some(u => u.role === 'SUPERVISOR' && (u.areaId === worker?.areaId || u.areas?.some(a => a.id === worker?.areaId))) && (
-                                                                            <div className="flex items-center gap-1 text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100" title="لا يوجد مراقب مباشر لهذه المنطقة">
-                                                                                <AlertTriangle className="h-3 w-3" />
-                                                                                بدون مراقب
-                                                                            </div>
-                                                                        )}
-                                                                        <Link href={`/dashboard/entry/${worker?.id}?month=${month}&year=${year}`}>
-                                                                            <Button size="sm" variant="outline" className="h-9 px-4 text-indigo-600 border-indigo-200 hover:bg-indigo-50 font-black rounded-xl flex gap-1 items-center">
-                                                                                {record ? 'تعديل' : 'إدخال'}
-                                                                                <ExternalLink className="h-3 w-3" />
-                                                                            </Button>
-                                                                        </Link>
-                                                                    </div>
-                                                                ) : activeTab === 'requests' ? (
+                                                                {activeTab === 'requests' ? (
                                                                     <>
                                                                         <Button
                                                                             size="sm"
@@ -588,7 +678,7 @@ export function GeneralSupervisorView() {
                         </div>
                     ) : null}
                 </div>
-            </div>
+            </div >
 
             <div className="hidden print:block font-sans">
                 <div className="text-center mb-10 border-b-[6px] border-emerald-700 pb-8">
