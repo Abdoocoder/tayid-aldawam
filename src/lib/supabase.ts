@@ -167,29 +167,28 @@ export const attendanceAPI = {
     },
 
     async getByPeriod(month: number, year: number, areaId?: string | string[]): Promise<AttendanceRecord[]> {
+        const isAll = (typeof areaId === 'string' && areaId === 'ALL') ||
+            (Array.isArray(areaId) && areaId.includes('ALL'));
+
         let query = supabase
             .from('attendance_records')
             .select('*')
             .eq('month', month)
             .eq('year', year);
 
-        const isAll = (typeof areaId === 'string' && areaId === 'ALL') ||
-            (Array.isArray(areaId) && areaId.includes('ALL'));
-
         if (areaId && !isAll) {
-            // Filter by workers in the specified area(s)
-            let workerQuery = supabase.from('workers').select('id');
-            if (Array.isArray(areaId)) {
-                workerQuery = workerQuery.in('area_id', areaId);
-            } else {
-                workerQuery = workerQuery.eq('area_id', areaId);
-            }
+            // Optimize: Filter by workers in the specified area(s) using a join
+            // Using !inner ensures that we only get records that have a matching worker in those areas
+            query = supabase
+                .from('attendance_records')
+                .select('*, workers!inner(area_id)')
+                .eq('month', month)
+                .eq('year', year);
 
-            const { data: workerIds } = await workerQuery;
-            if (workerIds && workerIds.length > 0) {
-                query = query.in('worker_id', workerIds.map(w => w.id));
+            if (Array.isArray(areaId)) {
+                query = query.in('workers.area_id', areaId);
             } else {
-                return []; // No workers in this area
+                query = query.eq('workers.area_id', areaId);
             }
         }
 
@@ -197,7 +196,7 @@ export const attendanceAPI = {
             .order('worker_id', { ascending: true });
 
         if (error) throw error;
-        return data || [];
+        return (data || []) as AttendanceRecord[];
     },
 
     async getByWorkerAndPeriod(

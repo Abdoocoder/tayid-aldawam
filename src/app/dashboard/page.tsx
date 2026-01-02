@@ -46,38 +46,45 @@ function ViewLoadingSkeleton() {
 }
 
 export default function DashboardPage() {
-    const { currentUser } = useAttendance();
+    const { currentUser, isLoading: isDataLoading } = useAttendance();
     const router = useRouter();
 
     useEffect(() => {
-        if (!currentUser) {
+        // Redirection should only happen if we are not loading and there is no user
+        if (!isDataLoading && !currentUser) {
             router.push("/");
         }
-    }, [currentUser, router]);
+    }, [currentUser, isDataLoading, router]);
 
-    if (!currentUser) {
+    // Better Loading Experience:
+    // 1. If we have a user but data is still loading, show the Header immediately (FCP boost)
+    // 2. The dynamic views will show their skeletons in the main area
+    if (currentUser) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
-                <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
-                <p className="text-slate-500 font-black">جاري التحقق من الصلاحيات...</p>
+            <div className="min-h-screen bg-gray-50 pb-10 print:bg-white print:min-h-0 print:pb-0">
+                <Header />
+                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print:max-w-none print:w-full print:mx-0 print:px-0 print:py-0">
+                    {/* Components will internally handle isDataLoading if needed, 
+                        or dynamic import skeletons will show during bundle load */}
+                    {currentUser.role === "SUPERVISOR" && <SupervisorView />}
+                    {currentUser.role === "GENERAL_SUPERVISOR" && <GeneralSupervisorView />}
+                    {currentUser.role === "HEALTH_DIRECTOR" && <HealthDirectorView />}
+                    {currentUser.role === "HR" && <HRView />}
+                    {currentUser.role === "INTERNAL_AUDIT" && <InternalAuditView />}
+                    {currentUser.role === "FINANCE" && <FinanceView />}
+                    {currentUser.role === "PAYROLL" && <PayrollView />}
+                    {currentUser.role === "ADMIN" && <AdminView />}
+                    {currentUser.role === "MAYOR" && <MayorView />}
+                </main>
             </div>
         );
     }
 
+    // Full screen loader only for the very initial auth check
     return (
-        <div className="min-h-screen bg-gray-50 pb-10 print:bg-white print:min-h-0 print:pb-0">
-            <Header />
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print:max-w-none print:w-full print:mx-0 print:px-0 print:py-0">
-                {currentUser.role === "SUPERVISOR" && <SupervisorView />}
-                {currentUser.role === "GENERAL_SUPERVISOR" && <GeneralSupervisorView />}
-                {currentUser.role === "HEALTH_DIRECTOR" && <HealthDirectorView />}
-                {currentUser.role === "HR" && <HRView />}
-                {currentUser.role === "INTERNAL_AUDIT" && <InternalAuditView />}
-                {currentUser.role === "FINANCE" && <FinanceView />}
-                {currentUser.role === "PAYROLL" && <PayrollView />}
-                {currentUser.role === "ADMIN" && <AdminView />}
-                {currentUser.role === "MAYOR" && <MayorView />}
-            </main>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 space-y-4">
+            <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
+            <p className="text-slate-500 font-black">جاري التحقق من الصلاحيات...</p>
         </div>
     );
 }

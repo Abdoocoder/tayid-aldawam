@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             const { data, error } = await supabase
                 .from('users')
-                .select('*')
+                .select('*, user_areas (areas (*))')
                 .eq('auth_user_id', authUserId)
                 .maybeSingle();
 
@@ -42,13 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
 
             if (data) {
-                // Fetch associated areas
-                const { data: areasData } = await supabase
-                    .from('user_areas')
-                    .select('areas (*)')
-                    .eq('user_id', data.id);
-
-                const userAreas = (areasData as unknown as { areas: Area }[] | null)?.map((item) => item.areas) || [];
+                const userAreas = (data.user_areas as unknown as { areas: Area }[] | null)?.map((item) => item.areas) || [];
 
                 setAppUser({
                     id: data.id,
