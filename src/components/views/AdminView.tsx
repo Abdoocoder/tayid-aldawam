@@ -209,7 +209,7 @@ export const AdminView = () => {
                 user={{ name: appUser?.name || "مدير النظام", role: "الإدارة التقنية (IT Admin)" }}
             />
 
-            <div className="space-y-8 pb-24 min-h-screen print:hidden">
+            <div className="space-y-8 pb-24 print:hidden">
                 {/* Header section - Sticky & Premium Glass */}
                 <div className="sticky top-0 z-30 -mx-4 px-4 py-4 bg-white/40 backdrop-blur-2xl border-b border-white/20 shadow-sm print:hidden">
                     <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -275,7 +275,7 @@ export const AdminView = () => {
             <div className="max-w-7xl mx-auto px-4">
 
                 {/* Content based on active tab */}
-                <div className="animate-in fade-in zoom-in-95 duration-500 delay-200 print:hidden">
+                <div className="print:hidden">
                     {activeTab === 'overview' && (
                         <div className="space-y-6">
                             {/* Stats Grid - Responsive & Premium */}

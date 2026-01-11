@@ -242,7 +242,7 @@ export function FinanceView() {
                 user={{ name: currentUser?.name || "المدير المالي", role: "المدير المالي" }}
             />
 
-            <div className="space-y-6 pb-24 min-h-screen print:hidden">
+            <div className="space-y-6 pb-24 print:hidden">
                 {/* Header section - Sticky & Premium Glass */}
                 <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm">
                     <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -296,7 +296,7 @@ export function FinanceView() {
             </div>
 
             {/* View Toggle & Filters */}
-            <div className="flex flex-col lg:flex-row gap-3 px-1 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-300">
+            <div className="flex flex-col lg:flex-row gap-3 px-1">
                 <div className="flex bg-slate-100/80 p-1 rounded-2xl w-fit border border-slate-200/50">
                     <button
                         onClick={() => setViewMode('table')}
