@@ -18,7 +18,8 @@ import {
     CheckCircle,
     Loader2,
     Clock,
-    Menu
+    Menu,
+    LayoutGrid
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ export function FinanceView() {
     const [searchTerm, setSearchTerm] = useState("");
     const [areaFilter, setAreaFilter] = useState("ALL");
     const [statusFilter, setStatusFilter] = useState<string>('PENDING_FINANCE'); // Default to finance pending
+    const [viewMode, setViewMode] = useState<'table' | 'grid'>('table'); // View mode toggle
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -289,76 +291,100 @@ export function FinanceView() {
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Quick Stats Grid - New Pattern */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
-                    {[
-                        {
-                            label: 'إجمالي المستحقات',
-                            value: stats.totalAmount.toLocaleString(),
-                            unit: 'د.أ',
-                            icon: DollarSign,
-                            gradient: 'from-amber-600 to-amber-700',
-                            desc: 'المعتمدة حالياً'
-                        },
-                        {
-                            label: 'العمال المكتملين',
-                            value: stats.workersCount,
-                            unit: 'عامل',
-                            icon: Users,
-                            gradient: 'from-emerald-600 to-emerald-700',
-                            desc: 'جاهز للصرف'
-                        },
-                        {
-                            label: 'صافي أيام العمل',
-                            value: stats.totalDays,
-                            unit: 'يوم',
-                            icon: Calendar,
-                            gradient: 'from-blue-600 to-blue-700',
-                            desc: 'مجموع الساعات'
-                        },
-                        {
-                            label: 'متوسط الأجور',
-                            value: stats.avgSalary.toFixed(1),
-                            unit: 'د.أ',
-                            icon: TrendingUp,
-                            gradient: 'from-indigo-600 to-indigo-700',
-                            desc: 'لكل عامل'
-                        }
-                    ].map((kpi, i) => (
-                        <div key={i} className={`relative group overflow-hidden bg-gradient-to-br ${kpi.gradient} rounded-[2rem] p-5 text-white shadow-lg transition-all duration-500 hover:shadow-xl hover:scale-[1.02]`}>
-                            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl" />
-
-                            <div className="relative z-10 flex flex-col gap-3">
-                                <div className="flex justify-between items-start">
-                                    <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl ring-1 ring-white/30 group-hover:scale-110 transition-transform duration-500">
-                                        <kpi.icon className="h-5 w-5 text-white" />
-                                    </div>
-                                    <div className="text-[8px] font-black px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 uppercase tracking-widest">
-                                        Active
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-0.5">{kpi.label}</p>
-                                    <div className="flex items-baseline gap-1.5">
-                                        <span className="text-2xl font-black tracking-tighter">{kpi.value}</span>
-                                        <span className="text-[9px] font-bold text-white/60 uppercase">{kpi.unit}</span>
-                                    </div>
-                                    <p className="text-white/60 text-[9px] font-bold mt-1.5 flex items-center gap-1.5">
-                                        <span className="w-1 h-1 rounded-full bg-white/40 animate-pulse" />
-                                        {kpi.desc}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <kpi.icon className="absolute -bottom-4 -right-4 h-20 w-20 text-white/10 -rotate-12 transition-transform group-hover:scale-110 group-hover:rotate-0 duration-700" />
+            {/* View Toggle & Filters */}
+            <div className="flex flex-col lg:flex-row gap-3 px-1 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-300">
+                <div className="flex bg-slate-100/80 p-1 rounded-2xl w-fit border border-slate-200/50">
+                    <button
+                        onClick={() => setViewMode('table')}
+                        className={`px-4 py-2 rounded-xl text-sm font-black transition-all ${viewMode === 'table' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        <div className="flex items-center gap-2">
+                            <LayoutGrid className="h-4 w-4" />
+                            <span>جدول تفصيلي</span>
                         </div>
-                    ))}
+                    </button>
+                    <button
+                        onClick={() => setViewMode('grid')}
+                        className={`px-4 py-2 rounded-xl text-sm font-black transition-all ${viewMode === 'grid' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            <span>بطاقات</span>
+                        </div>
+                    </button>
                 </div>
 
-                {/* Control Center - Floating Glassmorph */}
-                <div className="flex flex-col lg:flex-row gap-3 px-1 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-300">
+                <div className="relative flex-1 group">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+                        {[
+                            {
+                                label: 'إجمالي المستحقات',
+                                value: stats.totalAmount.toLocaleString(),
+                                unit: 'د.أ',
+                                icon: DollarSign,
+                                gradient: 'from-amber-600 to-amber-700',
+                                desc: 'المعتمدة حالياً'
+                            },
+                            {
+                                label: 'العمال المكتملين',
+                                value: stats.workersCount,
+                                unit: 'عامل',
+                                icon: Users,
+                                gradient: 'from-emerald-600 to-emerald-700',
+                                desc: 'جاهز للصرف'
+                            },
+                            {
+                                label: 'صافي أيام العمل',
+                                value: stats.totalDays,
+                                unit: 'يوم',
+                                icon: Calendar,
+                                gradient: 'from-blue-600 to-blue-700',
+                                desc: 'مجموع الساعات'
+                            },
+                            {
+                                label: 'متوسط الأجور',
+                                value: stats.avgSalary.toFixed(1),
+                                unit: 'د.أ',
+                                icon: TrendingUp,
+                                gradient: 'from-indigo-600 to-indigo-700',
+                                desc: 'لكل عامل'
+                            }
+                        ].map((kpi, i) => (
+                            <div key={i} className={`relative group overflow-hidden bg-gradient-to-br ${kpi.gradient} rounded-[2rem] p-5 text-white shadow-lg transition-all duration-500 hover:shadow-xl hover:scale-[1.02]`}>
+                                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl" />
+
+                                <div className="relative z-10 flex flex-col gap-3">
+                                    <div className="flex justify-between items-start">
+                                        <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl ring-1 ring-white/30 group-hover:scale-110 transition-transform duration-500">
+                                            <kpi.icon className="h-5 w-5 text-white" />
+                                        </div>
+                                        <div className="text-[8px] font-black px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 uppercase tracking-widest">
+                                            Active
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-0.5">{kpi.label}</p>
+                                        <div className="flex items-baseline gap-1.5">
+                                            <span className="text-2xl font-black tracking-tighter">{kpi.value}</span>
+                                            <span className="text-[9px] font-bold text-white/60 uppercase">{kpi.unit}</span>
+                                        </div>
+                                        <p className="text-white/60 text-[9px] font-bold mt-1.5 flex items-center gap-1.5">
+                                            <span className="w-1 h-1 rounded-full bg-white/40 animate-pulse" />
+                                            {kpi.desc}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <kpi.icon className="absolute -bottom-4 -right-4 h-20 w-20 text-white/10 -rotate-12 transition-transform group-hover:scale-110 group-hover:rotate-0 duration-700" />
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Control Center - Floating Glassmorph */
+                /* Removed original Control Center start div as it is now merged above */}
                     <div className="relative flex-1 group">
                         <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-amber-600 transition-colors" />
                         <Input
@@ -435,118 +461,241 @@ export function FinanceView() {
                     </div>
                 </div>
 
-                {/* Payroll Table - Commercial Banking Aesthetic */}
-                <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-white overflow-hidden mx-1 animate-in fade-in duration-1000">
-                    <div className="overflow-x-auto relative scrollbar-hide">
-                        <table className="w-full text-right border-collapse min-w-[1000px]">
-                            <thead>
-                                <tr className="bg-slate-900/5 text-slate-500 text-[11px] font-black uppercase tracking-[0.15em] border-b border-slate-100">
-                                    <th className="p-6 sticky right-0 bg-slate-50/95 backdrop-blur-md z-20 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)]">📝 الموظف المنتج</th>
-                                    <th className="p-6 text-center">🏢 القطاع</th>
-                                    <th className="p-6 text-center">📅 الأيام</th>
-                                    <th className="p-6 text-center">💰 سعر اليوم</th>
-                                    <th className="p-6 text-center bg-amber-500/10 text-amber-900 font-extrabold">💵 صافي المستحق</th>
-                                    <th className="p-6 text-center">🔔 الحالة</th>
-                                    <th className="p-6 text-center">⚡ الإجراء</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {approvedPayrolls.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={8} className="p-20 text-center text-slate-400 italic font-bold">
-                                            لا توجد سجلات مالية مطابقة للبحث
-                                        </td>
+                {/* Content Area */}
+                {viewMode === 'table' ? (
+                    <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-white overflow-hidden mx-1 animate-in fade-in duration-1000">
+                        <div className="overflow-x-auto relative scrollbar-hide">
+                            <table className="w-full text-right border-collapse min-w-[1200px]">
+                                <thead>
+                                    <tr className="bg-slate-900/5 text-slate-500 text-[10px] font-black uppercase tracking-wider border-b border-slate-100">
+                                        <th className="p-4 sticky right-0 bg-slate-50/95 backdrop-blur-md z-20 shadow-sm">الموظف</th>
+                                        <th className="p-4 text-center">المنطقة</th>
+                                        <th className="p-4 text-center bg-blue-50/50 text-blue-900 min-w-[120px]">
+                                            <div className="flex flex-col gap-1">
+                                                <span>أيام العمل العادية</span>
+                                                <span className="text-[9px] opacity-60 font-normal">عدد أيام الحضور الفعلي</span>
+                                            </div>
+                                        </th>
+                                        <th className="p-4 text-center bg-indigo-50/50 text-indigo-900 min-w-[120px]">
+                                            <div className="flex flex-col gap-1">
+                                                <span>إضافي (أيام عادية)</span>
+                                                <span className="text-[9px] opacity-60 font-normal">ساعات إضافية (x0.5)</span>
+                                            </div>
+                                        </th>
+                                        <th className="p-4 text-center bg-amber-50/50 text-amber-900 min-w-[120px]">
+                                            <div className="flex flex-col gap-1">
+                                                <span>إضافي (عطل وجمع)</span>
+                                                <span className="text-[9px] opacity-60 font-normal">ساعات إضافية (x1.0)</span>
+                                            </div>
+                                        </th>
+                                        <th className="p-4 text-center bg-rose-50/50 text-rose-900 min-w-[120px]">
+                                            <div className="flex flex-col gap-1">
+                                                <span>أيام الأعياد</span>
+                                                <span className="text-[9px] opacity-60 font-normal">عطل رسمية (x1.0)</span>
+                                            </div>
+                                        </th>
+                                        <th className="p-4 text-center font-extrabold text-slate-800">صافي المستحق</th>
+                                        <th className="p-4 text-center">الحالة</th>
+                                        <th className="p-4 text-center">الإجراء</th>
                                     </tr>
-                                ) : (
-                                    approvedPayrolls.map((p) => (
-                                        <tr key={p.worker.id} className="hover:bg-amber-50/20 transition-all duration-300 group">
-                                            <td className="p-5 sticky right-0 bg-inherit z-10 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)]">
-                                                <div className="font-black text-slate-800 group-hover:text-amber-700 transition-colors uppercase tracking-tight">{p.worker.name}</div>
-                                                <div className="text-[10px] text-slate-400 font-mono mt-0.5 tracking-tighter uppercase font-bold opacity-60">ID: {p.worker.id}</div>
-                                            </td>
-                                            <td className="p-5 text-center">
-                                                <div className="inline-flex items-center px-3 py-1 bg-slate-100/50 text-slate-600 rounded-full text-[11px] font-bold border border-slate-200/50">
-                                                    {p.areaName}
-                                                </div>
-                                            </td>
-                                            <td className="p-5 text-center">
-                                                <Badge
-                                                    className={`font-black text-[10px] px-2 py-1 ${p.record?.status === 'PENDING_SUPERVISOR' ? 'bg-slate-100 text-slate-700' :
-                                                        p.record?.status === 'PENDING_GS' ? 'bg-blue-100 text-blue-700' :
-                                                            p.record?.status === 'PENDING_HEALTH' ? 'bg-teal-100 text-teal-700' :
-                                                                p.record?.status === 'PENDING_HR' ? 'bg-purple-100 text-purple-700' :
-                                                                    p.record?.status === 'PENDING_AUDIT' ? 'bg-rose-100 text-rose-700' :
-                                                                        p.record?.status === 'PENDING_FINANCE' ? 'bg-emerald-100 text-emerald-700' :
-                                                                            p.record?.status === 'PENDING_PAYROLL' ? 'bg-cyan-100 text-cyan-700' :
-                                                                                'bg-green-100 text-green-700'
-                                                        }`}
-                                                >
-                                                    {p.record?.status === 'PENDING_SUPERVISOR' ? '📋 مراقب' :
-                                                        p.record?.status === 'PENDING_GS' ? '👤 م.عام' :
-                                                            p.record?.status === 'PENDING_HEALTH' ? '🏥 صحة' :
-                                                                p.record?.status === 'PENDING_HR' ? '👥 م.ب' :
-                                                                    p.record?.status === 'PENDING_AUDIT' ? '🛡️ رقابة' :
-                                                                        p.record?.status === 'PENDING_FINANCE' ? '💰 مالية' :
-                                                                            p.record?.status === 'PENDING_PAYROLL' ? '💳 رواتب' :
-                                                                                '✅ معتمد'}
-                                                </Badge>
-                                            </td>
-                                            <td className="p-5 text-center font-black text-slate-700 text-lg">{p.record?.totalCalculatedDays || "-"}</td>
-                                            <td className="p-5 text-center font-bold text-slate-500 text-sm">
-                                                {p.worker.dayValue.toLocaleString()} <span className="text-[10px] opacity-60 uppercase font-black">د.أ</span>
-                                            </td>
-                                            <td className="p-5 text-center bg-amber-50/10">
-                                                <div className="inline-flex flex-col items-center justify-center px-5 py-2 rounded-2xl bg-white/60 backdrop-blur-sm text-amber-800 font-black text-xl shadow-sm border border-amber-100 ring-1 ring-amber-200/20">
-                                                    {p.totalAmount.toLocaleString()}
-                                                    <span className="text-[9px] uppercase tracking-widest opacity-60 mt-0.5 font-bold">دينار أردني</span>
-                                                </div>
-                                            </td>
-                                            <td className="p-5 text-center">
-                                                <div className="flex justify-center">
-                                                    <div className={`flex items - center gap - 1.5 text - [10px] font - black px - 3 py - 1.5 rounded - xl border ${p.record?.status === 'APPROVED' ? 'text-emerald-700 bg-emerald-50 border-emerald-100' : 'text-amber-700 bg-amber-50 border-amber-100'
-                                                        } `}>
-                                                        {p.record?.status === 'APPROVED' ? <CheckCircle className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
-                                                        {p.record?.status === 'APPROVED' ? 'معتمد للصرف' : 'بانتظار الاعتماد'}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="p-5 text-center">
-                                                <div className="flex items-center justify-center gap-2">
-                                                    {statusFilter === 'PENDING_FINANCE' && p.record && (
-                                                        <>
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() => handleApprove(p.record!.id)}
-                                                                disabled={approvingIds.has(p.record.id)}
-                                                                className="h-10 px-5 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-xl shadow-lg shadow-amber-200/50 transition-all active:scale-95"
-                                                            >
-                                                                {approvingIds.has(p.record.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : "تحويل للرواتب"}
-                                                            </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="ghost"
-                                                                onClick={() => handleReject(p.record!.id)}
-                                                                disabled={rejectingIds.has(p.record.id)}
-                                                                className="h-10 px-4 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-bold rounded-xl"
-                                                            >
-                                                                {rejectingIds.has(p.record.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : "رفض"}
-                                                            </Button>
-                                                        </>
-                                                    )}
-                                                    {statusFilter === 'APPROVED' && (
-                                                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 font-black px-3 py-1.5 rounded-xl uppercase text-[10px]">
-                                                            جاهز للتحويل البنكي
-                                                        </Badge>
-                                                    )}
-                                                </div>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {approvedPayrolls.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={10} className="p-20 text-center text-slate-400 italic font-bold">
+                                                لا توجد سجلات مالية مطابقة للبحث
                                             </td>
                                         </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                                    ) : (
+                                        approvedPayrolls.map((p) => (
+                                            <tr key={p.worker.id} className="hover:bg-slate-50/80 transition-all duration-300 group text-[11px] font-bold">
+                                                <td className="p-4 sticky right-0 bg-inherit z-10 shadow-sm">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-black text-xs">
+                                                            {p.worker.name.charAt(0)}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-black text-slate-800 text-xs">{p.worker.name}</div>
+                                                            <div className="text-[9px] text-slate-400 font-mono">ID: {p.worker.id}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-center text-slate-500">{p.areaName}</td>
+
+                                                {/* Detailed Columns */}
+                                                <td className="p-4 text-center bg-blue-50/30">
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="text-slate-900 text-xs">{p.record?.normalDays || 0}</span>
+                                                        <span className="text-[9px] text-blue-600 font-mono">{p.normalCost.toLocaleString()} د.أ</span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-center bg-indigo-50/30">
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="text-slate-900 text-xs">{p.record?.overtimeNormalDays || 0}</span>
+                                                        <span className="text-[9px] text-indigo-600 font-mono">{p.overtimeNormalCost.toLocaleString()} د.أ</span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-center bg-amber-50/30">
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="text-slate-900 text-xs">{p.record?.overtimeHolidayDays || 0}</span>
+                                                        <span className="text-[9px] text-amber-600 font-mono">{p.overtimeHolidayCost.toLocaleString()} د.أ</span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-center bg-rose-50/30">
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="text-slate-900 text-xs">{p.record?.overtimeEidDays || 0}</span>
+                                                        <span className="text-[9px] text-rose-600 font-mono">{p.overtimeEidCost.toLocaleString()} د.أ</span>
+                                                    </div>
+                                                </td>
+
+                                                <td className="p-4 text-center bg-emerald-50/30">
+                                                    <div className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-white border border-emerald-100 shadow-sm">
+                                                        <span className="text-sm font-black text-emerald-700">{p.totalAmount.toLocaleString()}</span>
+                                                        <span className="text-[8px] text-emerald-500 uppercase">دينار</span>
+                                                    </div>
+                                                </td>
+
+                                                <td className="p-4 text-center">
+                                                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[9px] ${p.record?.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                                        'bg-amber-50 text-amber-700 border-amber-100'
+                                                        }`}>
+                                                        {p.record?.status === 'APPROVED' ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                                                        <span>{p.record?.status === 'APPROVED' ? 'معتمد' : 'بانتظار الاعتماد'}</span>
+                                                    </div>
+                                                </td>
+
+                                                <td className="p-4 text-center">
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        {statusFilter === 'PENDING_FINANCE' && p.record && (
+                                                            <>
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={() => handleApprove(p.record!.id)}
+                                                                    disabled={approvingIds.has(p.record.id)}
+                                                                    className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-sm text-xs"
+                                                                >
+                                                                    {approvingIds.has(p.record.id) ? <Loader2 className="h-3 w-3 animate-spin" /> : "اعتماد"}
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    onClick={() => handleReject(p.record!.id)}
+                                                                    disabled={rejectingIds.has(p.record.id)}
+                                                                    className="h-8 px-2 text-rose-600 hover:bg-rose-50 rounded-lg"
+                                                                >
+                                                                    <AlertCircle className="h-4 w-4" />
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mx-1">
+                        {approvedPayrolls.map((p) => (
+                            <div key={p.worker.id} className="bg-white/80 backdrop-blur-md p-5 rounded-[2rem] border border-white shadow-sm hover:shadow-xl transition-all group">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 font-black shadow-inner">
+                                            {p.worker.name.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-black text-slate-900">{p.worker.name}</h3>
+                                            <p className="text-[10px] text-slate-400 font-bold uppercase">{p.areaName}</p>
+                                        </div>
+                                    </div>
+                                    <Badge className={`font-black text-[9px] px-2 py-0.5 ${p.record?.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                                        }`}>
+                                        {p.record?.status === 'APPROVED' ? 'معتمد' : 'معلق'}
+                                    </Badge>
+                                </div>
+
+                                <div className="space-y-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50">
+                                    <div className="flex justify-between items-start text-slate-700 pb-3 border-b border-slate-200/50">
+                                        <div>
+                                            <p className="font-bold text-sm">أيام العمل العادية</p>
+                                            <p className="text-[10px] text-slate-400">عدد أيام الحضور الفعلي في الموقع</p>
+                                        </div>
+                                        <div className="text-left">
+                                            <span className="block font-black text-lg">{p.record?.normalDays || 0}</span>
+                                            <span className="text-[10px] text-blue-600 font-mono font-bold">{p.normalCost.toLocaleString()} د.أ</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-start text-slate-700 pb-3 border-b border-slate-200/50">
+                                        <div>
+                                            <p className="font-bold text-sm">إضافي (أيام عادية)</p>
+                                            <p className="text-[10px] text-slate-400">ساعات إضافية محتسبة بنصف يوم (x0.5)</p>
+                                        </div>
+                                        <div className="text-left">
+                                            <span className="block font-black text-lg">{p.record?.overtimeNormalDays || 0}</span>
+                                            <span className="text-[10px] text-indigo-600 font-mono font-bold">{p.overtimeNormalCost.toLocaleString()} د.أ</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-start text-slate-700 pb-3 border-b border-slate-200/50">
+                                        <div>
+                                            <p className="font-bold text-sm">إضافي (عطل وجمع)</p>
+                                            <p className="text-[10px] text-slate-400">ساعات إضافية محتسبة بيوم كامل (x1.0)</p>
+                                        </div>
+                                        <div className="text-left">
+                                            <span className="block font-black text-lg">{p.record?.overtimeHolidayDays || 0}</span>
+                                            <span className="text-[10px] text-amber-600 font-mono font-bold">{p.overtimeHolidayCost.toLocaleString()} د.أ</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-start text-slate-700">
+                                        <div>
+                                            <p className="font-bold text-sm">أيام الأعياد</p>
+                                            <p className="text-[10px] text-slate-400">أيام العطل الرسمية والأعياد (x1.0)</p>
+                                        </div>
+                                        <div className="text-left">
+                                            <span className="block font-black text-lg">{p.record?.overtimeEidDays || 0}</span>
+                                            <span className="text-[10px] text-rose-600 font-mono font-bold">{p.overtimeEidCost.toLocaleString()} د.أ</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-slate-400 font-bold uppercase">صافي المستحق</span>
+                                        <span className="text-xl font-black text-slate-900">{p.totalAmount.toLocaleString()} <span className="text-[10px] text-slate-400">د.أ</span></span>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        {statusFilter === 'PENDING_FINANCE' && p.record && (
+                                            <>
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() => handleApprove(p.record!.id)}
+                                                    disabled={approvingIds.has(p.record.id)}
+                                                    className="h-9 w-9 p-0 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-lg shadow-emerald-200/50"
+                                                >
+                                                    {approvingIds.has(p.record.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() => handleReject(p.record!.id)}
+                                                    disabled={rejectingIds.has(p.record.id)}
+                                                    className="h-9 w-9 p-0 text-rose-600 hover:bg-rose-50 rounded-xl"
+                                                >
+                                                    <AlertCircle className="h-4 w-4" />
+                                                </Button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
 
             </div>
 

@@ -12,7 +12,8 @@ import {
     Users,
     CheckCircle,
     Loader2,
-    Menu
+    Menu,
+    LayoutGrid
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export function PayrollView() {
     const [year, setYear] = useState(new Date().getFullYear());
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState<'PENDING_PAYROLL' | 'APPROVED'>('PENDING_PAYROLL');
+    const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -36,12 +38,23 @@ export function PayrollView() {
         const isApproved = record?.status === 'APPROVED';
         const areaName = resolveAreaNames(w.areaId, areas);
 
+        // Calculate cost breakdown
+        const normalCost = record ? record.normalDays * w.dayValue : 0;
+        const overtimeNormalCost = record ? record.overtimeNormalDays * 0.5 * w.dayValue : 0;
+        const overtimeHolidayCost = record ? record.overtimeHolidayDays * w.dayValue : 0;
+        const overtimeEidCost = record ? (record.overtimeEidDays || 0) * w.dayValue : 0;
+        const totalAmount = normalCost + overtimeNormalCost + overtimeHolidayCost + overtimeEidCost;
+
         return {
             worker: w,
             record,
             isApproved,
             areaName,
-            totalAmount: record ? record.totalCalculatedDays * w.dayValue : 0
+            totalAmount,
+            normalCost,
+            overtimeNormalCost,
+            overtimeHolidayCost,
+            overtimeEidCost
         };
     }).filter(p => {
         const matchesSearch = p.worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -201,73 +214,257 @@ export function PayrollView() {
                         <option value="PENDING_PAYROLL">⏱️ بانتظار الصرف</option>
                         <option value="APPROVED">✅ تم الصرف</option>
                     </select>
-                    <Button variant="ghost" onClick={() => window.print()} className="h-12 border border-slate-200 rounded-2xl">
-                        <Printer className="h-4 w-4 ml-2" /> طباعة
+                    <Button variant="ghost" onClick={() => window.print()} className="h-12 px-6 text-purple-600 hover:bg-purple-50/80 rounded-2xl font-black gap-2 border border-purple-200 shadow-sm transition-all active:scale-95 hover:shadow-md">
+                        <Printer className="h-4 w-4" /> <span className="hidden sm:inline">طباعة</span>
                     </Button>
                 </div>
 
-                {/* Table */}
-                <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-xl border border-white overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-right border-collapse min-w-[1000px]">
-                            <thead>
-                                <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 text-[11px] font-black uppercase tracking-wider">
-                                    <th className="p-6">العامل</th>
-                                    <th className="p-6 text-center">القطاع</th>
-                                    <th className="p-6 text-center">الأيام</th>
-                                    <th className="p-6 text-center">القيمة</th>
-                                    <th className="p-6 text-center bg-emerald-50 text-emerald-900">المستحق</th>
-                                    <th className="p-6 text-center">الإجراء</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {payrollRecords.length === 0 ? (
-                                    <tr><td colSpan={6} className="p-10 text-center text-slate-400 font-bold">لا يوجد سجلات</td></tr>
-                                ) : (
-                                    payrollRecords.map(p => (
-                                        <tr key={p.worker.id} className="hover:bg-slate-50/50 transition-colors">
-                                            <td className="p-5 font-bold text-slate-700">{p.worker.name}</td>
-                                            <td className="p-5 text-center text-sm">{p.areaName}</td>
-                                            <td className="p-5 text-center font-bold">{p.record?.totalCalculatedDays}</td>
-                                            <td className="p-5 text-center text-sm">{p.worker.dayValue}</td>
-                                            <td className="p-5 text-center font-black text-emerald-700 bg-emerald-50/30">
-                                                {p.totalAmount.toLocaleString()} د.أ
-                                            </td>
-                                            <td className="p-5 text-center">
-                                                <div className="flex justify-center gap-2">
-                                                    {statusFilter === 'PENDING_PAYROLL' && p.record && (
-                                                        <>
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() => handleApprove(p.record!.id)}
-                                                                disabled={approvingIds.has(p.record.id)}
-                                                                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-lg shadow-emerald-200"
-                                                            >
-                                                                {approvingIds.has(p.record.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : "صرف المستحقات"}
-                                                            </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="ghost"
-                                                                onClick={() => handleReject(p.record!.id)}
-                                                                disabled={rejectingIds.has(p.record.id)}
-                                                                className="text-rose-600 hover:bg-rose-50 rounded-xl"
-                                                            >
-                                                                {rejectingIds.has(p.record.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : "إعادة"}
-                                                            </Button>
-                                                        </>
-                                                    )}
-                                                    {statusFilter === 'APPROVED' && (
-                                                        <Badge className="bg-emerald-100 text-emerald-800">تم الصرف</Badge>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                {/* View Toggle */}
+                <div className="flex bg-slate-100/80 p-1 rounded-2xl w-fit border border-slate-200/50">
+                    <button
+                        onClick={() => setViewMode('table')}
+                        className={`px-4 py-2 rounded-xl text-sm font-black transition-all ${viewMode === 'table' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        <div className="flex items-center gap-2">
+                            <LayoutGrid className="h-4 w-4" />
+                            <span>جدول تفصيلي</span>
+                        </div>
+                    </button>
+                    <button
+                        onClick={() => setViewMode('grid')}
+                        className={`px-4 py-2 rounded-xl text-sm font-black transition-all ${viewMode === 'grid' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            <span>بطاقات</span>
+                        </div>
+                    </button>
                 </div>
+
+                {/* Content Area */}
+                {viewMode === 'table' ? (
+                    <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-xl border border-white overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-right border-collapse min-w-[1200px]">
+                                <thead>
+                                    <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-wider">
+                                        <th className="p-4 sticky right-0 bg-slate-50/95 backdrop-blur-md z-20 shadow-sm">الموظف</th>
+                                        <th className="p-4 text-center">المنطقة</th>
+                                        <th className="p-4 text-center bg-blue-50/50 text-blue-900 min-w-[120px]">
+                                            <div className="flex flex-col gap-1">
+                                                <span>أيام العمل العادية</span>
+                                                <span className="text-[9px] opacity-60 font-normal">عدد أيام الحضور الفعلي</span>
+                                            </div>
+                                        </th>
+                                        <th className="p-4 text-center bg-indigo-50/50 text-indigo-900 min-w-[120px]">
+                                            <div className="flex flex-col gap-1">
+                                                <span>إضافي (أيام عادية)</span>
+                                                <span className="text-[9px] opacity-60 font-normal">ساعات إضافية (x0.5)</span>
+                                            </div>
+                                        </th>
+                                        <th className="p-4 text-center bg-amber-50/50 text-amber-900 min-w-[120px]">
+                                            <div className="flex flex-col gap-1">
+                                                <span>إضافي (عطل وجمع)</span>
+                                                <span className="text-[9px] opacity-60 font-normal">ساعات إضافية (x1.0)</span>
+                                            </div>
+                                        </th>
+                                        <th className="p-4 text-center bg-rose-50/50 text-rose-900 min-w-[120px]">
+                                            <div className="flex flex-col gap-1">
+                                                <span>أيام الأعياد</span>
+                                                <span className="text-[9px] opacity-60 font-normal">عطل رسمية (x1.0)</span>
+                                            </div>
+                                        </th>
+                                        <th className="p-4 text-center font-extrabold text-emerald-900 bg-emerald-50/50">صافي المستحق</th>
+                                        <th className="p-4 text-center">الإجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {payrollRecords.length === 0 ? (
+                                        <tr><td colSpan={9} className="p-10 text-center text-slate-400 font-bold">لا يوجد سجلات</td></tr>
+                                    ) : (
+                                        payrollRecords.map(p => (
+                                            <tr key={p.worker.id} className="hover:bg-slate-50/80 transition-all duration-300 group text-[11px] font-bold">
+                                                <td className="p-4 sticky right-0 bg-inherit z-10 shadow-sm">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-black text-xs">
+                                                            {p.worker.name.charAt(0)}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-black text-slate-800 text-xs">{p.worker.name}</div>
+                                                            <div className="text-[9px] text-slate-400 font-mono">ID: {p.worker.id}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-center text-slate-500">{p.areaName}</td>
+
+                                                {/* Detailed Columns */}
+                                                <td className="p-4 text-center bg-blue-50/30">
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="text-slate-900 text-xs">{p.record?.normalDays || 0}</span>
+                                                        <span className="text-[9px] text-blue-600 font-mono">{p.normalCost.toLocaleString()} د.أ</span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-center bg-indigo-50/30">
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="text-slate-900 text-xs">{p.record?.overtimeNormalDays || 0}</span>
+                                                        <span className="text-[9px] text-indigo-600 font-mono">{p.overtimeNormalCost.toLocaleString()} د.أ</span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-center bg-amber-50/30">
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="text-slate-900 text-xs">{p.record?.overtimeHolidayDays || 0}</span>
+                                                        <span className="text-[9px] text-amber-600 font-mono">{p.overtimeHolidayCost.toLocaleString()} د.أ</span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-center bg-rose-50/30">
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="text-slate-900 text-xs">{p.record?.overtimeEidDays || 0}</span>
+                                                        <span className="text-[9px] text-rose-600 font-mono">{p.overtimeEidCost.toLocaleString()} د.أ</span>
+                                                    </div>
+                                                </td>
+
+                                                <td className="p-4 text-center bg-emerald-50/30">
+                                                    <div className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-white border border-emerald-100 shadow-sm">
+                                                        <span className="text-sm font-black text-emerald-700">{p.totalAmount.toLocaleString()}</span>
+                                                        <span className="text-[8px] text-emerald-500 uppercase">دينار</span>
+                                                    </div>
+                                                </td>
+
+                                                <td className="p-4 text-center">
+                                                    <div className="flex justify-center gap-2">
+                                                        {statusFilter === 'PENDING_PAYROLL' && p.record && (
+                                                            <>
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={() => handleApprove(p.record!.id)}
+                                                                    disabled={approvingIds.has(p.record.id)}
+                                                                    className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-lg shadow-emerald-200 text-xs"
+                                                                >
+                                                                    {approvingIds.has(p.record.id) ? <Loader2 className="h-3 w-3 animate-spin" /> : "صرف"}
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    onClick={() => handleReject(p.record!.id)}
+                                                                    disabled={rejectingIds.has(p.record.id)}
+                                                                    className="h-8 px-2 text-rose-600 hover:bg-rose-50 rounded-xl"
+                                                                >
+                                                                    {rejectingIds.has(p.record.id) ? <Loader2 className="h-3 w-3 animate-spin" /> : "إعادة"}
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                        {statusFilter === 'APPROVED' && (
+                                                            <Badge className="bg-emerald-100 text-emerald-800">تم الصرف</Badge>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {payrollRecords.map((p) => (
+                            <div key={p.worker.id} className="bg-white/80 backdrop-blur-md p-5 rounded-[2rem] border border-white shadow-sm hover:shadow-xl transition-all group">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 font-black shadow-inner">
+                                            {p.worker.name.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-black text-slate-900">{p.worker.name}</h3>
+                                            <p className="text-[10px] text-slate-400 font-bold uppercase">{p.areaName}</p>
+                                        </div>
+                                    </div>
+                                    <Badge className={`font-black text-[9px] px-2 py-0.5 ${statusFilter === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                                        }`}>
+                                        {statusFilter === 'APPROVED' ? 'تم الصرف' : 'معلق'}
+                                    </Badge>
+                                </div>
+
+                                <div className="space-y-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50">
+                                    <div className="flex justify-between items-start text-slate-700 pb-3 border-b border-slate-200/50">
+                                        <div>
+                                            <p className="font-bold text-sm">أيام العمل العادية</p>
+                                            <p className="text-[10px] text-slate-400">عدد أيام الحضور الفعلي في الموقع</p>
+                                        </div>
+                                        <div className="text-left">
+                                            <span className="block font-black text-lg">{p.record?.normalDays || 0}</span>
+                                            <span className="text-[10px] text-blue-600 font-mono font-bold">{p.normalCost.toLocaleString()} د.أ</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-start text-slate-700 pb-3 border-b border-slate-200/50">
+                                        <div>
+                                            <p className="font-bold text-sm">إضافي (أيام عادية)</p>
+                                            <p className="text-[10px] text-slate-400">ساعات إضافية محتسبة بنصف يوم (x0.5)</p>
+                                        </div>
+                                        <div className="text-left">
+                                            <span className="block font-black text-lg">{p.record?.overtimeNormalDays || 0}</span>
+                                            <span className="text-[10px] text-indigo-600 font-mono font-bold">{p.overtimeNormalCost.toLocaleString()} د.أ</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-start text-slate-700 pb-3 border-b border-slate-200/50">
+                                        <div>
+                                            <p className="font-bold text-sm">إضافي (عطل وجمع)</p>
+                                            <p className="text-[10px] text-slate-400">ساعات إضافية محتسبة بيوم كامل (x1.0)</p>
+                                        </div>
+                                        <div className="text-left">
+                                            <span className="block font-black text-lg">{p.record?.overtimeHolidayDays || 0}</span>
+                                            <span className="text-[10px] text-amber-600 font-mono font-bold">{p.overtimeHolidayCost.toLocaleString()} د.أ</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-start text-slate-700">
+                                        <div>
+                                            <p className="font-bold text-sm">أيام الأعياد</p>
+                                            <p className="text-[10px] text-slate-400">أيام العطل الرسمية والأعياد (x1.0)</p>
+                                        </div>
+                                        <div className="text-left">
+                                            <span className="block font-black text-lg">{p.record?.overtimeEidDays || 0}</span>
+                                            <span className="text-[10px] text-rose-600 font-mono font-bold">{p.overtimeEidCost.toLocaleString()} د.أ</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-slate-400 font-bold uppercase">صافي المستحق</span>
+                                        <span className="text-xl font-black text-slate-900">{p.totalAmount.toLocaleString()} <span className="text-[10px] text-slate-400">د.أ</span></span>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        {statusFilter === 'PENDING_PAYROLL' && p.record && (
+                                            <>
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() => handleApprove(p.record!.id)}
+                                                    disabled={approvingIds.has(p.record.id)}
+                                                    className="h-9 w-9 p-0 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-lg shadow-emerald-200/50"
+                                                >
+                                                    {approvingIds.has(p.record.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() => handleReject(p.record!.id)}
+                                                    disabled={rejectingIds.has(p.record.id)}
+                                                    className="h-9 w-9 p-0 text-rose-600 hover:bg-rose-50 rounded-xl"
+                                                >
+                                                    {rejectingIds.has(p.record.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : "↩"}
+                                                </Button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Print View */}
