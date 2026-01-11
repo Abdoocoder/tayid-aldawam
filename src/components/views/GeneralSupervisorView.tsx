@@ -45,6 +45,7 @@ export function GeneralSupervisorView() {
     ];
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedAreaId, setSelectedAreaId] = useState<string>("ALL");
+    const [selectedNationality, setSelectedNationality] = useState<string>("ALL");
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
 
@@ -137,6 +138,7 @@ export function GeneralSupervisorView() {
         if (activeTab === 'workers') {
             return responsibleWorkers.filter(w =>
                 (selectedAreaId === 'ALL' || w.areaId === selectedAreaId) &&
+                (selectedNationality === 'ALL' || w.nationality === selectedNationality) &&
                 (w.name.toLowerCase().includes(searchTerm.toLowerCase()) || w.id.includes(searchTerm))
             );
         }
@@ -153,12 +155,13 @@ export function GeneralSupervisorView() {
             if (!worker) return false;
 
             const matchesArea = selectedAreaId === 'ALL' || worker.areaId === selectedAreaId;
+            const matchesNationality = selectedNationality === 'ALL' || worker.nationality === selectedNationality;
             const matchesSearch = worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 worker.id.includes(searchTerm);
 
-            return matchesArea && matchesSearch;
+            return matchesArea && matchesNationality && matchesSearch;
         });
-    }, [activeTab, pendingRecords, historyRecords, responsibleWorkers, responsibleSupervisors, workers, selectedAreaId, searchTerm]);
+    }, [activeTab, pendingRecords, historyRecords, responsibleWorkers, responsibleSupervisors, workers, selectedAreaId, selectedNationality, searchTerm]);
 
     const [printMetadata] = useState(() => ({
         date: new Date().toLocaleDateString('ar-JO'),
@@ -362,7 +365,7 @@ export function GeneralSupervisorView() {
 
                 {activeTab !== 'areas' && (
                     <div className="flex flex-col gap-4 px-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="flex flex-col sm:flex-row gap-3">
+                        <div className="flex flex-col md:flex-row gap-3">
                             <div className="relative flex-1 group">
                                 <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
                                 <Input
@@ -375,19 +378,34 @@ export function GeneralSupervisorView() {
                                     onChange={e => setSearchTerm(e.target.value)}
                                 />
                             </div>
-                            <Select
-                                id="gs-area-filter"
-                                name="gsAreaFilter"
-                                aria-label="تصفية حسب المنطقة"
-                                className="h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-indigo-500 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[200px]"
-                                value={selectedAreaId}
-                                onChange={e => setSelectedAreaId(e.target.value)}
-                            >
-                                <option value="ALL">جميع مناطق إشرافي</option>
-                                {supervisorAreas.map(area => (
-                                    <option key={area.id} value={area.id}>{area.name}</option>
-                                ))}
-                            </Select>
+                            <div className="flex gap-3 flex-1 md:flex-initial">
+                                <Select
+                                    id="gs-area-filter"
+                                    name="gsAreaFilter"
+                                    aria-label="تصفية حسب المنطقة"
+                                    className="flex-1 md:w-48 h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-indigo-500 rounded-2xl shadow-sm font-bold text-slate-700"
+                                    value={selectedAreaId}
+                                    onChange={e => setSelectedAreaId(e.target.value)}
+                                >
+                                    <option value="ALL">جميع المناطق</option>
+                                    {supervisorAreas.map(area => (
+                                        <option key={area.id} value={area.id}>{area.name}</option>
+                                    ))}
+                                </Select>
+
+                                <Select
+                                    id="gs-nationality-filter"
+                                    name="gsNationalityFilter"
+                                    aria-label="تصفية حسب الجنسية"
+                                    className="flex-1 md:w-36 h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-indigo-500 rounded-2xl shadow-sm font-bold text-slate-700"
+                                    value={selectedNationality}
+                                    onChange={e => setSelectedNationality(e.target.value)}
+                                >
+                                    <option value="ALL">جميع الجنسيات</option>
+                                    <option value="أردني">أردني</option>
+                                    <option value="مصري">مصري</option>
+                                </Select>
+                            </div>
                         </div>
 
                         {activeTab === 'requests' && pendingRecords.length > 0 && (

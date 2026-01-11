@@ -22,7 +22,7 @@ async function migrateData() {
 
         // Migrate Workers
         console.log('👷 Migrating workers...');
-        const workersToInsert = initialData.workers.map(workerToDb);
+        const workersToInsert = initialData.workers.map(w => workerToDb({ ...w, nationality: 'مصري' } as any));
 
         const { data: workersData, error: workersError } = await supabase
             .from('workers')

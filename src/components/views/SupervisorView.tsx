@@ -24,6 +24,7 @@ export function SupervisorView() {
     ];
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedAreaId, setSelectedAreaId] = useState<string>("ALL");
+    const [selectedNationality, setSelectedNationality] = useState<string>("ALL");
 
     // Get all areas relevant to this supervisor
     const supervisorAreas = areas.filter(a =>
@@ -55,7 +56,9 @@ export function SupervisorView() {
             matchesArea = w.areaId === selectedAreaId || (selectedAreaObj ? w.areaId === selectedAreaObj.name : false);
         }
 
-        return matchesSearch && matchesArea;
+        const matchesNationality = selectedNationality === "ALL" || w.nationality === selectedNationality;
+
+        return matchesSearch && matchesArea && matchesNationality;
     });
 
     // Calculate stats
@@ -220,8 +223,8 @@ export function SupervisorView() {
                 </div>
 
                 {/* Filters - Modern and Compact */}
-                <div className="flex flex-col gap-3 px-1">
-                    <div className="relative group">
+                <div className="flex flex-col md:flex-row gap-3 px-1">
+                    <div className="relative group flex-1">
                         <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                         <Input
                             id="worker-search"
@@ -233,21 +236,37 @@ export function SupervisorView() {
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    {supervisorAreas.length > 1 && (
+
+                    <div className="flex gap-3 flex-1 md:flex-initial">
+                        {supervisorAreas.length > 1 && (
+                            <Select
+                                id="area-filter"
+                                name="areaFilter"
+                                aria-label="تصفية حسب المنطقة"
+                                className="flex-1 md:w-48 h-11 bg-white/60 backdrop-blur-md border-slate-200 rounded-2xl shadow-sm font-bold text-slate-700"
+                                value={selectedAreaId}
+                                onChange={e => setSelectedAreaId(e.target.value)}
+                            >
+                                <option value="ALL">جميع المناطق</option>
+                                {supervisorAreas.map(area => (
+                                    <option key={area.id} value={area.id}>{area.name}</option>
+                                ))}
+                            </Select>
+                        )}
+
                         <Select
-                            id="area-filter"
-                            name="areaFilter"
-                            aria-label="تصفية حسب المنطقة"
-                            className="h-11 bg-white/60 backdrop-blur-md border-slate-200 rounded-2xl shadow-sm font-bold text-slate-700"
-                            value={selectedAreaId}
-                            onChange={e => setSelectedAreaId(e.target.value)}
+                            id="nationality-filter"
+                            name="nationalityFilter"
+                            aria-label="تصفية حسب الجنسية"
+                            className="flex-1 md:w-36 h-11 bg-white/60 backdrop-blur-md border-slate-200 rounded-2xl shadow-sm font-bold text-slate-700"
+                            value={selectedNationality}
+                            onChange={e => setSelectedNationality(e.target.value)}
                         >
-                            <option value="ALL">جميع المناطق</option>
-                            {supervisorAreas.map(area => (
-                                <option key={area.id} value={area.id}>{area.name}</option>
-                            ))}
+                            <option value="ALL">جميع الجنسيات</option>
+                            <option value="أردني">أردني</option>
+                            <option value="مصري">مصري</option>
                         </Select>
-                    )}
+                    </div>
                 </div>
 
                 {/* Workers Grid - Modernized */}
@@ -280,7 +299,10 @@ export function SupervisorView() {
                                             </div>
                                             <div className="text-right">
                                                 <h4 className="text-base font-black text-slate-900 group-hover:text-blue-600 transition-colors uppercase tracking-tight">{worker.name}</h4>
-                                                <div className="flex items-center gap-2 mt-0.5 justify-end">
+                                                <div className="flex items-center gap-1.5 mt-0.5 justify-end">
+                                                    <Badge variant="outline" className={`text-[8px] font-black px-1.5 py-0 border-transparent ${worker.nationality === 'أردني' ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'}`}>
+                                                        {worker.nationality}
+                                                    </Badge>
                                                     <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
                                                         <MapPin className="h-2.5 w-2.5" />
                                                         {areaName}
@@ -378,6 +400,7 @@ export function SupervisorView() {
                             <th className="border-2 border-slate-900 p-3 text-right">م</th>
                             <th className="border-2 border-slate-900 p-3 text-right">رقم العامل</th>
                             <th className="border-2 border-slate-900 p-3 text-right">اسم العامل</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">الجنسية</th>
                             <th className="border-2 border-slate-900 p-3 text-right">المنطقة</th>
                             <th className="border-2 border-slate-900 p-3 text-center">أيام عادية</th>
                             <th className="border-2 border-slate-900 p-3 text-center text-[10px]">إضافي عادي (0.5)</th>
@@ -395,6 +418,7 @@ export function SupervisorView() {
                                     <td className="border-2 border-slate-900 p-3 text-center font-bold">{index + 1}</td>
                                     <td className="border-2 border-slate-900 p-3 font-mono">{worker.id}</td>
                                     <td className="border-2 border-slate-900 p-3 font-black">{worker.name}</td>
+                                    <td className="border-2 border-slate-900 p-3 text-center">{worker.nationality}</td>
                                     <td className="border-2 border-slate-900 p-3">{areaName}</td>
                                     <td className="border-2 border-slate-900 p-3 text-center font-bold">{record ? record.normalDays : "0"}</td>
                                     <td className="border-2 border-slate-900 p-3 text-center font-bold">{record ? record.overtimeNormalDays : "0"}</td>

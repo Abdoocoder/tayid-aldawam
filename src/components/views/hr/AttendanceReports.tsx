@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Search, Printer, Download, CheckCircle, Clock, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -17,6 +18,7 @@ interface AttendanceReportsProps {
     year: number;
     reportSearchTerm: string;
     reportAreaFilter: string;
+    reportNationalityFilter: string;
     reportStatusFilter: string;
     getWorkerAttendance: (workerId: string, month: number, year: number) => AttendanceRecord | undefined;
     approveAttendance: (recordId: string, nextStatus: 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'APPROVED') => Promise<void>;
@@ -24,6 +26,7 @@ interface AttendanceReportsProps {
     onMonthChange: (m: number, y: number) => void;
     onSearchChange: (value: string) => void;
     onAreaFilterChange: (value: string) => void;
+    onNationalityFilterChange: (value: string) => void;
     onStatusFilterChange: (value: 'ALL' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'APPROVED') => void;
     onExportCSV: () => void;
     onBulkApprove?: () => void;
@@ -36,6 +39,7 @@ export const AttendanceReports = React.memo(function AttendanceReports({
     year,
     reportSearchTerm,
     reportAreaFilter,
+    reportNationalityFilter,
     reportStatusFilter,
     getWorkerAttendance,
     approveAttendance,
@@ -43,6 +47,7 @@ export const AttendanceReports = React.memo(function AttendanceReports({
     onMonthChange,
     onSearchChange,
     onAreaFilterChange,
+    onNationalityFilterChange,
     onStatusFilterChange,
     onExportCSV,
     onBulkApprove
@@ -58,11 +63,12 @@ export const AttendanceReports = React.memo(function AttendanceReports({
             w.id.includes(reportSearchTerm) ||
             areaName.toLowerCase().includes(reportSearchTerm.toLowerCase());
         const matchesArea = reportAreaFilter === 'ALL' || w.areaId === reportAreaFilter;
+        const matchesNationality = reportNationalityFilter === 'ALL' || w.nationality === reportNationalityFilter;
 
         const recordStatus = record?.status || 'PENDING_GS';
         const matchesStatus = reportStatusFilter === 'ALL' || recordStatus === reportStatusFilter;
 
-        return matchesSearch && matchesArea && matchesStatus;
+        return matchesSearch && matchesArea && matchesNationality && matchesStatus;
     });
 
     // Stable print metadata - generated on mount to fix purity lint errors
@@ -107,6 +113,19 @@ export const AttendanceReports = React.memo(function AttendanceReports({
                             {areas.map(a => (
                                 <option key={a.id} value={a.id}>{a.name}</option>
                             ))}
+                        </Select>
+
+                        <Select
+                            id="report-nationality-filter"
+                            name="reportNationalityFilter"
+                            aria-label="تصفية التقرير حسب الجنسية"
+                            className="h-12 bg-white/60 backdrop-blur-md border-slate-100 focus:border-purple-500 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[120px]"
+                            value={reportNationalityFilter}
+                            onChange={e => onNationalityFilterChange(e.target.value)}
+                        >
+                            <option value="ALL">جميع الجنسيات</option>
+                            <option value="أردني">أردني</option>
+                            <option value="مصري">مصري</option>
                         </Select>
 
                         <Select
@@ -180,6 +199,7 @@ export const AttendanceReports = React.memo(function AttendanceReports({
                             <thead>
                                 <tr className="bg-slate-50/50 text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
                                     <th className="p-5">العامل</th>
+                                    <th className="p-5 text-center">الجنسية</th>
                                     <th className="p-5">القطاع</th>
                                     <th className="p-5 text-center">أيام عادية</th>
                                     <th className="p-5 text-center">إضافي (ع/عط/ع)</th>
@@ -210,6 +230,11 @@ export const AttendanceReports = React.memo(function AttendanceReports({
                                                 <td className="p-5">
                                                     <div className="font-black text-slate-800 group-hover:text-purple-600 transition-colors uppercase tracking-tight">{worker.name}</div>
                                                     <div className="text-[10px] text-slate-400 font-mono mt-0.5 tracking-tighter">REF: {worker.id}</div>
+                                                </td>
+                                                <td className="p-5 text-center">
+                                                    <Badge variant="outline" className={`text-[10px] font-bold ${worker.nationality === 'أردني' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>
+                                                        {worker.nationality}
+                                                    </Badge>
                                                 </td>
                                                 <td className="p-5">
                                                     <div className="inline-flex items-center px-3 py-1 bg-slate-100/50 text-slate-600 rounded-full text-[11px] font-bold border border-slate-200/50">
@@ -318,6 +343,7 @@ export const AttendanceReports = React.memo(function AttendanceReports({
                             <th className="border-2 border-slate-900 p-3 text-right">م</th>
                             <th className="border-2 border-slate-900 p-3 text-right">رقم العامل</th>
                             <th className="border-2 border-slate-900 p-3 text-right">الاسم الكامل</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">الجنسية</th>
                             <th className="border-2 border-slate-900 p-3 text-right">المنطقة</th>
                             <th className="border-2 border-slate-900 p-3 text-center">أيام عادية</th>
                             <th className="border-2 border-slate-900 p-3 text-center text-[10px]">إضافي عادي (0.5)</th>
@@ -336,6 +362,7 @@ export const AttendanceReports = React.memo(function AttendanceReports({
                                     <td className="border-2 border-slate-900 p-3 text-center font-bold">{index + 1}</td>
                                     <td className="border-2 border-slate-900 p-3 font-mono">{worker.id}</td>
                                     <td className="border-2 border-slate-900 p-3 font-black">{worker.name}</td>
+                                    <td className="border-2 border-slate-900 p-3 text-center">{worker.nationality}</td>
                                     <td className="border-2 border-slate-900 p-3">{areaName}</td>
                                     <td className="border-2 border-slate-900 p-3 text-center font-bold">{record ? record.normalDays : 0}</td>
                                     <td className="border-2 border-slate-900 p-3 text-center font-bold">{record ? record.overtimeNormalDays : 0}</td>

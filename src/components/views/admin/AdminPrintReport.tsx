@@ -121,6 +121,7 @@ export function AdminPrintReport({ type, data, month, year }: AdminPrintReportPr
                             <th className="border-2 border-slate-900 p-3 text-right">#</th>
                             <th className="border-2 border-slate-900 p-3 text-right">المعرف</th>
                             <th className="border-2 border-slate-900 p-3 text-right">الاسم الكامل</th>
+                            <th className="border-2 border-slate-900 p-3 text-right">الجنسية</th>
                             <th className="border-2 border-slate-900 p-3 text-right">القطاع</th>
                             <th className="border-2 border-slate-900 p-3 text-center">الأجر اليومي</th>
                         </tr>
@@ -131,6 +132,7 @@ export function AdminPrintReport({ type, data, month, year }: AdminPrintReportPr
                                 <td className="border border-slate-300 p-3 text-center font-bold">{i + 1}</td>
                                 <td className="border border-slate-300 p-3 font-mono text-xs">{w.id}</td>
                                 <td className="border border-slate-300 p-3 font-black">{w.name}</td>
+                                <td className="border border-slate-300 p-3 text-center">{w.nationality}</td>
                                 <td className="border border-slate-300 p-3">{data.areas?.find(a => a.id === w.areaId)?.name || 'غير محدد'}</td>
                                 <td className="border border-slate-300 p-3 text-center font-bold">{w.dayValue} JOD</td>
                             </tr>

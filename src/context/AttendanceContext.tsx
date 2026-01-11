@@ -24,6 +24,7 @@ export interface Worker {
     id: string;
     name: string;
     areaId: string;
+    nationality: string;
     baseSalary: number;
     dayValue: number; // Dinars
 }

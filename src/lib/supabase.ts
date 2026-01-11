@@ -17,6 +17,7 @@ export interface Worker {
     id: string;
     name: string;
     area_id: string; // This will now be a UUID referencing Areas table
+    nationality: string;
     base_salary: number;
     day_value: number;
     created_at?: string;

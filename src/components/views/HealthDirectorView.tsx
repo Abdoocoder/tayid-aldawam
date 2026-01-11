@@ -48,6 +48,7 @@ export function HealthDirectorView() {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedAreaId, setSelectedAreaId] = useState<string>("ALL");
     const [selectedSupervisorId, setSelectedSupervisorId] = useState<string>("ALL");
+    const [selectedNationality, setSelectedNationality] = useState<string>("ALL");
     const [showAnomaliesOnly, setShowAnomaliesOnly] = useState(false);
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
@@ -137,6 +138,8 @@ export function HealthDirectorView() {
             const matchesSupervisor = selectedSupervisorId === 'ALL' ||
                 (supervisor?.areas?.some(a => a.id === worker.areaId) || supervisor?.areaId === worker.areaId);
 
+            const matchesNationality = selectedNationality === "ALL" || worker.nationality === selectedNationality;
+
             const matchesSearch = worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 worker.id.includes(searchTerm);
 
@@ -146,9 +149,9 @@ export function HealthDirectorView() {
             // For anomalies tab, only show anomalies
             const matchesAnomalyTab = activeTab !== 'anomalies' || isAnomaly;
 
-            return isCorrectPeriod && matchesStatus && matchesArea && matchesSupervisor && matchesSearch && matchesAnomaly && matchesAnomalyTab;
+            return isCorrectPeriod && matchesStatus && matchesArea && matchesSupervisor && matchesNationality && matchesSearch && matchesAnomaly && matchesAnomalyTab;
         });
-    }, [attendanceRecords, workers, month, year, activeTab, selectedAreaId, selectedSupervisorId, searchTerm, showAnomaliesOnly, supervisors, statusFilter]);
+    }, [attendanceRecords, workers, month, year, activeTab, selectedAreaId, selectedSupervisorId, selectedNationality, searchTerm, showAnomaliesOnly, supervisors, statusFilter]);
 
     const recentlyApproved = useMemo(() => {
         return attendanceRecords
@@ -421,12 +424,12 @@ export function HealthDirectorView() {
                                     onChange={e => setSearchTerm(e.target.value)}
                                 />
                             </div>
-                            <div className="grid grid-cols-2 md:flex items-center gap-2">
+                            <div className="grid grid-cols-2 lg:flex items-center gap-2 flex-wrap">
                                 <Select
                                     id="supervisor-filter"
                                     name="supervisorFilter"
                                     aria-label="تصفية حسب المراقب"
-                                    className="h-12 flex-1 md:min-w-[160px] border-slate-200 bg-white/80 rounded-xl font-bold text-xs shadow-sm"
+                                    className="h-12 flex-1 md:min-w-[140px] border-slate-200 bg-white/80 rounded-xl font-bold text-[10px] shadow-sm"
                                     value={selectedSupervisorId}
                                     onChange={e => setSelectedSupervisorId(e.target.value)}
                                 >
@@ -439,7 +442,7 @@ export function HealthDirectorView() {
                                     id="area-filter"
                                     name="areaFilter"
                                     aria-label="تصفية حسب المنطقة"
-                                    className="h-12 flex-1 md:min-w-[160px] border-slate-200 bg-white/80 rounded-xl font-bold text-xs shadow-sm"
+                                    className="h-12 flex-1 md:min-w-[140px] border-slate-200 bg-white/80 rounded-xl font-bold text-[10px] shadow-sm"
                                     value={selectedAreaId}
                                     onChange={e => setSelectedAreaId(e.target.value)}
                                 >
@@ -449,10 +452,22 @@ export function HealthDirectorView() {
                                     ))}
                                 </Select>
                                 <Select
+                                    id="nationality-filter"
+                                    name="nationalityFilter"
+                                    aria-label="تصفية حسب الجنسية"
+                                    className="h-12 flex-1 md:min-w-[120px] border-slate-200 bg-white/80 rounded-xl font-bold text-[10px] shadow-sm"
+                                    value={selectedNationality}
+                                    onChange={e => setSelectedNationality(e.target.value)}
+                                >
+                                    <option value="ALL">كل الجنسيات</option>
+                                    <option value="أردني">أردني</option>
+                                    <option value="مصري">مصري</option>
+                                </Select>
+                                <Select
                                     id="status-filter"
                                     name="statusFilter"
                                     aria-label="تصفية حسب الحالة"
-                                    className="h-12 flex-1 md:min-w-[180px] border-slate-200 bg-white/80 rounded-xl font-bold text-xs shadow-sm"
+                                    className="h-12 flex-1 md:min-w-[160px] border-slate-200 bg-white/80 rounded-xl font-bold text-[10px] shadow-sm"
                                     value={statusFilter}
                                     onChange={e => setStatusFilter(e.target.value)}
                                 >
@@ -470,7 +485,7 @@ export function HealthDirectorView() {
                             <Button
                                 variant={showAnomaliesOnly ? 'destructive' : 'outline'}
                                 onClick={() => setShowAnomaliesOnly(!showAnomaliesOnly)}
-                                className={`h-12 px-4 rounded-xl font-bold transition-all gap-2 text-xs ${!showAnomaliesOnly && 'border-slate-200 text-slate-600'}`}
+                                className={`h-12 px-4 rounded-xl font-bold transition-all gap-2 text-[10px] ${!showAnomaliesOnly && 'border-slate-200 text-slate-600'}`}
                             >
                                 <AlertTriangle className="h-4 w-4" />
                                 <span className="hidden sm:inline">{showAnomaliesOnly ? 'عرض الكل' : 'التنبيهات'}</span>

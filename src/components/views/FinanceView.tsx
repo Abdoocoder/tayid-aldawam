@@ -37,6 +37,7 @@ export function FinanceView() {
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table'); // View mode toggle
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
+    const [selectedNationality, setSelectedNationality] = useState("ALL");
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
     // Budget Configuration (in a real app, this would be fetched from database)
@@ -78,7 +79,8 @@ export function FinanceView() {
             p.areaName.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesArea = areaFilter === "ALL" || p.worker.areaId === areaFilter;
         const matchesStatus = statusFilter === 'all' || p.record?.status === statusFilter;
-        return matchesStatus && matchesSearch && matchesArea;
+        const matchesNationality = selectedNationality === "ALL" || p.worker.nationality === selectedNationality;
+        return matchesStatus && matchesSearch && matchesArea && matchesNationality;
     });
 
     const handleApprove = async (recordId: string) => {
@@ -436,6 +438,19 @@ export function FinanceView() {
                             {areas.map(a => (
                                 <option key={a.id} value={a.id}>{a.name}</option>
                             ))}
+                        </select>
+
+                        <select
+                            id="finance-nationality-filter"
+                            name="financeNationalityFilter"
+                            aria-label="تصفية حسب الجنسية المالية"
+                            className="h-12 bg-white/80 backdrop-blur-md border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 rounded-2xl shadow-sm font-bold text-slate-700 min-w-[140px] outline-none px-4 transition-all"
+                            value={selectedNationality}
+                            onChange={e => setSelectedNationality(e.target.value)}
+                        >
+                            <option value="ALL">جميع الجنسيات</option>
+                            <option value="أردني">أردني</option>
+                            <option value="مصري">مصري</option>
                         </select>
 
                         <div className="flex items-center gap-2 mr-auto lg:mr-0 lg:mr-auto">

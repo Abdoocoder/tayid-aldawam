@@ -85,6 +85,7 @@ export function HRView() {
     const [year, setYear] = useState(new Date().getFullYear());
     const [reportSearchTerm, setReportSearchTerm] = useState('');
     const [reportAreaFilter, setReportAreaFilter] = useState('ALL');
+    const [reportNationalityFilter, setReportNationalityFilter] = useState('ALL');
     const [reportStatusFilter, setReportStatusFilter] = useState<'ALL' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'APPROVED'>('PENDING_HR');
 
     const filteredUsers = useMemo(() => users.filter(u => u.role !== 'ADMIN'), [users]);
@@ -162,6 +163,7 @@ export function HRView() {
                     areaId: workerData.areaId || '',
                     dayValue: workerData.dayValue || 0,
                     baseSalary: workerData.baseSalary || 0,
+                    nationality: workerData.nationality || 'مصري',
                 });
             }
             setEditingItem(null);
@@ -600,6 +602,24 @@ export function HRView() {
                                                 required
                                             />
                                         </div>
+                                        <div className="space-y-1">
+                                            <label htmlFor="nationality" className="text-xs font-bold text-gray-500">الجنسية</label>
+                                            <select
+                                                id="nationality"
+                                                name="nationality"
+                                                className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                value={(editingItem.data as WorkerEditingData).nationality || 'مصري'}
+                                                onChange={e => {
+                                                    if (editingItem.type === 'worker') {
+                                                        setEditingItem({ ...editingItem, data: { ...editingItem.data, nationality: e.target.value } });
+                                                    }
+                                                }}
+                                                required
+                                            >
+                                                <option value="مصري">مصري</option>
+                                                <option value="أردني">أردني</option>
+                                            </select>
+                                        </div>
                                     </>
                                 )}
                                 {editingItem.type === 'supervisor' && (
@@ -700,6 +720,7 @@ export function HRView() {
                             year={year}
                             reportSearchTerm={reportSearchTerm}
                             reportAreaFilter={reportAreaFilter}
+                            reportNationalityFilter={reportNationalityFilter}
                             reportStatusFilter={reportStatusFilter}
                             getWorkerAttendance={getWorkerAttendance}
                             approveAttendance={async (id, status) => {
@@ -720,6 +741,7 @@ export function HRView() {
                             onMonthChange={(m, y) => { setMonth(m); setYear(y); }}
                             onSearchChange={setReportSearchTerm}
                             onAreaFilterChange={setReportAreaFilter}
+                            onNationalityFilterChange={setReportNationalityFilter}
                             onStatusFilterChange={setReportStatusFilter}
                             onExportCSV={handleExportCSV}
                             onBulkApprove={handleBulkApprove}

@@ -10,6 +10,7 @@ export function workerToDb(worker: FrontendWorker): Omit<DbWorker, 'created_at' 
         id: worker.id,
         name: worker.name,
         area_id: worker.areaId,
+        nationality: worker.nationality,
         base_salary: worker.baseSalary,
         day_value: worker.dayValue,
     };
@@ -24,6 +25,7 @@ export function workerFromDb(dbWorker: DbWorker): FrontendWorker {
         id: dbWorker.id,
         name: dbWorker.name,
         areaId: dbWorker.area_id,
+        nationality: dbWorker.nationality || 'مصري',
         baseSalary: dbWorker.base_salary,
         dayValue: dbWorker.day_value,
     };

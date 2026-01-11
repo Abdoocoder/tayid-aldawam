@@ -33,7 +33,7 @@ export const WorkerSection = React.memo(function WorkerSection({ workers, areas,
                 </div>
                 <Button
                     className="bg-purple-600 hover:bg-purple-700 shadow-lg shadow-purple-100"
-                    onClick={() => onEdit({ id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0 })}
+                    onClick={() => onEdit({ id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0, nationality: 'مصري' })}
                 >
                     <Plus className="h-4 w-4 ml-2" />
                     إضافة عامل جديد
@@ -46,7 +46,7 @@ export const WorkerSection = React.memo(function WorkerSection({ workers, areas,
                         title="لا يوجد عمال"
                         description={searchTerm ? "لم نجد عمالاً يطابقون بحثك" : "قم بإضافة العمال لبدء تسجيل الحضور"}
                         action={!searchTerm && (
-                            <Button variant="outline" onClick={() => onEdit({ id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0 })}>
+                            <Button variant="outline" onClick={() => onEdit({ id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0, nationality: 'مصري' })}>
                                 إضافة أول عامل
                             </Button>
                         )}
@@ -59,6 +59,7 @@ export const WorkerSection = React.memo(function WorkerSection({ workers, areas,
                                 <th className="p-4 border-b">اسم العامل</th>
                                 <th className="p-4 border-b">القطاع / المنطقة</th>
                                 <th className="p-4 border-b text-center">الأجر اليومي</th>
+                                <th className="p-4 border-b text-center">الجنسية</th>
                                 <th className="p-4 border-b text-center">الإجراءات</th>
                             </tr>
                         </thead>
@@ -78,6 +79,11 @@ export const WorkerSection = React.memo(function WorkerSection({ workers, areas,
                                             <span className="font-black text-green-700 font-mono">{w.dayValue}</span>
                                             <span className="text-[9px] text-gray-400 font-bold uppercase">د.أ / يوم</span>
                                         </div>
+                                    </td>
+                                    <td className="p-4 text-center">
+                                        <Badge variant="outline" className={`text-[10px] font-bold ${w.nationality === 'أردني' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-gray-50 text-gray-600 border-gray-100'}`}>
+                                            {w.nationality}
+                                        </Badge>
                                     </td>
                                     <td className="p-4">
                                         <div className="flex justify-center gap-2">

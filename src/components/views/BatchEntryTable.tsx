@@ -30,6 +30,7 @@ export function BatchEntryTable({
     const { saveAttendance } = useAttendance();
     const [filterType, setFilterType] = useState<'all' | 'unsupervised'>('unsupervised');
     const [searchTerm, setSearchTerm] = useState('');
+    const [nationalityFilter, setNationalityFilter] = useState<string>("ALL");
     const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
     const [edits, setEdits] = useState<Record<string, {
         normalDays: number;
@@ -50,6 +51,9 @@ export function BatchEntryTable({
 
             // Search
             if (searchTerm && !w.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+
+            // Nationality
+            if (nationalityFilter !== "ALL" && w.nationality !== nationalityFilter) return false;
 
             return true;
         });
@@ -172,6 +176,21 @@ export function BatchEntryTable({
                         onChange={e => setSearchTerm(e.target.value)}
                         className="bg-white border-slate-200"
                     />
+                </div>
+
+                <div className="w-full md:w-48">
+                    <select
+                        id="batch-nationality-filter"
+                        name="batchNationalityFilter"
+                        aria-label="تصفية حسب الجنسية للإدخال"
+                        className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        value={nationalityFilter}
+                        onChange={(e) => setNationalityFilter(e.target.value)}
+                    >
+                        <option value="ALL">جميع الجنسيات</option>
+                        <option value="أردني">أردني</option>
+                        <option value="مصري">مصري</option>
+                    </select>
                 </div>
             </div>
 

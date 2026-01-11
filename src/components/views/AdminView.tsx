@@ -43,6 +43,7 @@ export const AdminView = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [tableFilter, setTableFilter] = useState("ALL");
     const [actionFilter, setActionFilter] = useState("ALL");
+    const [workerNationalityFilter, setWorkerNationalityFilter] = useState("ALL");
 
     const [editingItem, setEditingItem] = useState<{
         type: 'user', data: Partial<User> & { id: string }
@@ -594,9 +595,11 @@ export const AdminView = () => {
                                 workers={workers}
                                 areas={areas}
                                 searchTerm={searchTerm}
+                                nationalityFilter={workerNationalityFilter}
+                                onNationalityFilterChange={setWorkerNationalityFilter}
                                 onEditWorker={(w: Worker) => setEditingItem({ type: 'worker', data: w })}
                                 onDeleteWorker={handleDeleteWorker}
-                                onAddWorker={() => setEditingItem({ type: 'worker', data: { id: 'NEW', name: '', areaId: areas[0]?.id || '', baseSalary: 300, dayValue: 10 } })}
+                                onAddWorker={() => setEditingItem({ type: 'worker', data: { id: 'NEW', name: '', areaId: areas[0]?.id || '', baseSalary: 300, dayValue: 10, nationality: 'مصري' } })}
                             />
                         </div>
                     )}
@@ -787,6 +790,19 @@ export const AdminView = () => {
                                             {areas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                                         </select>
                                     </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label htmlFor="worker-nationality" className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الجنسية</label>
+                                    <select
+                                        id="worker-nationality"
+                                        name="workerNationality"
+                                        className="w-full h-12 rounded-xl border border-slate-100 px-3 bg-slate-50/50 text-sm font-bold text-right outline-none"
+                                        value={(editingItem.data as Worker).nationality || 'مصري'}
+                                        onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, nationality: e.target.value } })}
+                                    >
+                                        <option value="مصري">مصري</option>
+                                        <option value="أردني">أردني</option>
+                                    </select>
                                 </div>
                                 <div className="pt-4 flex gap-3">
                                     <Button type="submit" disabled={isSaving} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-12 rounded-xl font-black">

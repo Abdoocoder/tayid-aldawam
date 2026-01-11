@@ -7,12 +7,14 @@ interface WorkersTabProps {
     workers: Worker[];
     areas: Area[];
     searchTerm: string;
+    nationalityFilter: string;
+    onNationalityFilterChange: (val: string) => void;
     onEditWorker: (worker: Worker) => void;
     onDeleteWorker: (id: string) => void;
     onAddWorker: () => void;
 }
 
-export function WorkersTab({ workers, areas, searchTerm, onEditWorker, onDeleteWorker, onAddWorker }: WorkersTabProps) {
+export function WorkersTab({ workers, areas, searchTerm, nationalityFilter, onNationalityFilterChange, onEditWorker, onDeleteWorker, onAddWorker }: WorkersTabProps) {
     return (
         <div className="bg-white/40 backdrop-blur-2xl rounded-[3rem] border border-white/20 shadow-2xl shadow-blue-500/10 overflow-hidden animate-in slide-in-from-bottom-12 duration-1000">
             <div className="p-10 border-b border-white/10 flex flex-col md:flex-row justify-between items-center gap-8 bg-gradient-to-br from-blue-600/10 via-transparent to-transparent relative">
@@ -50,6 +52,23 @@ export function WorkersTab({ workers, areas, searchTerm, onEditWorker, onDeleteW
                 </div>
             </div>
 
+            <div className="px-10 py-4 bg-slate-50/50 border-b border-white/10 flex justify-end">
+                <div className="w-48">
+                    <select
+                        id="admin-worker-nationality-filter"
+                        name="adminWorkerNationalityFilter"
+                        aria-label="تصفية عمال النظام حسب الجنسية"
+                        className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-sm font-black text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20"
+                        value={nationalityFilter}
+                        onChange={(e) => onNationalityFilterChange(e.target.value)}
+                    >
+                        <option value="ALL">جميع الجنسيات</option>
+                        <option value="أردني">أردني</option>
+                        <option value="مصري">مصري</option>
+                    </select>
+                </div>
+            </div>
+
             <div className="overflow-x-auto">
                 <table className="w-full text-right">
                     <thead>
@@ -58,15 +77,17 @@ export function WorkersTab({ workers, areas, searchTerm, onEditWorker, onDeleteW
                             <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">الاسم الكامل</th>
                             <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">القطاع / الحي</th>
                             <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">الأجر اليومي</th>
+                            <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">الجنسية</th>
                             <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">التحكم</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/10">
                         {workers.filter(w => {
                             const areaName = areas.find(a => a.id === w.areaId)?.name || "";
-                            return w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            return (w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                 w.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                areaName.toLowerCase().includes(searchTerm.toLowerCase());
+                                areaName.toLowerCase().includes(searchTerm.toLowerCase())) &&
+                                (nationalityFilter === "ALL" || w.nationality === nationalityFilter);
                         }).map((w) => {
                             const areaName = areas.find(a => a.id === w.areaId)?.name || "غير محدد";
                             return (
@@ -91,6 +112,11 @@ export function WorkersTab({ workers, areas, searchTerm, onEditWorker, onDeleteW
                                             <span>{w.dayValue}</span>
                                             <span className="text-[11px] text-slate-400 opacity-60">JOD / DAY</span>
                                         </div>
+                                    </td>
+                                    <td className="px-10 py-8 text-center">
+                                        <Badge variant="outline" className={`font-black text-[10px] px-3 py-1.5 ${w.nationality === 'أردني' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>
+                                            {w.nationality}
+                                        </Badge>
                                     </td>
                                     <td className="px-10 py-8">
                                         <div className="flex justify-center items-center gap-3">

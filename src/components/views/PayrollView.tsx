@@ -30,6 +30,7 @@ export function PayrollView() {
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
+    const [selectedNationality, setSelectedNationality] = useState("ALL");
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
     // Filter workers based on search and area
@@ -61,7 +62,8 @@ export function PayrollView() {
             p.worker.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
             p.areaName.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = p.record?.status === statusFilter;
-        return matchesStatus && matchesSearch;
+        const matchesNationality = selectedNationality === "ALL" || p.worker.nationality === selectedNationality;
+        return matchesStatus && matchesSearch && matchesNationality;
     });
 
     const handleApprove = async (recordId: string) => {
@@ -213,6 +215,19 @@ export function PayrollView() {
                     >
                         <option value="PENDING_PAYROLL">⏱️ بانتظار الصرف</option>
                         <option value="APPROVED">✅ تم الصرف</option>
+                    </select>
+
+                    <select
+                        id="payroll-nationality-filter"
+                        name="payrollNationalityFilter"
+                        aria-label="تصفية حسب الجنسية للرواتب"
+                        className="h-12 bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl shadow-sm px-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                        value={selectedNationality}
+                        onChange={e => setSelectedNationality(e.target.value)}
+                    >
+                        <option value="ALL">جميع الجنسيات</option>
+                        <option value="أردني">أردني</option>
+                        <option value="مصري">مصري</option>
                     </select>
                     <Button variant="ghost" onClick={() => window.print()} className="h-12 px-6 text-purple-600 hover:bg-purple-50/80 rounded-2xl font-black gap-2 border border-purple-200 shadow-sm transition-all active:scale-95 hover:shadow-md">
                         <Printer className="h-4 w-4" /> <span className="hidden sm:inline">طباعة</span>

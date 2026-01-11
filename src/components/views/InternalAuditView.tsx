@@ -54,6 +54,7 @@ export function InternalAuditView() {
     const [areaFilter, setAreaFilter] = useState<string>('all');
     const [amountFilter, setAmountFilter] = useState<'all' | '0-20' | '20-30' | '30+'>('all');
     const [statusFilter, setStatusFilter] = useState<string>('PENDING_AUDIT'); // Default to audit pending
+    const [selectedNationality, setSelectedNationality] = useState<string>("ALL");
 
     const navItems = [
         { id: 'audit', label: 'تدقيق المستحقات', icon: ShieldCheck },
@@ -104,7 +105,9 @@ export function InternalAuditView() {
             else if (amountFilter === '20-30') matchesAmount = item.record.totalCalculatedDays > 20 && item.record.totalCalculatedDays <= 30;
             else if (amountFilter === '30+') matchesAmount = item.record.totalCalculatedDays > 30;
 
-            return matchesSearch && matchesRisk && matchesArea && matchesAmount;
+            const matchesNationality = selectedNationality === "ALL" || item.worker.nationality === selectedNationality;
+
+            return matchesSearch && matchesRisk && matchesArea && matchesAmount && matchesNationality;
         });
     }, [workers, areas, getWorkerAttendance, month, year, activeTab, searchTerm, riskFilter, areaFilter, amountFilter, statusFilter]);
 
@@ -319,10 +322,23 @@ export function InternalAuditView() {
                                 onChange={(e) => setAmountFilter(e.target.value as 'all' | '0-20' | '20-30' | '30+')}
                                 className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-sm font-bold text-slate-700"
                             >
-                                <option value="all">الكل</option>
-                                <option value="0-20">0-20 يوم</option>
                                 <option value="20-30">20-30 يوم</option>
                                 <option value="30+">30+ يوم</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-600 mb-2">الجنسية</label>
+                            <select
+                                id="audit-nationality-filter"
+                                name="auditNationalityFilter"
+                                aria-label="تصفية حسب الجنسية"
+                                value={selectedNationality}
+                                onChange={(e) => setSelectedNationality(e.target.value)}
+                                className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-sm font-bold text-slate-700"
+                            >
+                                <option value="ALL">جميع الجنسيات</option>
+                                <option value="أردني">أردني</option>
+                                <option value="مصري">مصري</option>
                             </select>
                         </div>
                     </div>
