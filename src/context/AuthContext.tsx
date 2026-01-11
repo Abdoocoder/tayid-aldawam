@@ -16,6 +16,8 @@ interface AuthContextType {
     signInWithGoogle: () => Promise<void>;
     signInWithGithub: () => Promise<void>;
     signOut: () => Promise<void>;
+    resetPassword: (email: string) => Promise<void>;
+    updatePassword: (password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -121,21 +123,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 finalEmail = `${prefix}.sv@tayid-attendance.com`;
             }
 
+            // Optional: Check if user exists in public.users first for better error messages
+            // This is professional as it allows us to tell the user the account doesn't exist
+            const { data: userProfile } = await supabase
+                .from('users')
+                .select('id, is_active')
+                .eq('username', finalEmail)
+                .maybeSingle();
+
+            if (!userProfile) {
+                throw new Error('عذراً، هذا البريد الإلكتروني غير مسجل في النظام');
+            }
+
             const { error } = await supabase.auth.signInWithPassword({
                 email: finalEmail,
-                password,
+                password: password.trim(),
             });
 
             if (error) {
+                if (error.message.includes('Invalid login credentials')) {
+                    throw new Error('عذراً، كلمة المرور غير صحيحة');
+                }
                 if (error.message.includes('Email not confirmed')) {
-                    throw new Error('يرجى تأكيد البريد الإلكتروني أو طلب تعطيل تأكيد البريد من المسؤول');
+                    throw new Error('يرجى تأكيد البريد الإلكتروني للمتابعة');
                 }
                 throw error;
             }
 
             // User will be loaded via onAuthStateChange
         } catch (err: unknown) {
-            console.error('Sign in error:', err);
+            // Only log unexpected errors, not standard auth failures
+            if (!(err instanceof Error) || (!err.message.includes('غير مسجل') && !err.message.includes('غير صحيحة'))) {
+                console.error('Sign in error details:', err);
+            }
             const message = err instanceof Error ? err.message : 'فشل تسجيل الدخول';
             setError(message);
             throw err;
@@ -278,6 +298,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const resetPassword = async (email: string) => {
+        try {
+            setError(null);
+            setIsLoading(true);
+
+            let finalEmail = email.trim().toLowerCase();
+            if (!finalEmail.includes('@')) {
+                const prefix = finalEmail.replace(/[^a-z0-9]/g, '');
+                finalEmail = `${prefix}.sv@tayid-attendance.com`;
+            }
+
+            const { error } = await supabase.auth.resetPasswordForEmail(finalEmail, {
+                redirectTo: `${window.location.origin}/reset-password`,
+            });
+            if (error) throw error;
+        } catch (err: unknown) {
+            console.error('Reset password error:', err);
+            const message = err instanceof Error ? err.message : 'فشل إرسال رابط إعادة تعيين كلمة المرور';
+            setError(message);
+            throw err;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const updatePassword = async (password: string) => {
+        try {
+            setError(null);
+            setIsLoading(true);
+            const { error } = await supabase.auth.updateUser({
+                password: password.trim(),
+            });
+            if (error) throw error;
+        } catch (err: unknown) {
+            console.error('Update password error:', err);
+            const message = err instanceof Error ? err.message : 'فشل تحديث كلمة المرور';
+            setError(message);
+            throw err;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const signOut = async () => {
         try {
             setError(null);
@@ -307,6 +370,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 signInWithGoogle,
                 signInWithGithub,
                 signOut,
+                resetPassword,
+                updatePassword,
             }}
         >
             {children}
