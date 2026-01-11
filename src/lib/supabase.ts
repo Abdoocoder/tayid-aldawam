@@ -49,6 +49,7 @@ export interface User {
     area_id?: string | null; // Keep for compatibility/single selection
     areas?: Area[]; // For multi-area support
     is_active: boolean;
+    handled_nationality?: string;
     created_at?: string;
     updated_at?: string;
 }

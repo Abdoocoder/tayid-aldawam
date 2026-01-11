@@ -18,6 +18,7 @@ export interface User {
     areaId?: string; // Legacy/Single Area
     areas?: Area[]; // Multi-Area Support
     isActive: boolean;
+    handledNationality?: string; // ALL, أردني, مصري
 }
 
 export interface Worker {
@@ -124,7 +125,8 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
                 role: u.role as UserRole,
                 areaId: u.area_id || undefined,
                 areas: u.user_areas?.map(ua => ua.areas) || [],
-                isActive: u.is_active
+                isActive: u.is_active,
+                handledNationality: u.handled_nationality || 'ALL'
             }));
             setUsers(formattedUsers);
         } catch (err) {
@@ -341,6 +343,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             if (updates.areaId !== undefined) dbUpdates.area_id = updates.areaId;
             if (updates.username) dbUpdates.username = updates.username;
             if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
+            if (updates.handledNationality !== undefined) dbUpdates.handled_nationality = updates.handledNationality;
 
             if (Object.keys(dbUpdates).length > 0) {
                 const { error } = await supabase.from('users').update(dbUpdates).eq('id', userId);
