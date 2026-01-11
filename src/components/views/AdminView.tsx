@@ -742,6 +742,23 @@ export const AdminView = () => {
                                     </div>
                                 </div>
 
+                                {editingItem.data.role === 'HR' && (
+                                    <div className="space-y-2">
+                                        <label htmlFor="edit-handled-nationality" className="text-[11px] font-black text-slate-500 uppercase tracking-widest block text-right">الجنسية التي يديرها (خاص بموظف HR)</label>
+                                        <select
+                                            id="edit-handled-nationality"
+                                            name="editHandledNationality"
+                                            className="w-full h-12 rounded-xl border border-slate-100 px-3 bg-slate-50/50 text-sm font-bold text-right focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                                            value={editingItem.data.handledNationality || 'ALL'}
+                                            onChange={e => setEditingItem({ ...editingItem, data: { ...editingItem.data, handledNationality: e.target.value } })}
+                                        >
+                                            <option value="ALL">الكل (إدارة عامة)</option>
+                                            <option value="أردني">أردنيين فقط</option>
+                                            <option value="مصري">مصريين فقط</option>
+                                        </select>
+                                    </div>
+                                )}
+
                                 <div className="pt-4 flex gap-3">
                                     <Button type="submit" disabled={isSaving} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white h-12 rounded-xl font-black shadow-lg shadow-indigo-200">
                                         {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : 'اعتماد المستخدم'}

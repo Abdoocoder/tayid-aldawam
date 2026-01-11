@@ -40,7 +40,7 @@ async function runImport() {
     const workbook = XLSX.readFile(filePath);
     const firstSheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[firstSheetName];
-    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as (string | number | undefined)[][];
 
     // Data rows start from index 2
     const rows = data.slice(2).filter(row => row[1] && row[2]); // Must have ID and Name

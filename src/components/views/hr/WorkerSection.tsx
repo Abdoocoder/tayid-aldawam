@@ -14,9 +14,17 @@ interface WorkerSectionProps {
     searchTerm: string;
     onEdit: (worker: Worker | (Partial<Worker> & { id: 'NEW' })) => void;
     onDelete: (id: string) => void;
+    defaultNationality?: string;
 }
 
-export const WorkerSection = React.memo(function WorkerSection({ workers, areas, searchTerm, onEdit, onDelete }: WorkerSectionProps) {
+export const WorkerSection = React.memo(function WorkerSection({
+    workers,
+    areas,
+    searchTerm,
+    onEdit,
+    onDelete,
+    defaultNationality = 'مصري'
+}: WorkerSectionProps) {
     const filteredWorkers = workers.filter(w => {
         const areaName = areas.find(a => a.id === w.areaId)?.name || "";
         return w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -33,7 +41,7 @@ export const WorkerSection = React.memo(function WorkerSection({ workers, areas,
                 </div>
                 <Button
                     className="bg-purple-600 hover:bg-purple-700 shadow-lg shadow-purple-100"
-                    onClick={() => onEdit({ id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0, nationality: 'مصري' })}
+                    onClick={() => onEdit({ id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0, nationality: defaultNationality })}
                 >
                     <Plus className="h-4 w-4 ml-2" />
                     إضافة عامل جديد
@@ -46,7 +54,7 @@ export const WorkerSection = React.memo(function WorkerSection({ workers, areas,
                         title="لا يوجد عمال"
                         description={searchTerm ? "لم نجد عمالاً يطابقون بحثك" : "قم بإضافة العمال لبدء تسجيل الحضور"}
                         action={!searchTerm && (
-                            <Button variant="outline" onClick={() => onEdit({ id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0, nationality: 'مصري' })}>
+                            <Button variant="outline" onClick={() => onEdit({ id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0, nationality: defaultNationality })}>
                                 إضافة أول عامل
                             </Button>
                         )}

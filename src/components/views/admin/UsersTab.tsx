@@ -78,7 +78,7 @@ export function UsersTab({ users, areas, searchTerm, onEditUser, onDeleteUser, o
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-10 py-8 text-center text-center">
+                                    <td className="px-10 py-8 text-center">
                                         <Badge variant="outline" className={`font-black text-[10px] uppercase tracking-widest ring-1 border-none px-4 py-1.5 rounded-xl shadow-sm ${u.role === 'ADMIN' ? 'bg-indigo-600 text-white ring-indigo-500' : 'bg-white text-slate-600 ring-slate-200'} `}>
                                             {{
                                                 'SUPERVISOR': 'مراقب ميداني',
@@ -92,6 +92,11 @@ export function UsersTab({ users, areas, searchTerm, onEditUser, onDeleteUser, o
                                                 'ADMIN': 'مدير نظام'
                                             }[u.role] || u.role}
                                         </Badge>
+                                        {u.role === 'HR' && u.handledNationality && u.handledNationality !== 'ALL' && (
+                                            <div className="mt-2 text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md inline-block">
+                                                الجنسية: {u.handledNationality}
+                                            </div>
+                                        )}
                                     </td>
                                     <td className="px-10 py-8">
                                         <div className="flex items-center gap-3 text-xs font-black text-slate-500 group-hover:text-indigo-600 transition-colors">
@@ -140,7 +145,7 @@ export function UsersTab({ users, areas, searchTerm, onEditUser, onDeleteUser, o
                         })}
                     </tbody>
                 </table>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

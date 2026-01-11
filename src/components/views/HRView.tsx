@@ -782,6 +782,7 @@ export function HRView() {
                             searchTerm={searchTerm}
                             onEdit={(w) => setEditingItem({ type: 'worker', data: w })}
                             onDelete={handleDeleteWorker}
+                            defaultNationality={appUser?.handledNationality !== 'ALL' ? appUser?.handledNationality : 'مصري'}
                         />
                     )}
                 </div>

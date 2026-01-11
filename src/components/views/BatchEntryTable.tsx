@@ -57,7 +57,7 @@ export function BatchEntryTable({
 
             return true;
         });
-    }, [workers, responsibleAreasIds, unsupervisedAreaIds, filterType, searchTerm]);
+    }, [workers, responsibleAreasIds, unsupervisedAreaIds, filterType, searchTerm, nationalityFilter]);
 
     const handleInputChange = (workerId: string, field: string, value: string) => {
         const numVal = parseFloat(value) || 0;

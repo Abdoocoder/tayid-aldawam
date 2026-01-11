@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { workerToDb, attendanceToDb } from '@/lib/data-transformer';
 import initialData from '@/data/initialData.json';
+import { Worker as FrontendWorker } from '@/context/AttendanceContext';
 
 /**
  * Migration script to import initial data from JSON to Supabase
@@ -22,7 +23,7 @@ async function migrateData() {
 
         // Migrate Workers
         console.log('👷 Migrating workers...');
-        const workersToInsert = initialData.workers.map(w => workerToDb({ ...w, nationality: 'مصري' } as any));
+        const workersToInsert = initialData.workers.map(w => workerToDb({ ...w, nationality: 'مصري' } as unknown as FrontendWorker));
 
         const { data: workersData, error: workersError } = await supabase
             .from('workers')

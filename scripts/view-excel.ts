@@ -8,7 +8,7 @@ try {
     const workbook = XLSX.readFile(filePath);
     const firstSheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[firstSheetName];
-    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as (string | number | undefined)[][];
 
     console.log('--- Row 0 (Headers?) ---');
     console.log(JSON.stringify(data[0], null, 2));

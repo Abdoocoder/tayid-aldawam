@@ -24,9 +24,12 @@ async function describeTables() {
     console.log('📋 Describing attendance_records table...');
     const { data: attCols, error: attErr } = await supabase.rpc('get_table_columns', { table_name: 'attendance_records' });
     if (attErr) {
+        console.warn('RPC Error for attendance_records, falling back to sample query.');
         const { data: attSample, error: asErr } = await supabase.from('attendance_records').select('*').limit(1);
         if (asErr) console.error('Attendance Sample Error:', asErr);
         else console.log('Attendance Sample Keys:', Object.keys(attSample[0] || {}));
+    } else {
+        console.log('Attendance Columns:', JSON.stringify(attCols, null, 2));
     }
 }
 

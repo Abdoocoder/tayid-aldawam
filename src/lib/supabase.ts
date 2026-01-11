@@ -168,22 +168,18 @@ export const attendanceAPI = {
         return data || [];
     },
 
-    async getByPeriod(month: number, year: number, areaId?: string | string[]): Promise<AttendanceRecord[]> {
+    async getByPeriod(month: number, year: number, areaId?: string | string[], nationality?: string): Promise<AttendanceRecord[]> {
         const isAll = (typeof areaId === 'string' && areaId === 'ALL') ||
             (Array.isArray(areaId) && areaId.includes('ALL'));
 
-        let query = supabase
-            .from('attendance_records')
-            .select('*')
-            .eq('month', month)
-            .eq('year', year);
+        let query;
 
         if (areaId && !isAll) {
             // Optimize: Filter by workers in the specified area(s) using a join
             // Using !inner ensures that we only get records that have a matching worker in those areas
             query = supabase
                 .from('attendance_records')
-                .select('*, workers!inner(area_id)')
+                .select('*, workers!inner(area_id, nationality)')
                 .eq('month', month)
                 .eq('year', year);
 
@@ -191,6 +187,26 @@ export const attendanceAPI = {
                 query = query.in('workers.area_id', areaId);
             } else {
                 query = query.eq('workers.area_id', areaId);
+            }
+
+            if (nationality && nationality !== 'ALL') {
+                query = query.eq('workers.nationality', nationality);
+            }
+        } else {
+            // If areaId is ALL but nationality is scoped
+            if (nationality && nationality !== 'ALL') {
+                query = supabase
+                    .from('attendance_records')
+                    .select('*, workers!inner(area_id, nationality)')
+                    .eq('month', month)
+                    .eq('year', year)
+                    .eq('workers.nationality', nationality);
+            } else {
+                query = supabase
+                    .from('attendance_records')
+                    .select('*')
+                    .eq('month', month)
+                    .eq('year', year);
             }
         }
 

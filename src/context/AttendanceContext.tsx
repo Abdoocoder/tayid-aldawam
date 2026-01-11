@@ -86,11 +86,20 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
     // --- Loading Functions ---
 
-    const loadWorkers = useCallback(async (areaId?: string | string[]) => {
+    const loadWorkers = useCallback(async (areaId?: string | string[], nationality?: string) => {
         try {
-            const dbWorkers = areaId && areaId !== 'ALL'
-                ? await workersAPI.getByAreaId(areaId)
-                : await workersAPI.getAll();
+            let dbWorkers;
+            if (areaId && areaId !== 'ALL') {
+                dbWorkers = await workersAPI.getByAreaId(areaId);
+            } else {
+                dbWorkers = await workersAPI.getAll();
+            }
+
+            // Filter by nationality if scoped
+            if (nationality && nationality !== 'ALL') {
+                dbWorkers = dbWorkers.filter(w => w.nationality === nationality);
+            }
+
             const frontendWorkers = dbWorkers.map(workerFromDb);
             setWorkers(frontendWorkers);
         } catch (err) {
@@ -99,9 +108,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     }, []);
 
-    const loadAttendance = useCallback(async (month: number, year: number, areaId?: string | string[]) => {
+    const loadAttendance = useCallback(async (month: number, year: number, areaId?: string | string[], nationality?: string) => {
         try {
-            const dbRecords = await attendanceAPI.getByPeriod(month, year, areaId);
+            const dbRecords = await attendanceAPI.getByPeriod(month, year, areaId, nationality);
             const frontendRecords = dbRecords.map(attendanceFromDb);
             setAttendanceRecords(prev => {
                 // Merge records: Update existing, add new ones
@@ -184,8 +193,8 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             }
 
             const promises: Promise<unknown>[] = [
-                loadWorkers(areaIds),
-                loadAttendance(currentMonth, currentYear, areaIds),
+                loadWorkers(areaIds, appUser.handledNationality),
+                loadAttendance(currentMonth, currentYear, areaIds, appUser.handledNationality),
                 loadAreas(),
             ];
 
@@ -201,7 +210,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         } finally {
             setIsLoading(false);
         }
-    }, [appUser?.role, appUser?.isActive, appUser?.areaId, appUser?.areas, loadWorkers, loadAttendance, loadAreas, loadUsers, loadAuditLogs]);
+    }, [appUser?.role, appUser?.isActive, appUser?.areaId, appUser?.areas, appUser?.handledNationality, loadWorkers, loadAttendance, loadAreas, loadUsers, loadAuditLogs]);
 
     const refreshData = useCallback(async () => {
         await loadData();
@@ -234,14 +243,14 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         const attendanceSubscription = supabase
             .channel('attendance_changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, () => {
-                loadAttendance(m, y, areaIds);
+                loadAttendance(m, y, areaIds, appUser.handledNationality);
             })
             .subscribe();
 
         const workersSubscription = supabase
             .channel('workers_changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'workers' }, () => {
-                loadWorkers(areaIds);
+                loadWorkers(areaIds, appUser.handledNationality);
             })
             .subscribe();
 

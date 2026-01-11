@@ -10,7 +10,7 @@ const supabase = createClient(supabaseUrl!, supabaseKey!);
 
 async function checkCols() {
     console.log('👷 Checking nationality column...');
-    const { data, error } = await supabase.from('workers').select('nationality').limit(1);
+    const { error } = await supabase.from('workers').select('nationality').limit(1);
     if (error) console.error('Nationality check error:', JSON.stringify(error, null, 2));
     else console.log('Nationality column exists!');
 }

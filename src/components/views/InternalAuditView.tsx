@@ -109,7 +109,7 @@ export function InternalAuditView() {
 
             return matchesSearch && matchesRisk && matchesArea && matchesAmount && matchesNationality;
         });
-    }, [workers, areas, getWorkerAttendance, month, year, activeTab, searchTerm, riskFilter, areaFilter, amountFilter, statusFilter]);
+    }, [workers, areas, getWorkerAttendance, month, year, activeTab, searchTerm, riskFilter, areaFilter, amountFilter, statusFilter, selectedNationality]);
 
     // Analytics
     const analytics = useMemo(() => {
