@@ -286,7 +286,7 @@ export function FinanceView() {
 
                             <button
                                 onClick={() => setIsMobileNavOpen(true)}
-                                className="p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
+                                className="md:hidden p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
                             >
                                 <Menu className="h-6 w-6" />
                             </button>

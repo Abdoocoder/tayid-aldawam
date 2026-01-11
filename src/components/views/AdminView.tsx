@@ -261,13 +261,15 @@ export const AdminView = () => {
                                     طباعة
                                 </Button>
                             )}
-                            <button
-                                onClick={() => setIsMobileNavOpen(true)}
-                                className="md:hidden p-3 bg-white/80 border border-slate-200 rounded-2xl text-slate-600 shadow-xl active:scale-95 transition-all"
-                            >
-                                <Menu className="h-6 w-6" />
-                            </button>
                         </div>
+
+                        {/* Mobile Menu Trigger */}
+                        <button
+                            onClick={() => setIsMobileNavOpen(true)}
+                            className="lg:hidden p-3 bg-white/80 border border-slate-200 rounded-2xl text-slate-600 shadow-xl active:scale-95 transition-all"
+                        >
+                            <Menu className="h-6 w-6" />
+                        </button>
                     </div>
                 </div>
             </div>
