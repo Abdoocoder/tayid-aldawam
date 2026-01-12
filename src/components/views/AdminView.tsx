@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useAttendance, User, UserRole, Worker, Area } from '@/context/AttendanceContext';
+import { useAttendance } from '@/context/AttendanceContext';
+import { User, UserRole, Worker, Area } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { Button } from '../ui/button';

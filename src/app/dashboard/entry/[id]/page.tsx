@@ -2,7 +2,8 @@
 
 import React, { useState, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useAttendance, Worker } from "@/context/AttendanceContext";
+import { useAttendance } from "@/context/AttendanceContext";
+import { Worker } from "@/types";
 import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

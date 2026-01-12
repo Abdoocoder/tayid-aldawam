@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { AuditLog } from "@/context/AttendanceContext";
+import { AuditLog } from "@/types";
 import { History } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
@@ -105,8 +105,8 @@ export function LogsTab({ logs, searchTerm, onSearchChange, tableFilter, onTable
                                 </td>
                                 <td className="px-10 py-8 text-center text-center">
                                     <Badge variant="outline" className={`font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-2xl border-none ring-1 shadow-sm ${log.action === 'INSERT' ? 'bg-emerald-600 text-white ring-emerald-500' :
-                                            log.action === 'UPDATE' ? 'bg-indigo-600 text-white ring-indigo-500' :
-                                                'bg-rose-600 text-white ring-rose-500'} `}>
+                                        log.action === 'UPDATE' ? 'bg-indigo-600 text-white ring-indigo-500' :
+                                            'bg-rose-600 text-white ring-rose-500'} `}>
                                         {log.action}
                                     </Badge>
                                 </td>

@@ -13,7 +13,8 @@ import {
     Search,
     Menu
 } from "lucide-react";
-import { useAttendance, User, Worker, UserRole } from "@/context/AttendanceContext";
+import { useAttendance } from "@/context/AttendanceContext";
+import { User, Worker, UserRole } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { MobileNav, NavItem } from "../ui/mobile-nav";

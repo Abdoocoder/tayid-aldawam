@@ -1,49 +1,18 @@
-"use client";
-
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { supabase, workersAPI, attendanceAPI, usersAPI, areasAPI, type Area, type AuditLog } from "@/lib/supabase";
-export type { Area, AuditLog };
+import { supabase, workersAPI, attendanceAPI, usersAPI, areasAPI, type AuditLog } from "@/lib/supabase";
 import { workerFromDb, workerToDb, attendanceFromDb, attendanceToDb } from "@/lib/data-transformer";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
+import {
+    User,
+    Worker,
+    AttendanceRecord,
+    UserRole,
+    AttendanceStatus,
+    Area
+} from "@/types";
 
-// --- Types ---
-
-export type UserRole = "SUPERVISOR" | "GENERAL_SUPERVISOR" | "HEALTH_DIRECTOR" | "HR" | "INTERNAL_AUDIT" | "FINANCE" | "PAYROLL" | "ADMIN" | "MAYOR";
-
-export interface User {
-    id: string;
-    username: string;
-    name: string;
-    role: UserRole;
-    areaId?: string; // Legacy/Single Area
-    areas?: Area[]; // Multi-Area Support
-    isActive: boolean;
-    handledNationality?: string; // ALL, أردني, مصري
-}
-
-export interface Worker {
-    id: string;
-    name: string;
-    areaId: string;
-    nationality: string;
-    baseSalary: number;
-    dayValue: number; // Dinars
-}
-
-export interface AttendanceRecord {
-    id: string;
-    workerId: string;
-    month: number;
-    year: number;
-    normalDays: number;
-    overtimeNormalDays: number; // 0.5 value
-    overtimeHolidayDays: number; // 1.0 value
-    overtimeEidDays: number; // 1.0 value
-    totalCalculatedDays: number;
-    status: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'PENDING_PAYROLL' | 'APPROVED';
-    rejectionNotes?: string;
-    updatedAt: string;
-}
+export type { Area, AuditLog };
 
 // --- Context ---
 
@@ -68,14 +37,15 @@ interface AttendanceContextType {
     deleteArea: (id: string) => Promise<void>;
     refreshData: () => Promise<void>;
     loadAttendance: (month: number, year: number, areaId?: string | string[]) => Promise<void>;
-    approveAttendance: (recordId: string, nextStatus: 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'PENDING_PAYROLL' | 'APPROVED') => Promise<void>;
-    rejectAttendance: (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE', reason?: string) => Promise<void>;
+    approveAttendance: (recordId: string, nextStatus: AttendanceStatus) => Promise<void>;
+    rejectAttendance: (recordId: string, newStatus: AttendanceStatus, reason?: string) => Promise<void>;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(undefined);
 
 export function AttendanceProvider({ children }: { children: React.ReactNode }) {
     const { appUser } = useAuth();
+    const { showToast } = useToast();
     const [workers, setWorkers] = useState<Worker[]>([]);
     const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
     const [users, setUsers] = useState<User[]>([]);
@@ -83,6 +53,21 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // --- Helpers ---
+
+    const handleError = useCallback((msg: string, err: unknown) => {
+        console.error(msg, err);
+        setError(err instanceof Error ? err.message : msg);
+    }, []);
+
+    const getEffectiveAreaIds = useCallback(() => {
+        if (!appUser) return undefined;
+        if (appUser.areaId === 'ALL') return 'ALL';
+        if (appUser.areas && appUser.areas.length > 0) return appUser.areas.map((a: Area) => a.id);
+        if (appUser.areaId) return [appUser.areaId];
+        return undefined;
+    }, [appUser]);
 
     // --- Loading Functions ---
 
@@ -103,10 +88,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             const frontendWorkers = dbWorkers.map(workerFromDb);
             setWorkers(frontendWorkers);
         } catch (err) {
-            console.error('Failed to load workers:', err);
-            throw err;
+            handleError('Failed to load workers', err);
         }
-    }, []);
+    }, [handleError]);
 
     const loadAttendance = useCallback(async (month: number, year: number, areaId?: string | string[], nationality?: string) => {
         try {
@@ -119,10 +103,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
                 return Array.from(recordMap.values());
             });
         } catch (err) {
-            console.error('Failed to load attendance:', err);
-            throw err;
+            handleError('Failed to load attendance', err);
         }
-    }, []);
+    }, [handleError]);
 
     const loadUsers = useCallback(async () => {
         try {
@@ -133,24 +116,24 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
                 name: u.name,
                 role: u.role as UserRole,
                 areaId: u.area_id || undefined,
-                areas: u.user_areas?.map(ua => ua.areas) || [],
+                areas: (u.user_areas?.map(ua => ua.areas) || []) as Area[],
                 isActive: u.is_active,
                 handledNationality: u.handled_nationality || 'ALL'
             }));
             setUsers(formattedUsers);
         } catch (err) {
-            console.error('AttendanceContext: Failed to load users:', err);
+            handleError('Failed to load users', err);
         }
-    }, []);
+    }, [handleError]);
 
     const loadAreas = useCallback(async () => {
         try {
             const dbAreas = await areasAPI.getAll();
-            setAreas(dbAreas);
+            setAreas(dbAreas as Area[]);
         } catch (err) {
-            console.error('Failed to load areas:', err);
+            handleError('Failed to load areas', err);
         }
-    }, []);
+    }, [handleError]);
 
     const loadAuditLogs = useCallback(async () => {
         try {
@@ -162,9 +145,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             if (error) throw error;
             setAuditLogs(data || []);
         } catch (err) {
-            console.error('AttendanceContext: Failed to load audit logs:', err);
+            handleError('Failed to load audit logs', err);
         }
-    }, []);
+    }, [handleError]);
 
     const loadData = useCallback(async () => {
         setIsLoading(true);
@@ -179,10 +162,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             const currentMonth = now.getMonth() + 1;
             const currentYear = now.getFullYear();
 
-            // Collect all assigned areas
-            const areaIds = appUser.areaId === 'ALL' ? 'ALL' :
-                (appUser.areas && appUser.areas.length > 0) ? appUser.areas.map(a => a.id) :
-                    appUser.areaId ? [appUser.areaId] : undefined;
+            const areaIds = getEffectiveAreaIds();
 
             const promises: Promise<unknown>[] = [
                 loadWorkers(areaIds, appUser.handledNationality),
@@ -197,12 +177,11 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
             await Promise.all(promises);
         } catch (err) {
-            console.error('AttendanceContext: Failed to load data:', err);
-            setError(err instanceof Error ? err.message : 'فشل تحميل البيانات');
+            handleError('Failed to load initial data', err);
         } finally {
             setIsLoading(false);
         }
-    }, [appUser?.role, appUser?.isActive, appUser?.areaId, appUser?.areas, appUser?.handledNationality, loadWorkers, loadAttendance, loadAreas, loadUsers, loadAuditLogs]);
+    }, [appUser?.role, appUser?.isActive, appUser?.handledNationality, getEffectiveAreaIds, loadWorkers, loadAttendance, loadAreas, loadUsers, loadAuditLogs, handleError]);
 
     const refreshData = useCallback(async () => {
         await loadData();
@@ -219,10 +198,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         const m = now.getMonth() + 1;
         const y = now.getFullYear();
 
-        // Collect all assigned areas for real-time refresh
-        const areaIds = appUser.areaId === 'ALL' ? 'ALL' :
-            (appUser.areas && appUser.areas.length > 0) ? appUser.areas.map(a => a.id) :
-                appUser.areaId ? [appUser.areaId] : undefined;
+        const areaIds = getEffectiveAreaIds();
 
         const attendanceSubscription = supabase
             .channel('attendance_changes')
@@ -252,7 +228,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             workersSubscription.unsubscribe();
             usersSubscription.unsubscribe();
         };
-    }, [appUser, loadData, loadAttendance, loadWorkers, loadUsers]);
+    }, [appUser, loadData, loadAttendance, loadWorkers, loadUsers, getEffectiveAreaIds]);
 
     // --- Actions ---
 
@@ -287,12 +263,14 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
                 const filtered = prev.filter((r) => r.id !== frontendRecord.id);
                 return [...filtered, frontendRecord];
             });
+
+            showToast("تم الحفظ بنجاح", "تم حفظ بيانات الحضور بنجاح");
         } catch (err) {
-            console.error('Failed to save attendance:', err);
-            setError(err instanceof Error ? err.message : 'فشل حفظ البيانات');
+            handleError('Failed to save attendance', err);
+            showToast("فشل الحفظ", "حدث خطأ أثناء محاولة حفظ البيانات", "error");
             throw err;
         }
-    }, [appUser?.role]);
+    }, [appUser?.role, showToast, handleError]);
 
     const addWorker = useCallback(async (worker: Worker) => {
         try {
@@ -394,7 +372,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     }, [loadAreas]);
 
-    const approveAttendance = useCallback(async (recordId: string, nextStatus: 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'PENDING_PAYROLL' | 'APPROVED') => {
+    const approveAttendance = useCallback(async (recordId: string, nextStatus: AttendanceStatus) => {
         try {
             const { error } = await supabase
                 .from('attendance_records')
@@ -403,18 +381,18 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             if (error) throw error;
 
             const now = new Date();
-            const areaIds = appUser?.areaId === 'ALL' ? 'ALL' :
-                (appUser?.areas && appUser.areas.length > 0) ? appUser.areas.map(a => a.id) :
-                    appUser?.areaId ? [appUser.areaId] : undefined;
+            const areaIds = getEffectiveAreaIds();
 
             await loadAttendance(now.getMonth() + 1, now.getFullYear(), areaIds);
+            showToast("تم الاعتماد", "تم اعتماد كشف الحضور بنجاح");
         } catch (err) {
-            console.error('Failed to approve attendance:', err);
+            handleError('Failed to approve attendance', err);
+            showToast("فشل الاعتماد", "حدث خطأ أثناء محاولة اعتماد البيانات", "error");
             throw err;
         }
-    }, [loadAttendance, appUser?.areaId, appUser?.areas]);
+    }, [loadAttendance, getEffectiveAreaIds, handleError, showToast]);
 
-    const rejectAttendance = useCallback(async (recordId: string, newStatus: 'PENDING_SUPERVISOR' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE', reason?: string) => {
+    const rejectAttendance = useCallback(async (recordId: string, newStatus: AttendanceStatus, reason?: string) => {
         try {
             const { error } = await supabase
                 .from('attendance_records')
@@ -427,16 +405,16 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             if (error) throw error;
 
             const now = new Date();
-            const areaIds = appUser?.areaId === 'ALL' ? 'ALL' :
-                (appUser?.areas && appUser.areas.length > 0) ? appUser.areas.map(a => a.id) :
-                    appUser?.areaId ? [appUser.areaId] : undefined;
+            const areaIds = getEffectiveAreaIds();
 
             await loadAttendance(now.getMonth() + 1, now.getFullYear(), areaIds);
+            showToast("تم الرفض", "تم إرجاع الكشف للمراجعة");
         } catch (err) {
-            console.error('Failed to reject attendance:', err);
+            handleError('Failed to reject attendance', err);
+            showToast("فشل معالجة الطلب", "حدث خطأ أثناء محاولة رفض البيانات", "error");
             throw err;
         }
-    }, [loadAttendance, appUser?.areaId, appUser?.areas]);
+    }, [loadAttendance, getEffectiveAreaIds, handleError, showToast]);
 
     return (
         <AttendanceContext.Provider value={{

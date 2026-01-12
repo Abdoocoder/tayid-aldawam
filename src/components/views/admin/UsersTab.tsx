@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, Area } from "@/context/AttendanceContext";
+
+import { User, Area } from "@/types";
 import { Edit2, ShieldCheck, Trash2, UserPlus, Plus, MapPin } from "lucide-react";
 
 interface UsersTabProps {

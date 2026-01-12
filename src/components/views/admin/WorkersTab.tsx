@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Worker, Area } from "@/context/AttendanceContext";
+
+import { Worker, Area } from "@/types";
 import { Edit2, HardHat, Plus, Trash2, Printer, MapPin } from "lucide-react";
 
 interface WorkersTabProps {

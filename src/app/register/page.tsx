@@ -9,7 +9,8 @@ import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building, Loader2, AlertCircle, Mail, Lock, User as UserIcon } from "lucide-react";
 import Link from "next/link";
-import { UserRole } from "@/context/AttendanceContext";
+
+import { UserRole } from "@/types";
 
 export default function RegisterPage() {
     const router = useRouter();

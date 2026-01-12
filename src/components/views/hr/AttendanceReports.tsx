@@ -8,7 +8,8 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { MonthYearPicker } from "../../ui/month-year-picker";
-import { Worker, Area, AttendanceRecord } from "@/context/AttendanceContext";
+
+import { Area, Worker, AttendanceRecord } from "@/types";
 import { resolveAreaNames } from "@/lib/utils";
 
 interface AttendanceReportsProps {

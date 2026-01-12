@@ -1,7 +1,8 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Area, Worker, User } from "@/context/AttendanceContext";
+
+import { Area, Worker, User } from "@/types";
 import { MapPin, Plus, Trash2, Edit2, Users, HardHat } from "lucide-react";
 
 interface AreasTabProps {

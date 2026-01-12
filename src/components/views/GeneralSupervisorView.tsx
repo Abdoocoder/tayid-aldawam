@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-import { useAttendance, type Worker, type User, type AttendanceRecord } from "@/context/AttendanceContext";
+import { useAttendance } from "@/context/AttendanceContext";
+import { type Worker, type User, type AttendanceRecord } from "@/types";
 import { MonthYearPicker } from "../ui/month-year-picker";
 import { Button } from "../ui/button";
 import { MobileNav } from "../ui/mobile-nav";

@@ -1,4 +1,4 @@
-import { Worker as FrontendWorker, AttendanceRecord as FrontendAttendanceRecord } from '@/context/AttendanceContext';
+import { Worker as FrontendWorker, AttendanceRecord as FrontendAttendanceRecord } from '@/types';
 import { Worker as DbWorker, AttendanceRecord as DbAttendanceRecord } from '@/lib/supabase';
 
 /**

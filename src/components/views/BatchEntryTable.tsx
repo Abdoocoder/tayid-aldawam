@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { type Worker, type AttendanceRecord, type Area, useAttendance } from '@/context/AttendanceContext';
+import { useAttendance } from '@/context/AttendanceContext';
+import { type Worker, type AttendanceRecord, type Area } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Save, Loader2, AlertTriangle, Filter, CheckCircle } from 'lucide-react';

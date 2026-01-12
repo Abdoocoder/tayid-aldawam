@@ -1,5 +1,6 @@
 import React from 'react';
-import { User, Worker, Area, AuditLog } from '@/context/AttendanceContext';
+
+import { User, Worker, Area, AuditLog } from '@/types';
 import { Shield, MapPin, HardHat, History } from 'lucide-react';
 
 interface AdminPrintReportProps {
