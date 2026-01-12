@@ -65,6 +65,31 @@ export interface AuditLog {
     changed_at: string;
 }
 
+/**
+ * Normalizes mixed area ID inputs into a clean array of individual UUIDs or 'ALL'.
+ */
+export function normalizeAreaId(areaId: string | string[] | undefined | null): string[] | 'ALL' | undefined {
+    if (!areaId) return undefined;
+    if (areaId === 'ALL') return 'ALL';
+
+    const ids = new Set<string>();
+    const inputArray = Array.isArray(areaId) ? areaId : [areaId];
+
+    inputArray.forEach(item => {
+        if (typeof item === 'string') {
+            item.split(',').forEach(id => {
+                const trimmed = id.trim();
+                if (trimmed && trimmed !== 'ALL') ids.add(trimmed);
+                if (trimmed === 'ALL') ids.add('ALL');
+            });
+        }
+    });
+
+    const result = Array.from(ids);
+    if (result.includes('ALL')) return 'ALL';
+    return result.length > 0 ? result : undefined;
+}
+
 // Helper function to check connection
 export async function testConnection(): Promise<boolean> {
     try {
@@ -93,20 +118,19 @@ export const workersAPI = {
         return data || [];
     },
 
-    async getByAreaId(areaId: string | string[]): Promise<Worker[]> {
-        let query = supabase.from('workers').select('*');
+    async getByAreaId(areaIdInput: string | string[]): Promise<Worker[]> {
+        const normalized = normalizeAreaId(areaIdInput);
 
-        const isAll = (typeof areaId === 'string' && areaId === 'ALL') ||
-            (Array.isArray(areaId) && areaId.includes('ALL'));
-
-        if (!isAll) {
-            if (Array.isArray(areaId)) {
-                query = query.in('area_id', areaId);
-            } else {
-                query = query.eq('area_id', areaId);
-            }
+        if (normalized === 'ALL' || !normalized) {
+            return this.getAll();
         }
-        const { data, error } = await query.order('name', { ascending: true });
+
+        const { data, error } = await supabase
+            .from('workers')
+            .select('*')
+            .in('area_id', Array.isArray(normalized) ? normalized : [normalized])
+            .order('name', { ascending: true });
+
         if (error) throw error;
         return data || [];
     },
@@ -168,26 +192,20 @@ export const attendanceAPI = {
         return data || [];
     },
 
-    async getByPeriod(month: number, year: number, areaId?: string | string[], nationality?: string): Promise<AttendanceRecord[]> {
-        const isAll = (typeof areaId === 'string' && areaId === 'ALL') ||
-            (Array.isArray(areaId) && areaId.includes('ALL'));
+    async getByPeriod(month: number, year: number, areaIdInput?: string | string[], nationality?: string): Promise<AttendanceRecord[]> {
+        const normalizedArea = normalizeAreaId(areaIdInput);
 
         let query;
 
-        if (areaId && !isAll) {
+        if (normalizedArea && normalizedArea !== 'ALL') {
             // Optimize: Filter by workers in the specified area(s) using a join
             // Using !inner ensures that we only get records that have a matching worker in those areas
             query = supabase
                 .from('attendance_records')
                 .select('*, workers!inner(area_id, nationality)')
                 .eq('month', month)
-                .eq('year', year);
-
-            if (Array.isArray(areaId)) {
-                query = query.in('workers.area_id', areaId);
-            } else {
-                query = query.eq('workers.area_id', areaId);
-            }
+                .eq('year', year)
+                .in('workers.area_id', Array.isArray(normalizedArea) ? normalizedArea : [normalizedArea]);
 
             if (nationality && nationality !== 'ALL') {
                 query = query.eq('workers.nationality', nationality);

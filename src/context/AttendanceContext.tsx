@@ -180,17 +180,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             const currentYear = now.getFullYear();
 
             // Collect all assigned areas
-            let areaIds: string | string[] | undefined;
-
-            if (appUser.areaId === 'ALL') {
-                areaIds = 'ALL';
-            } else if (appUser.areas && appUser.areas.length > 0) {
-                areaIds = appUser.areas.map(a => a.id);
-            } else if (appUser.areaId) {
-                areaIds = [appUser.areaId];
-            } else {
-                areaIds = undefined;
-            }
+            const areaIds = appUser.areaId === 'ALL' ? 'ALL' :
+                (appUser.areas && appUser.areas.length > 0) ? appUser.areas.map(a => a.id) :
+                    appUser.areaId ? [appUser.areaId] : undefined;
 
             const promises: Promise<unknown>[] = [
                 loadWorkers(areaIds, appUser.handledNationality),
@@ -228,17 +220,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         const y = now.getFullYear();
 
         // Collect all assigned areas for real-time refresh
-        let areaIds: string | string[] | undefined;
-
-        if (appUser.areaId === 'ALL') {
-            areaIds = 'ALL';
-        } else if (appUser.areas && appUser.areas.length > 0) {
-            areaIds = appUser.areas.map(a => a.id);
-        } else if (appUser.areaId) {
-            areaIds = [appUser.areaId];
-        } else {
-            areaIds = undefined;
-        }
+        const areaIds = appUser.areaId === 'ALL' ? 'ALL' :
+            (appUser.areas && appUser.areas.length > 0) ? appUser.areas.map(a => a.id) :
+                appUser.areaId ? [appUser.areaId] : undefined;
 
         const attendanceSubscription = supabase
             .channel('attendance_changes')
@@ -419,17 +403,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             if (error) throw error;
 
             const now = new Date();
-            let areaIds: string | string[] | undefined;
-
-            if (appUser?.areaId === 'ALL') {
-                areaIds = 'ALL';
-            } else if (appUser?.areas && appUser.areas.length > 0) {
-                areaIds = appUser.areas.map(a => a.id);
-            } else if (appUser?.areaId) {
-                areaIds = [appUser.areaId];
-            } else {
-                areaIds = undefined;
-            }
+            const areaIds = appUser?.areaId === 'ALL' ? 'ALL' :
+                (appUser?.areas && appUser.areas.length > 0) ? appUser.areas.map(a => a.id) :
+                    appUser?.areaId ? [appUser.areaId] : undefined;
 
             await loadAttendance(now.getMonth() + 1, now.getFullYear(), areaIds);
         } catch (err) {
@@ -451,17 +427,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             if (error) throw error;
 
             const now = new Date();
-            let areaIds: string | string[] | undefined;
-
-            if (appUser?.areaId === 'ALL') {
-                areaIds = 'ALL';
-            } else if (appUser?.areas && appUser.areas.length > 0) {
-                areaIds = appUser.areas.map(a => a.id);
-            } else if (appUser?.areaId) {
-                areaIds = [appUser.areaId];
-            } else {
-                areaIds = undefined;
-            }
+            const areaIds = appUser?.areaId === 'ALL' ? 'ALL' :
+                (appUser?.areas && appUser.areas.length > 0) ? appUser.areas.map(a => a.id) :
+                    appUser?.areaId ? [appUser.areaId] : undefined;
 
             await loadAttendance(now.getMonth() + 1, now.getFullYear(), areaIds);
         } catch (err) {
