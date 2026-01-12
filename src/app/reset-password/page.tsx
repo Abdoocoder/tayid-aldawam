@@ -171,7 +171,7 @@ export default function ResetPasswordPage() {
 
                 {/* Footer */}
                 <div className="text-center text-sm font-medium text-gray-500/80 animate-in fade-in duration-1000 delay-500">
-                    <p>© 2025 جميع الحقوق محفوظة لعبدالله ابوصغيرة</p>
+                    <p>جميع الحقوق محفوظة لـ <a href="https://portfolio-abdoocoders-projects.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 font-bold transition-colors">abdoocoder</a></p>
                 </div>
             </div>
         </div>

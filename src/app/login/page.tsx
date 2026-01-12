@@ -213,7 +213,7 @@ export default function LoginPage() {
                                 فريق التحول الرقمي
                             </a>
                         </p>
-                        <p>© 2025 جميع الحقوق محفوظة لعبدالله ابوصغيرة</p>
+                        <p>جميع الحقوق محفوظة لـ <a href="https://portfolio-abdoocoders-projects.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 font-bold transition-colors">abdoocoder</a></p>
                     </div>
                 </div>
             </div>

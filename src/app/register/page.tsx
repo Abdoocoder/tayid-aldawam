@@ -313,7 +313,7 @@ export default function RegisterPage() {
                             تطوير وإشراف: فريق التحول الرقمي
                         </a>
                     </p>
-                    <p>جميع الحقوق محفوظة لعبدالله ابوصغيرة - 2025</p>
+                    <p>جميع الحقوق محفوظة لـ <a href="https://portfolio-abdoocoders-projects.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-purple-600 transition-colors font-bold underline underline-offset-4">abdoocoder</a></p>
                 </div>
             </div>
         </div>

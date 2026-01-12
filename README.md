@@ -124,7 +124,7 @@ npm run build
 <div align="center">
 
 **تطوير وإشراف: فريق التحول الرقمي**  
-**جميع الحقوق محفوظة لمديرية الشؤون الصحية والبيئة - 2025**
+**جميع الحقوق محفوظة لـ [abdoocoder](https://portfolio-abdoocoders-projects.vercel.app/)**
 
 </div>
 
