@@ -24,7 +24,7 @@ export function SupervisorView() {
     ];
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedAreaId, setSelectedAreaId] = useState<string>("ALL");
-    const [selectedNationality, setSelectedNationality] = useState<string>("ALL");
+    const [selectedNationality, setSelectedNationality] = useState<string>(currentUser?.handledNationality || "ALL");
 
     // Get all areas relevant to this supervisor
     const supervisorAreas = areas.filter(a =>

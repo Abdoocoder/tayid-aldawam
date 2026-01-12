@@ -48,7 +48,7 @@ export function HealthDirectorView() {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedAreaId, setSelectedAreaId] = useState<string>("ALL");
     const [selectedSupervisorId, setSelectedSupervisorId] = useState<string>("ALL");
-    const [selectedNationality, setSelectedNationality] = useState<string>("ALL");
+    const [selectedNationality, setSelectedNationality] = useState<string>(currentUser?.handledNationality || "ALL");
     const [showAnomaliesOnly, setShowAnomaliesOnly] = useState(false);
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());

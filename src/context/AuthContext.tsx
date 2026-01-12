@@ -53,7 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     role: data.role as UserRole,
                     areaId: data.area_id,
                     areas: userAreas,
-                    isActive: data.is_active
+                    isActive: data.is_active,
+                    handledNationality: data.handled_nationality || 'ALL'
                 });
                 setIsPendingApproval(!data.is_active);
             } else {

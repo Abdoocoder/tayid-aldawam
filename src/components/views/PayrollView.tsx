@@ -30,7 +30,7 @@ export function PayrollView() {
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
-    const [selectedNationality, setSelectedNationality] = useState("ALL");
+    const [selectedNationality, setSelectedNationality] = useState(currentUser?.handledNationality || "ALL");
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
     // Filter workers based on search and area

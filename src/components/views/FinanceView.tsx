@@ -37,7 +37,7 @@ export function FinanceView() {
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table'); // View mode toggle
     const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
     const [rejectingIds, setRejectingIds] = useState<Set<string>>(new Set());
-    const [selectedNationality, setSelectedNationality] = useState("ALL");
+    const [selectedNationality, setSelectedNationality] = useState<string>(currentUser?.handledNationality || "ALL");
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
     // Budget Configuration (in a real app, this would be fetched from database)

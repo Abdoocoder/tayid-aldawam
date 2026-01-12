@@ -85,7 +85,7 @@ export function HRView() {
     const [year, setYear] = useState(new Date().getFullYear());
     const [reportSearchTerm, setReportSearchTerm] = useState('');
     const [reportAreaFilter, setReportAreaFilter] = useState('ALL');
-    const [reportNationalityFilter, setReportNationalityFilter] = useState('ALL');
+    const [reportNationalityFilter, setReportNationalityFilter] = useState(appUser?.handledNationality || 'ALL');
     const [reportStatusFilter, setReportStatusFilter] = useState<'ALL' | 'PENDING_GS' | 'PENDING_HEALTH' | 'PENDING_HR' | 'PENDING_AUDIT' | 'PENDING_FINANCE' | 'APPROVED'>('PENDING_HR');
 
     const filteredUsers = useMemo(() => users.filter(u => u.role !== 'ADMIN'), [users]);

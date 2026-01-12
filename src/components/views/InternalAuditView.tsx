@@ -54,7 +54,7 @@ export function InternalAuditView() {
     const [areaFilter, setAreaFilter] = useState<string>('all');
     const [amountFilter, setAmountFilter] = useState<'all' | '0-20' | '20-30' | '30+'>('all');
     const [statusFilter, setStatusFilter] = useState<string>('PENDING_AUDIT'); // Default to audit pending
-    const [selectedNationality, setSelectedNationality] = useState<string>("ALL");
+    const [selectedNationality, setSelectedNationality] = useState<string>(appUser?.handledNationality || "ALL");
 
     const navItems = [
         { id: 'audit', label: 'تدقيق المستحقات', icon: ShieldCheck },
