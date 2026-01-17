@@ -6,11 +6,16 @@ import { MonthYearPicker } from "../ui/month-year-picker";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { MobileNav } from "../ui/mobile-nav";
-import { User, ClipboardList, CheckCircle, Loader2, AlertCircle, Users, Clock, Target, Search, MapPin, Printer, Menu } from "lucide-react";
+import {
+    MapPin, Search, Loader2, AlertCircle, Users, CheckCircle, Target,
+    ClipboardList, User, Printer, Menu, Clock
+} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
+import { motion, AnimatePresence } from "framer-motion";
+import { getNationalityLabel } from "@/lib/export-utils";
 
 export function SupervisorView() {
     const { currentUser, workers, getWorkerAttendance, isLoading, error, areas } = useAttendance();
@@ -37,7 +42,6 @@ export function SupervisorView() {
     const baseWorkers = workers.filter((w) => {
         if (currentUser?.areaId === 'ALL') return true;
         const isPrimaryArea = w.areaId === currentUser?.areaId;
-        // Fix: Check both ID (new) and Name (legacy)
         const isInAssignedAreas = currentUser?.areas?.some(a => a.id === w.areaId || a.name === w.areaId);
         return isPrimaryArea || isInAssignedAreas;
     });
@@ -46,17 +50,15 @@ export function SupervisorView() {
         const matchesSearch = w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             w.id.toLowerCase().includes(searchTerm.toLowerCase());
 
-        // Fix: Check matches against ID or Name for the selected filter
         let matchesArea = false;
         if (selectedAreaId === "ALL") {
             matchesArea = true;
         } else {
-            // Find the selected area object to get its name
             const selectedAreaObj = areas.find(a => a.id === selectedAreaId);
             matchesArea = w.areaId === selectedAreaId || (selectedAreaObj ? w.areaId === selectedAreaObj.name : false);
         }
 
-        const matchesNationality = selectedNationality === "ALL" || w.nationality === selectedNationality;
+        const matchesNationality = selectedNationality === "ALL" || getNationalityLabel(w.nationality) === getNationalityLabel(selectedNationality);
 
         return matchesSearch && matchesArea && matchesNationality;
     });
@@ -67,13 +69,11 @@ export function SupervisorView() {
     const pendingEntries = totalWorkers - completedEntries;
     const completionPercentage = totalWorkers > 0 ? Math.round((completedEntries / totalWorkers) * 100) : 0;
 
-    // Stable print metadata - generated on mount to fix purity lint errors
     const [printMetadata] = useState(() => ({
         date: new Date().toLocaleDateString('ar-JO'),
         ref: `SUP-${Math.random().toString(36).substring(7).toUpperCase()}`
     }));
 
-    // Show loading state
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
@@ -110,15 +110,24 @@ export function SupervisorView() {
 
             <div className="space-y-6 pb-24 min-h-screen print:hidden">
                 {/* Header & Month Picker - Sticky and Glassmorphic */}
-                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm">
+                <div className="sticky top-0 z-30 -mx-4 px-4 py-4 bg-white/40 dark:bg-slate-950/40 backdrop-blur-2xl border-b border-white/20 dark:border-white/5 shadow-sm print:hidden">
                     <div className="max-w-7xl mx-auto flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-2.5 rounded-2xl text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/30">
-                                <ClipboardList className="h-5 w-5" />
+                        <div className="flex items-center gap-4">
+                            <div className="relative group">
+                                <div className="absolute -inset-1 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                                <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 p-3 rounded-2xl text-white shadow-xl">
+                                    <ClipboardList className="h-6 w-6" />
+                                </div>
                             </div>
-                            <div className="text-right">
-                                <h2 className="text-xl font-black text-slate-900 tracking-tight">الحضور والغياب</h2>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider text-right">{currentUser?.name}</p>
+                            <div>
+                                <div className="flex items-center gap-3">
+                                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">تأييد الدوام</h1>
+                                    <div className="flex items-center bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 px-2 py-0.5 rounded-full scale-90">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse mr-1.5" />
+                                        <span className="text-[10px] font-black text-blue-700 dark:text-blue-400 uppercase tracking-widest">Live System</span>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-[0.2em] mt-1.5">Smart Attendance Verification</p>
                             </div>
                         </div>
 
@@ -155,8 +164,13 @@ export function SupervisorView() {
                     </div>
                 </div>
 
-                {/* Quick Stats Grid - Mobile Optimized (grid-cols-2) */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-1">
+                {/* Quick Stats Grid */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-1"
+                >
                     {[
                         {
                             label: 'العمال',
@@ -191,7 +205,14 @@ export function SupervisorView() {
                             desc: 'نسبة الإتمام'
                         }
                     ].map((kpi, i) => (
-                        <div key={i} className={`relative group overflow-hidden bg-gradient-to-br ${kpi.gradient} rounded-[2rem] p-5 text-white shadow-lg transition-all duration-500 hover:shadow-xl hover:scale-[1.02]`}>
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                            whileHover={{ y: -5, scale: 1.02 }}
+                            className={`relative group overflow-hidden bg-gradient-to-br ${kpi.gradient} rounded-[2rem] p-5 text-white shadow-lg transition-all duration-500 hover:shadow-xl`}
+                        >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl" />
 
                             <div className="relative z-10 flex flex-col gap-3">
@@ -204,6 +225,13 @@ export function SupervisorView() {
                                     </div>
                                 </div>
 
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">ملخص الشهر</span>
+                                    <div className="flex items-baseline gap-1.5">
+                                        <span className="text-2xl font-black text-slate-900 dark:text-white">{completedEntries}</span>
+                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500">/ {totalWorkers}</span>
+                                    </div>
+                                </div>
                                 <div>
                                     <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-0.5">{kpi.label}</p>
                                     <div className="flex items-baseline gap-1.5">
@@ -218,11 +246,11 @@ export function SupervisorView() {
                             </div>
 
                             <kpi.icon className="absolute -bottom-4 -right-4 h-20 w-20 text-white/10 -rotate-12 transition-transform group-hover:scale-110 group-hover:rotate-0 duration-700" />
-                        </div>
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
 
-                {/* Filters - Modern and Compact */}
+                {/* Filters */}
                 <div className="flex flex-col md:flex-row gap-3 px-1">
                     <div className="relative group flex-1">
                         <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
@@ -231,7 +259,7 @@ export function SupervisorView() {
                             name="workerSearch"
                             aria-label="البحث عن العمال"
                             placeholder="ابحث عن عامل..."
-                            className="pr-10 h-11 bg-white/60 backdrop-blur-md border-slate-200 focus:border-blue-500 rounded-2xl shadow-sm"
+                            className="pr-10 h-11 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border-slate-200 dark:border-white/10 focus:border-blue-500 rounded-2xl shadow-sm dark:text-white"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
@@ -258,114 +286,127 @@ export function SupervisorView() {
                             id="nationality-filter"
                             name="nationalityFilter"
                             aria-label="تصفية حسب الجنسية"
-                            className="flex-1 md:w-36 h-11 bg-white/60 backdrop-blur-md border-slate-200 rounded-2xl shadow-sm font-bold text-slate-700"
+                            className="flex-1 md:w-36 h-11 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border-slate-200 dark:border-white/10 rounded-2xl shadow-sm font-bold text-slate-700 dark:text-slate-200"
                             value={selectedNationality}
                             onChange={e => setSelectedNationality(e.target.value)}
                         >
                             <option value="ALL">جميع الجنسيات</option>
                             <option value="أردني">أردني</option>
                             <option value="مصري">مصري</option>
+                            <option value="سوري">سوري</option>
                         </Select>
                     </div>
                 </div>
 
-                {/* Workers Grid - Modernized */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-in fade-in zoom-in-95 duration-500 delay-200">
-                    {filteredWorkers.length === 0 ? (
-                        <div className="col-span-full bg-white/60 backdrop-blur-md rounded-2xl border border-dashed border-slate-300 py-16 text-center">
-                            <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner border border-slate-100">
-                                <Search className="h-10 w-10 text-slate-300" />
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">لا توجد نتائج</h3>
-                            <p className="text-slate-500 text-sm mb-4">لم نجد أي عامل يطابق معايير البحث الحالية</p>
-                            {(searchTerm || selectedAreaId !== "ALL") && (
-                                <Button variant="outline" className="text-blue-600 border-blue-200 hover:bg-blue-50 rounded-xl" onClick={() => { setSearchTerm(""); setSelectedAreaId("ALL"); }}>
-                                    مسح فلاتر البحث
-                                </Button>
-                            )}
-                        </div>
-                    ) : (
-                        filteredWorkers.map((worker) => {
-                            const record = getWorkerAttendance(worker.id, month, year);
-                            const isFilled = !!record;
-                            const areaName = areas.find(a => a.id === worker.areaId)?.name || "غير محدد";
-
-                            return (
-                                <div key={worker.id} className={`group hover:shadow-2xl transition-all duration-300 relative overflow-hidden ring-1 rounded-2xl ${isFilled ? 'bg-gradient-to-br from-emerald-50 to-emerald-100/20 ring-emerald-100 shadow-lg shadow-emerald-500/5' : 'bg-white ring-slate-100 shadow-xl shadow-slate-200/50'}`}>
-                                    <div className="p-5 flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`p-3 rounded-2xl transition-all duration-300 ${isFilled ? 'bg-white shadow-sm text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
-                                                <User className="h-5 w-5" />
-                                            </div>
-                                            <div className="text-right">
-                                                <h4 className="text-base font-black text-slate-900 group-hover:text-blue-600 transition-colors uppercase tracking-tight">{worker.name}</h4>
-                                                <div className="flex items-center gap-1.5 mt-0.5 justify-end">
-                                                    <Badge variant="outline" className={`text-[8px] font-black px-1.5 py-0 border-transparent ${worker.nationality === 'أردني' ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'}`}>
-                                                        {worker.nationality}
-                                                    </Badge>
-                                                    <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-                                                        <MapPin className="h-2.5 w-2.5" />
-                                                        {areaName}
-                                                    </span>
-                                                    <Badge variant="outline" className="text-[9px] font-mono px-1.5 py-0 bg-slate-50/50 border-slate-200 text-slate-500">#{worker.id}</Badge>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {isFilled && (
-                                            <div className="bg-emerald-500 rounded-full p-1 shadow-lg shadow-emerald-500/20">
-                                                <CheckCircle className="h-4 w-4 text-white" />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="px-5 pb-5">
-                                        {isFilled && record.status === 'PENDING_SUPERVISOR' && record.rejectionNotes && (
-                                            <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 animate-in fade-in slide-in-from-top-2">
-                                                <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-                                                <div className="text-[10px] text-amber-800 font-bold leading-relaxed">
-                                                    <span className="block mb-0.5 underline">ملاحظة التعديل:</span>
-                                                    {record.rejectionNotes}
-                                                </div>
-                                            </div>
-                                        )}
-                                        <div className={`flex items-center justify-between gap-3 p-2.5 rounded-2xl border transition-colors ${isFilled ? 'bg-white/80 border-emerald-100' : 'bg-slate-50/50 border-slate-100'}`}>
-                                            <div className="flex flex-col text-right">
-                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">الحالة التدقيقية</span>
-                                                <span className={`text-[11px] font-black ${isFilled ? 'text-emerald-600' : 'text-amber-600'}`}>
-                                                    {isFilled ? (
-                                                        record.status === 'PENDING_GS' ? "بانتظار المشرف العام" :
-                                                            record.status === 'PENDING_HR' ? "بانتظار الموارد" :
-                                                                record.status === 'PENDING_AUDIT' ? "بانتظار الرقابة" :
-                                                                    record.status === 'PENDING_FINANCE' ? "بانتظار الرواتب" :
-                                                                        record.status === 'PENDING_SUPERVISOR' ? "يحتاج تصحيح" :
-                                                                            "معتمد نهائياً"
-                                                    ) : "بانتظار الإدخال"}
-                                                </span>
-                                            </div>
-                                            <Link href={`/dashboard/entry/${worker.id}?month=${month}&year=${year}`}>
-                                                <Button size="sm" className={`h-9 px-5 rounded-xl font-black shadow-lg transition-all active:scale-95 ${!isFilled ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-200 text-white' : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-100'}`}>
-                                                    {isFilled ? (record.status === 'PENDING_SUPERVISOR' ? "تصحيح" : "تعديل") : "إدخال الحضور"}
-                                                </Button>
-                                            </Link>
-                                        </div>
-
-                                        {isFilled && (
-                                            <div className="grid grid-cols-2 gap-2 mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                                                <div className="bg-white/60 p-2 rounded-xl border border-emerald-50 flex flex-col items-center">
-                                                    <span className="text-[8px] font-black text-slate-400 uppercase">أيام عادية</span>
-                                                    <span className="text-sm font-black text-slate-900">{record.normalDays}</span>
-                                                </div>
-                                                <div className="bg-white/60 p-2 rounded-xl border border-emerald-50 flex flex-col items-center">
-                                                    <span className="text-[8px] font-black text-slate-400 uppercase">الإجمالي</span>
-                                                    <span className="text-sm font-black text-blue-600">{record.totalCalculatedDays}</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
+                {/* Workers Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-1">
+                    <AnimatePresence mode="popLayout">
+                        {filteredWorkers.length === 0 ? (
+                            <motion.div
+                                key="empty"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                className="col-span-full bg-white/60 backdrop-blur-md rounded-2xl border border-dashed border-slate-300 py-16 text-center"
+                            >
+                                <div className="bg-slate-50 dark:bg-slate-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner border border-slate-100 dark:border-white/5">
+                                    <Search className="h-10 w-10 text-slate-300 dark:text-slate-600" />
                                 </div>
-                            );
-                        })
-                    )}
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">لا توجد نتائج</h3>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">لم نجد أي عامل يطابق معايير البحث الحالية</p>
+                            </motion.div>
+                        ) : (
+                            filteredWorkers.map((worker, i) => {
+                                const record = getWorkerAttendance(worker.id, month, year);
+                                const isFilled = !!record;
+                                const areaName = areas.find(a => a.id === worker.areaId)?.name || "غير محدد";
+
+                                return (
+                                    <motion.div
+                                        key={worker.id}
+                                        layout
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ delay: i * 0.05 }}
+                                        className={`group hover:shadow-2xl transition-all duration-300 relative overflow-hidden ring-1 rounded-2xl ${isFilled ? 'bg-gradient-to-br from-emerald-50 to-emerald-100/20 dark:from-emerald-900/20 dark:to-emerald-950/40 ring-emerald-100 dark:ring-emerald-900/30 shadow-lg shadow-emerald-500/5' : 'bg-white dark:bg-slate-900/40 ring-slate-100 dark:ring-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none'}`}
+                                    >
+                                        <div className="p-5 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`p-3 rounded-2xl transition-all duration-300 ${isFilled ? 'bg-white dark:bg-slate-800 shadow-sm text-emerald-600 dark:text-emerald-400' : 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'}`}>
+                                                    <User className="h-5 w-5" />
+                                                </div>
+                                                <div className="text-right">
+                                                    <h4 className="text-base font-black text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-tight">{worker.name}</h4>
+                                                    <div className="flex items-center gap-1.5 mt-0.5 justify-end">
+                                                        <Badge variant="outline" className={`text-[8px] font-black px-1.5 py-0 border-transparent ${worker.nationality === 'JORDANIAN' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'}`}>
+                                                            {worker.nationality === 'JORDANIAN' ? 'أردني' : worker.nationality === 'EGYPTIAN' ? 'مصري' : 'سوري'}
+                                                        </Badge>
+                                                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold flex items-center gap-1">
+                                                            <MapPin className="h-2.5 w-2.5" />
+                                                            {areaName}
+                                                        </span>
+                                                        <Badge variant="outline" className="text-[9px] font-mono px-1.5 py-0 bg-slate-50/50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400">#{worker.id}</Badge>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {isFilled && (
+                                                    <div className="bg-emerald-500 dark:bg-emerald-600 rounded-full p-1 shadow-lg shadow-emerald-500/20">
+                                                        <CheckCircle className="h-4 w-4 text-white" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="px-5 pb-5">
+                                            {isFilled && record.status === 'PENDING_SUPERVISOR' && record.rejectionNotes && (
+                                                <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 animate-in fade-in slide-in-from-top-2">
+                                                    <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                                                    <div className="text-[10px] text-amber-800 font-bold leading-relaxed">
+                                                        <span className="block mb-0.5 underline">ملاحظة التعديل:</span>
+                                                        {record.rejectionNotes}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div className={`flex items-center justify-between gap-3 p-2.5 rounded-2xl border transition-colors ${isFilled ? 'bg-white/80 border-emerald-100' : 'bg-slate-50/50 border-slate-100'}`}>
+                                                <div className="flex flex-col text-right">
+                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">الحالة التدقيقية</span>
+                                                    <span className={`text-[11px] font-black ${isFilled ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                        {isFilled ? (
+                                                            record.status === 'PENDING_GS' ? "بانتظار المشرف العام" :
+                                                                record.status === 'PENDING_HR' ? "بانتظار الموارد" :
+                                                                    record.status === 'PENDING_AUDIT' ? "بانتظار الرقابة" :
+                                                                        record.status === 'PENDING_FINANCE' ? "بانتظار الرواتب" :
+                                                                            record.status === 'PENDING_SUPERVISOR' ? "يحتاج تصحيح" :
+                                                                                "معتمد نهائياً"
+                                                        ) : "بانتظار الإدخال"}
+                                                    </span>
+                                                </div>
+                                                <Link href={`/dashboard/entry/${worker.id}?month=${month}&year=${year}`}>
+                                                    <Button size="sm" className={`h-9 px-5 rounded-xl font-black shadow-lg transition-all active:scale-95 ${!isFilled ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-200 text-white' : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-100'}`}>
+                                                        {isFilled ? (record.status === 'PENDING_SUPERVISOR' ? "تصحيح" : "تعديل") : "إدخال الحضور"}
+                                                    </Button>
+                                                </Link>
+                                            </div>
+
+                                            {isFilled && (
+                                                <div className="grid grid-cols-2 gap-2 mt-3">
+                                                    <div className="bg-white/60 p-2 rounded-xl border border-emerald-50 flex flex-col items-center">
+                                                        <span className="text-[8px] font-black text-slate-400 uppercase">أيام عادية</span>
+                                                        <span className="text-sm font-black text-slate-900">{record.normalDays}</span>
+                                                    </div>
+                                                    <div className="bg-white/60 p-2 rounded-xl border border-emerald-50 flex flex-col items-center">
+                                                        <span className="text-[8px] font-black text-slate-400 uppercase">الإجمالي</span>
+                                                        <span className="text-sm font-black text-blue-600">{record.totalCalculatedDays}</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                );
+                            })
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
 
@@ -455,7 +496,6 @@ export function SupervisorView() {
                     </p>
                 </div>
             </div>
-
         </>
     );
 }

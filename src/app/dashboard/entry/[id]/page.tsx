@@ -157,13 +157,13 @@ export default function EntryPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#f8fafc] pb-20 font-sans" dir="rtl">
+        <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 pb-20 font-sans" dir="rtl">
             <Header />
             <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
                 {/* Back Button */}
                 <Button
                     variant="ghost"
-                    className="mb-8 hover:bg-white text-gray-500 hover:text-blue-600 transition-all gap-2 px-0"
+                    className="mb-8 hover:bg-white dark:hover:bg-slate-900 text-gray-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all gap-2 px-0"
                     onClick={() => router.back()}
                 >
                     <ArrowRight className="h-4 w-4" />
@@ -173,7 +173,7 @@ export default function EntryPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                     {/* Main Form Card */}
                     <div className="lg:col-span-2 space-y-6">
-                        <Card className="border-none shadow-xl shadow-blue-900/5 overflow-hidden rounded-3xl">
+                        <Card className="border-none shadow-xl shadow-blue-900/5 dark:shadow-none overflow-hidden rounded-3xl bg-white dark:bg-slate-900/40 backdrop-blur-md">
                             <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-8">
                                 <div className="flex items-center gap-4">
                                     <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
@@ -203,13 +203,13 @@ export default function EntryPage() {
                                 )}
                                 {/* Rejection Notes from Management */}
                                 {canEdit && currentRecord?.status === 'PENDING_SUPERVISOR' && currentRecord.rejectionNotes && (
-                                    <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 flex items-start gap-4 animate-in fade-in slide-in-from-top-4">
-                                        <div className="bg-amber-100 p-3 rounded-xl text-amber-600">
+                                    <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-2xl p-6 flex items-start gap-4 animate-in fade-in slide-in-from-top-4">
+                                        <div className="bg-amber-100 dark:bg-amber-900/50 p-3 rounded-xl text-amber-600 dark:text-amber-400">
                                             <AlertCircle className="h-6 w-6" />
                                         </div>
                                         <div>
-                                            <h3 className="font-black text-amber-900 text-lg mb-1 italic underline underline-offset-4">سبب الإعادة للتصحيح:</h3>
-                                            <p className="text-gray-800 font-bold leading-relaxed bg-white/50 p-3 rounded-xl border border-amber-100 mt-2">
+                                            <h3 className="font-black text-amber-900 dark:text-amber-200 text-lg mb-1 italic underline underline-offset-4">سبب الإعادة للتصحيح:</h3>
+                                            <p className="text-gray-800 dark:text-slate-200 font-bold leading-relaxed bg-white/50 dark:bg-slate-800/50 p-3 rounded-xl border border-amber-100 dark:border-amber-800/50 mt-2">
                                                 {currentRecord.rejectionNotes}
                                             </p>
                                         </div>
@@ -218,17 +218,17 @@ export default function EntryPage() {
                                 {/* Entry Grid */}
                                 <div className="space-y-8">
                                     {/* Normal Days Input */}
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 bg-gray-50 rounded-2xl border border-gray-100 group hover:border-blue-100 transition-colors">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 bg-gray-50 dark:bg-slate-800/30 rounded-2xl border border-gray-100 dark:border-white/5 group hover:border-blue-100 dark:hover:border-blue-900/30 transition-colors">
                                         <div className="flex items-center gap-4">
-                                            <div className="bg-blue-100 p-3 rounded-xl text-blue-600 group-hover:scale-110 transition-transform">
+                                            <div className="bg-blue-100 dark:bg-blue-900/40 p-3 rounded-xl text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
                                                 <Calendar className="h-6 w-6" />
                                             </div>
                                             <div>
-                                                <h3 className="font-bold text-gray-900 text-lg">أيام العمل العادية</h3>
-                                                <p className="text-sm text-gray-500">عدد أيام الحضور الفعلي في الموقع</p>
+                                                <h3 className="font-bold text-gray-900 dark:text-white text-lg">أيام العمل العادية</h3>
+                                                <p className="text-sm text-gray-500 dark:text-slate-400">عدد أيام الحضور الفعلي في الموقع</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
+                                        <div className="flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5">
                                             <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl" onClick={() => handleDecrement(setNormalDays, normalDays)} disabled={!canEdit}>
                                                 <Minus className="h-5 w-5" />
                                             </Button>
@@ -402,7 +402,7 @@ export default function EntryPage() {
                                     </div>
                                 </div>
 
-                                <div className="mt-8 p-6 bg-blue-600 rounded-3xl text-white text-center shadow-lg shadow-blue-100">
+                                <div className="mt-8 p-6 bg-blue-600 dark:bg-blue-700 rounded-3xl text-white text-center shadow-lg shadow-blue-100 dark:shadow-none">
                                     <p className="text-blue-100 text-xs font-bold uppercase tracking-widest mb-1">الإجمالي المستحق</p>
                                     <div className="flex items-baseline justify-center gap-2">
                                         <span className="text-4xl font-black">{calculatedTotal}</span>

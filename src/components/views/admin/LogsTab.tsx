@@ -1,7 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { AuditLog } from "@/types";
-import { History } from "lucide-react";
+import { History, FileSpreadsheet } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { exportToExcel, formatAuditLogsForExport } from "@/lib/export-utils";
 
 interface LogsTabProps {
     logs: AuditLog[];
@@ -38,6 +40,21 @@ export function LogsTab({ logs, searchTerm, onSearchChange, tableFilter, onTable
                         </div>
                     </div>
                 </div>
+
+                <div className="flex items-center gap-4 relative z-10">
+                    <Button
+                        variant="outline"
+                        className="h-14 px-6 rounded-2xl border-slate-200 bg-white/40 backdrop-blur-md text-slate-600 hover:bg-slate-800 hover:text-white font-black text-xs gap-3 transition-all duration-500 hover:shadow-xl group"
+                        onClick={() => {
+                            const formatted = formatAuditLogsForExport(filteredLogs);
+                            exportToExcel(formatted, 'سجل_رقابة_النظام', 'AuditLogs');
+                        }}
+                    >
+                        <FileSpreadsheet className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                        تصدير السجل
+                    </Button>
+                </div>
+
                 <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto relative z-10">
                     <div className="relative w-full sm:w-64 group">
                         <Input

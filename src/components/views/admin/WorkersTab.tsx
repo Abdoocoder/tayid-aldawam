@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 import { Worker, Area } from "@/types";
-import { Edit2, HardHat, Plus, Trash2, Printer, MapPin } from "lucide-react";
+import { Edit2, HardHat, Plus, Trash2, Printer, MapPin, FileSpreadsheet } from "lucide-react";
+import { exportToExcel, formatWorkersForExport, getNationalityLabel } from "@/lib/export-utils";
 
 interface WorkersTabProps {
     workers: Worker[];
@@ -34,6 +35,17 @@ export function WorkersTab({ workers, areas, searchTerm, nationalityFilter, onNa
                     </div>
                 </div>
                 <div className="flex items-center gap-4 relative z-10">
+                    <Button
+                        variant="outline"
+                        className="h-14 px-6 rounded-2xl border-emerald-200 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-600 hover:text-white font-black text-xs gap-3 transition-all duration-500 hover:shadow-xl shadow-emerald-500/5 group"
+                        onClick={() => {
+                            const formatted = formatWorkersForExport(workers, areas);
+                            exportToExcel(formatted, 'دليل_العمال_الذكي', 'Workers');
+                        }}
+                    >
+                        <FileSpreadsheet className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                        تصدير Excel
+                    </Button>
                     <Button
                         variant="outline"
                         className="h-14 px-8 rounded-2xl border-white/40 bg-white/40 backdrop-blur-md text-slate-600 hover:bg-white hover:text-blue-600 font-black text-xs gap-3 transition-all duration-500 hover:shadow-xl shadow-blue-500/5 group"
@@ -88,7 +100,7 @@ export function WorkersTab({ workers, areas, searchTerm, nationalityFilter, onNa
                             return (w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                 w.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                 areaName.toLowerCase().includes(searchTerm.toLowerCase())) &&
-                                (nationalityFilter === "ALL" || w.nationality === nationalityFilter);
+                                (nationalityFilter === "ALL" || getNationalityLabel(w.nationality) === getNationalityLabel(nationalityFilter));
                         }).map((w) => {
                             const areaName = areas.find(a => a.id === w.areaId)?.name || "غير محدد";
                             return (
@@ -115,8 +127,8 @@ export function WorkersTab({ workers, areas, searchTerm, nationalityFilter, onNa
                                         </div>
                                     </td>
                                     <td className="px-10 py-8 text-center">
-                                        <Badge variant="outline" className={`font-black text-[10px] px-3 py-1.5 ${w.nationality === 'أردني' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>
-                                            {w.nationality}
+                                        <Badge variant="outline" className={`font-black text-[10px] px-3 py-1.5 ${getNationalityLabel(w.nationality) === 'أردني' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800' : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-800'}`}>
+                                            {getNationalityLabel(w.nationality)}
                                         </Badge>
                                     </td>
                                     <td className="px-10 py-8">

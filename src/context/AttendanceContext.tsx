@@ -1,9 +1,12 @@
-import React, { createContext, useContext, useCallback, useMemo } from "react";
+"use client";
+
+import React, { createContext, useContext, useCallback, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase, workersAPI, attendanceAPI, usersAPI, areasAPI, type AuditLog } from "@/lib/supabase";
 import { workerFromDb, workerToDb, attendanceFromDb, attendanceToDb } from "@/lib/data-transformer";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
+import { z } from "zod";
 import {
     User,
     Worker,
@@ -12,6 +15,15 @@ import {
     AttendanceStatus,
     Area
 } from "@/types";
+
+// --- Validation Schemas ---
+export const WorkerSchema = z.object({
+    name: z.string().min(3, "الاسم يجب أن يكون 3 حروف على الأقل"),
+    nationality: z.enum(["JORDANIAN", "EGYPTIAN", "SYRIAN"]),
+    areaId: z.string().min(1, "يرجى اختيار القطاع"),
+    dayValue: z.number().min(1, "الأجر اليومي يجب أن يكون أكبر من صفر"),
+    baseSalary: z.number().optional(),
+});
 
 export type { Area, AuditLog };
 
@@ -285,15 +297,43 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     });
 
-    // --- Subscriptions ---
+    // --- Subscriptions & Real-time Notifications ---
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (!appUser?.isActive) return;
 
         const attendanceSubscription = supabase
             .channel('attendance_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, () => {
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, (payload) => {
                 queryClient.invalidateQueries({ queryKey: ['attendance'] });
+
+                // Real-time Notification Logic
+                if (payload.eventType === 'UPDATE') {
+                    const newStatus = payload.new.status;
+                    const oldStatus = payload.old.status;
+
+                    if (newStatus !== oldStatus) {
+                        const workerId = payload.new.worker_id;
+                        const worker = workersQuery.data?.find(w => w.id === workerId);
+                        const workerName = worker?.name || "عامل غير معروف";
+
+                        const statusMap: Record<string, string> = {
+                            'APPROVED': 'معتمد نهائياً ✅',
+                            'PENDING_SUPERVISOR': 'بانتظار المراقب 👤',
+                            'PENDING_GS': 'بانتظار المراقب العام 💼',
+                            'PENDING_HEALTH': 'بانتظار مدير الصحة 🏥',
+                            'PENDING_HR': 'بانتظار الشؤون الإدارية 📝',
+                            'PENDING_AUDIT': 'بانتظار الرقابة الداخلية 🔍',
+                            'PENDING_FINANCE': 'بانتظار الشؤون المالية 💰'
+                        };
+
+                        showToast(
+                            'تحديث لحظي',
+                            `تم تغيير حالة كشف (${workerName}) إلى: ${statusMap[newStatus] || newStatus}`,
+                            'info'
+                        );
+                    }
+                }
             })
             .subscribe();
 
@@ -316,7 +356,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             workersSubscription.unsubscribe();
             usersSubscription.unsubscribe();
         };
-    }, [appUser?.isActive, queryClient]);
+    }, [appUser?.isActive, queryClient, showToast, workersQuery.data]);
 
     // --- Context Exports ---
 
@@ -331,8 +371,6 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     }, [queryClient]);
 
     const loadAttendance = useCallback(async (month: number, year: number) => {
-        // In TanStack Query, we typically rely on key-driven refetching,
-        // but for specific month/year jumps, we can use this
         await queryClient.fetchQuery({
             queryKey: ['attendance', month, year, effectiveAreaIds, appUser?.handledNationality],
             queryFn: async () => {

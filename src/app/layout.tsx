@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body
-        className={`${cairo.variable} antialiased font-sans bg-gray-50 text-gray-900`}
+        className={`${cairo.variable} antialiased font-sans`}
       >
         <Providers>
           <main className="min-h-screen print:min-h-0 print:h-auto">

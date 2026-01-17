@@ -30,6 +30,7 @@ import {
     LayoutDashboard
 } from "lucide-react";
 import { ThemeToggle } from "../ui/theme-toggle";
+import { motion } from "framer-motion";
 
 export function MayorView() {
     const { currentUser, workers, attendanceRecords, areas, isLoading } = useAttendance();
@@ -136,7 +137,7 @@ export function MayorView() {
 
             <div className="space-y-6 pb-24 min-h-screen print:hidden">
                 {/* Executive Header - Ultra Premium Glass */}
-                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/60 backdrop-blur-xl border-b border-white/40 shadow-sm">
+                <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-white/40 dark:bg-slate-950/40 backdrop-blur-2xl border-b border-white/20 dark:border-white/5 shadow-sm print:hidden">
                     <div className="max-w-7xl mx-auto flex justify-between items-center">
                         <div className="flex items-center gap-4">
                             <div className="bg-gradient-to-br from-fuchsia-600 to-purple-700 p-2.5 rounded-2xl text-white shadow-xl shadow-fuchsia-500/20 ring-1 ring-white/30">
@@ -144,10 +145,10 @@ export function MayorView() {
                             </div>
                             <div className="text-right">
                                 <div className="flex items-center gap-2">
-                                    <h2 className="text-xl font-black text-slate-900 tracking-tight">رئاسة البلدية</h2>
-                                    <Badge className="bg-fuchsia-50 text-fuchsia-700 border-fuchsia-100 text-[9px] font-black uppercase tracking-tighter">Executive</Badge>
+                                    <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">رئاسة البلدية</h2>
+                                    <Badge className="bg-fuchsia-50 dark:bg-fuchsia-900/30 text-fuchsia-700 dark:text-fuchsia-400 border-fuchsia-100 dark:border-fuchsia-800 text-[9px] font-black uppercase tracking-tighter">Executive</Badge>
                                 </div>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider text-right">نظام الرقابة والحوكمة الذكي</p>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-right">نظام الرقابة والحوكمة الذكي</p>
                             </div>
                         </div>
 
@@ -172,7 +173,7 @@ export function MayorView() {
                                 <ThemeToggle />
                                 <button
                                     onClick={() => setIsMobileNavOpen(true)}
-                                    className="p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
+                                    className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl text-slate-600 dark:text-slate-400 shadow-sm active:scale-95 transition-all"
                                 >
                                     <Menu className="h-6 w-6" />
                                 </button>
@@ -182,14 +183,19 @@ export function MayorView() {
 
                     {/* Mobile Date Picker Bar */}
                     <div className="md:hidden mt-3 px-1">
-                        <div className="bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-sm shadow-inner w-full">
+                        <div className="bg-slate-100/50 dark:bg-slate-900/50 p-1 rounded-2xl border border-slate-200/50 dark:border-white/5 backdrop-blur-sm shadow-inner w-full">
                             <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                         </div>
                     </div>
                 </div>
 
-                {/* Strategic Overview Grid - Mobile Optimized (grid-cols-2) */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-1">
+                {/* Strategic Overview Grid */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-1"
+                >
                     {[
                         {
                             label: "القوة العاملة",
@@ -224,7 +230,14 @@ export function MayorView() {
                             desc: "المستحقات الحالية"
                         }
                     ].map((kpi, i) => (
-                        <div key={i} className={`relative group overflow-hidden bg-gradient-to-br ${kpi.gradient} rounded-[2rem] p-5 text-white shadow-lg transition-all duration-500 hover:shadow-xl hover:scale-[1.02]`}>
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                            whileHover={{ y: -5, scale: 1.02 }}
+                            className={`relative group overflow-hidden bg-gradient-to-br ${kpi.gradient} rounded-[2rem] p-5 text-white shadow-lg transition-all duration-500 hover:shadow-xl`}
+                        >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl" />
 
                             <div className="relative z-10 flex flex-col gap-3">
@@ -251,14 +264,19 @@ export function MayorView() {
                             </div>
 
                             <kpi.icon className="absolute -bottom-4 -right-4 h-20 w-20 text-white/10 -rotate-12 transition-transform group-hover:scale-110 group-hover:rotate-0 duration-700" />
-                        </div>
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
 
                 {/* Analytics Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Process Funnel Card */}
-                    <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl p-8 rounded-2xl border border-white/40 shadow-xl shadow-slate-200/50">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4 }}
+                        className="lg:col-span-2 bg-white/60 backdrop-blur-xl p-8 rounded-2xl border border-white/40 shadow-xl shadow-slate-200/50"
+                    >
                         <div className="flex justify-between items-center mb-8">
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 bg-fuchsia-50 rounded-2xl text-fuchsia-600">
@@ -301,10 +319,11 @@ export function MayorView() {
                                         cursor={{ fill: '#f8fafc' }}
                                         content={({ active, payload }) => {
                                             if (active && payload && payload.length) {
+                                                const data = payload[0].payload;
                                                 return (
-                                                    <div className="bg-white p-3 border border-slate-100 shadow-xl rounded-xl">
-                                                        <p className="text-[10px] font-black text-slate-500 uppercase mb-1">{payload[0].payload.name}</p>
-                                                        <p className="text-sm font-black text-slate-900">{payload[0].value} <span className="text-[10px] text-slate-400">سجل</span></p>
+                                                    <div className="bg-white dark:bg-slate-900 p-3 border border-slate-100 dark:border-white/10 shadow-xl rounded-xl">
+                                                        <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase mb-1">{data.name}</p>
+                                                        <p className="text-sm font-black text-slate-900 dark:text-white">{payload[0].value as number} <span className="text-[10px] text-slate-400 dark:text-slate-500">سجل</span></p>
                                                     </div>
                                                 );
                                             }
@@ -328,12 +347,12 @@ export function MayorView() {
                             </ResponsiveContainer>
                         </div>
 
-                        <div className="bg-gradient-to-br from-slate-50 to-white/50 border border-slate-100 p-5 rounded-2xl relative overflow-hidden">
+                        <div className="bg-gradient-to-br from-slate-50 to-white/50 dark:from-slate-900/50 dark:to-slate-950/50 border border-slate-100 dark:border-white/5 p-5 rounded-2xl relative overflow-hidden">
                             <div className="flex gap-4">
                                 <div className="w-1.5 h-auto bg-fuchsia-600 rounded-full"></div>
                                 <div className="space-y-1">
-                                    <h4 className="text-xs font-black text-slate-900 uppercase">موجز الحالة الذكي</h4>
-                                    <p className="text-sm text-slate-600 font-medium leading-relaxed">
+                                    <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase">موجز الحالة الذكي</h4>
+                                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
                                         {stats.totalPending > 10 ?
                                             `تم رصد تكدس في العمليات الإجمالية (${stats.totalPending} سجل). يوصى بتشجيع المديرين على إنهاء الاعتمادات العالقة.` :
                                             "منظومة العمل تسير بكفاءة عالية وفق الجدول الزمني المحدد."}
@@ -341,17 +360,22 @@ export function MayorView() {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Regional Performance Card */}
-                    <div className="bg-white/60 backdrop-blur-xl p-8 rounded-2xl border border-white/40 shadow-xl shadow-slate-200/50">
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.6 }}
+                        className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl p-8 rounded-2xl border border-white/40 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none"
+                    >
                         <div className="flex items-center gap-3 mb-6">
                             <div className="p-2.5 bg-indigo-50 rounded-2xl text-indigo-600">
                                 <Target className="h-5 w-5" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-black text-slate-900 tracking-tight">ترتيب المناطق</h3>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">كفاءة الإنجاز المعتمد</p>
+                                <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">ترتيب المناطق</h3>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">كفاءة الإنجاز المعتمد</p>
                             </div>
                         </div>
 
@@ -359,10 +383,10 @@ export function MayorView() {
                             {areaProgress.map((area, idx) => (
                                 <div key={area.id} className="group">
                                     <div className="flex justify-between items-center mb-1.5">
-                                        <span className="text-xs font-black text-slate-700 group-hover:text-fuchsia-600 transition-colors uppercase">{area.name}</span>
-                                        <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100">{area.percentage}%</span>
+                                        <span className="text-xs font-black text-slate-700 dark:text-slate-200 group-hover:text-fuchsia-600 transition-colors uppercase">{area.name}</span>
+                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-100 dark:border-white/5">{area.percentage}%</span>
                                     </div>
-                                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/30">
+                                    <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-200/30 dark:border-white/5">
                                         <div
                                             className={`h-full rounded-full transition-all duration-1000 ${idx === 0 ? 'bg-gradient-to-r from-emerald-400 to-teal-500' :
                                                 idx < 3 ? 'bg-gradient-to-r from-blue-400 to-indigo-500' :
@@ -374,15 +398,20 @@ export function MayorView() {
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
 
                 {/* Live Updates Table - Clean Glass */}
-                <div className="bg-white/40 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/50 border border-white/60 overflow-hidden mx-1">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                    className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-white/60 dark:border-white/5 overflow-hidden mx-1"
+                >
                     <div className="p-6 border-b border-white/40 flex justify-between items-center">
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-6 bg-fuchsia-600 rounded-full"></div>
-                            <h3 className="text-lg font-black text-slate-900 tracking-tight">آخر المعاملات المسجلة</h3>
+                            <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">آخر المعاملات المسجلة</h3>
                         </div>
                         <Badge className="bg-white/60 text-slate-500 border-slate-200/60 font-black px-3 py-1 rounded-xl">RECENT UPDATES</Badge>
                     </div>
@@ -445,7 +474,7 @@ export function MayorView() {
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </motion.div>
             </div>
 
             {/* Printable Area for Executive Overview - Standardized Official Layout */}
