@@ -14,9 +14,12 @@ import {
     Shield,
     Activity,
     MapPin,
-    HardHat
+    HardHat,
+    Printer,
+    Search
 } from 'lucide-react';
 import { Badge } from '../ui/badge';
+import { ThemeToggle } from '../ui/theme-toggle';
 
 // Sub Components
 import { UsersTab } from './admin/UsersTab';
@@ -26,7 +29,6 @@ import { AreasTab } from './admin/AreasTab';
 import { AdminPrintReport } from './admin/AdminPrintReport';
 
 import { Input } from '../ui/input';
-import { Search, Printer } from "lucide-react";
 import { MobileNav, NavItem } from "../ui/mobile-nav";
 
 export const AdminView = () => {
@@ -251,6 +253,7 @@ export const AdminView = () => {
                         </div>
 
                         <div className="hidden lg:flex items-center gap-3">
+                            <ThemeToggle />
                             {activeTab !== 'overview' && (
                                 <Button
                                     variant="outline"
@@ -264,13 +267,16 @@ export const AdminView = () => {
                             )}
                         </div>
 
-                        {/* Mobile Menu Trigger */}
-                        <button
-                            onClick={() => setIsMobileNavOpen(true)}
-                            className="lg:hidden p-3 bg-white/80 border border-slate-200 rounded-2xl text-slate-600 shadow-xl active:scale-95 transition-all"
-                        >
-                            <Menu className="h-6 w-6" />
-                        </button>
+                        {/* Mobile Menu & Theme Trigger */}
+                        <div className="lg:hidden flex items-center gap-2">
+                            <ThemeToggle />
+                            <button
+                                onClick={() => setIsMobileNavOpen(true)}
+                                className="p-3 bg-white/80 border border-slate-200 rounded-2xl text-slate-600 shadow-xl active:scale-95 transition-all"
+                            >
+                                <Menu className="h-6 w-6" />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

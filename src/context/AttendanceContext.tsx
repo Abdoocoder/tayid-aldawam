@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useCallback, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase, workersAPI, attendanceAPI, usersAPI, areasAPI, type AuditLog } from "@/lib/supabase";
 import { workerFromDb, workerToDb, attendanceFromDb, attendanceToDb } from "@/lib/data-transformer";
 import { useAuth } from "@/context/AuthContext";
@@ -46,22 +47,10 @@ const AttendanceContext = createContext<AttendanceContextType | undefined>(undef
 export function AttendanceProvider({ children }: { children: React.ReactNode }) {
     const { appUser } = useAuth();
     const { showToast } = useToast();
-    const [workers, setWorkers] = useState<Worker[]>([]);
-    const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
-    const [users, setUsers] = useState<User[]>([]);
-    const [areas, setAreas] = useState<Area[]>([]);
-    const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const queryClient = useQueryClient();
 
-    // --- Helpers ---
-
-    const handleError = useCallback((msg: string, err: unknown) => {
-        console.error(msg, err);
-        setError(err instanceof Error ? err.message : msg);
-    }, []);
-
-    const getEffectiveAreaIds = useCallback(() => {
+    // --- Selectors ---
+    const effectiveAreaIds = useMemo(() => {
         if (!appUser) return undefined;
         if (appUser.areaId === 'ALL') return 'ALL';
         if (appUser.areas && appUser.areas.length > 0) return appUser.areas.map((a: Area) => a.id);
@@ -69,48 +58,49 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         return undefined;
     }, [appUser]);
 
-    // --- Loading Functions ---
+    const currentPeriod = useMemo(() => {
+        const now = new Date();
+        return { month: now.getMonth() + 1, year: now.getFullYear() };
+    }, []);
 
-    const loadWorkers = useCallback(async (areaId?: string | string[], nationality?: string) => {
-        try {
+    // --- Queries ---
+
+    const workersQuery = useQuery({
+        queryKey: ['workers', effectiveAreaIds, appUser?.handledNationality],
+        queryFn: async () => {
             let dbWorkers;
-            if (areaId && areaId !== 'ALL') {
-                dbWorkers = await workersAPI.getByAreaId(areaId);
+            if (effectiveAreaIds && effectiveAreaIds !== 'ALL') {
+                dbWorkers = await workersAPI.getByAreaId(effectiveAreaIds);
             } else {
                 dbWorkers = await workersAPI.getAll();
             }
-
-            // Filter by nationality if scoped
-            if (nationality && nationality !== 'ALL') {
-                dbWorkers = dbWorkers.filter(w => w.nationality === nationality);
+            if (appUser?.handledNationality && appUser.handledNationality !== 'ALL') {
+                dbWorkers = dbWorkers.filter(w => w.nationality === appUser.handledNationality);
             }
+            return dbWorkers.map(workerFromDb);
+        },
+        enabled: !!appUser?.isActive,
+    });
 
-            const frontendWorkers = dbWorkers.map(workerFromDb);
-            setWorkers(frontendWorkers);
-        } catch (err) {
-            handleError('Failed to load workers', err);
-        }
-    }, [handleError]);
+    const attendanceQuery = useQuery({
+        queryKey: ['attendance', currentPeriod.month, currentPeriod.year, effectiveAreaIds, appUser?.handledNationality],
+        queryFn: async () => {
+            const dbRecords = await attendanceAPI.getByPeriod(
+                currentPeriod.month,
+                currentPeriod.year,
+                effectiveAreaIds,
+                appUser?.handledNationality
+            );
+            return dbRecords.map(attendanceFromDb);
+        },
+        enabled: !!appUser?.isActive,
+    });
 
-    const loadAttendance = useCallback(async (month: number, year: number, areaId?: string | string[], nationality?: string) => {
-        try {
-            const dbRecords = await attendanceAPI.getByPeriod(month, year, areaId, nationality);
-            const frontendRecords = dbRecords.map(attendanceFromDb);
-            setAttendanceRecords(prev => {
-                // Merge records: Update existing, add new ones
-                const recordMap = new Map(prev.map(r => [r.id, r]));
-                frontendRecords.forEach(r => recordMap.set(r.id, r));
-                return Array.from(recordMap.values());
-            });
-        } catch (err) {
-            handleError('Failed to load attendance', err);
-        }
-    }, [handleError]);
-
-    const loadUsers = useCallback(async () => {
-        try {
+    const usersQuery = useQuery({
+        queryKey: ['users'],
+        queryFn: async () => {
             const dbUsers = await usersAPI.getAll();
-            const formattedUsers: User[] = dbUsers.map(u => ({
+            return dbUsers.map(u => ({
                 id: u.id,
                 username: u.username,
                 name: u.name,
@@ -120,129 +110,34 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
                 isActive: u.is_active,
                 handledNationality: u.handled_nationality || 'ALL'
             }));
-            setUsers(formattedUsers);
-        } catch (err) {
-            handleError('Failed to load users', err);
-        }
-    }, [handleError]);
+        },
+        enabled: !!appUser?.isActive && (appUser?.role === 'ADMIN' || appUser?.role === 'HR'),
+    });
 
-    const loadAreas = useCallback(async () => {
-        try {
-            const dbAreas = await areasAPI.getAll();
-            setAreas(dbAreas as Area[]);
-        } catch (err) {
-            handleError('Failed to load areas', err);
-        }
-    }, [handleError]);
+    const areasQuery = useQuery({
+        queryKey: ['areas'],
+        queryFn: areasAPI.getAll,
+        enabled: !!appUser?.isActive,
+    });
 
-    const loadAuditLogs = useCallback(async () => {
-        try {
+    const auditLogsQuery = useQuery({
+        queryKey: ['auditLogs'],
+        queryFn: async () => {
             const { data, error } = await supabase
                 .from('audit_logs')
                 .select('*')
                 .order('changed_at', { ascending: false })
                 .limit(50);
             if (error) throw error;
-            setAuditLogs(data || []);
-        } catch (err) {
-            handleError('Failed to load audit logs', err);
-        }
-    }, [handleError]);
+            return data as AuditLog[];
+        },
+        enabled: !!appUser?.isActive && (appUser?.role === 'ADMIN' || appUser?.role === 'HR'),
+    });
 
-    const loadData = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            if (!appUser?.isActive) {
-                setIsLoading(false);
-                return;
-            }
+    // --- Mutations ---
 
-            const now = new Date();
-            const currentMonth = now.getMonth() + 1;
-            const currentYear = now.getFullYear();
-
-            const areaIds = getEffectiveAreaIds();
-
-            const promises: Promise<unknown>[] = [
-                loadWorkers(areaIds, appUser.handledNationality),
-                loadAttendance(currentMonth, currentYear, areaIds, appUser.handledNationality),
-                loadAreas(),
-            ];
-
-            if (appUser?.role === 'ADMIN' || appUser?.role === 'HR') {
-                promises.push(loadUsers());
-                promises.push(loadAuditLogs());
-            }
-
-            await Promise.all(promises);
-        } catch (err) {
-            handleError('Failed to load initial data', err);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [appUser?.role, appUser?.isActive, appUser?.handledNationality, getEffectiveAreaIds, loadWorkers, loadAttendance, loadAreas, loadUsers, loadAuditLogs, handleError]);
-
-    const refreshData = useCallback(async () => {
-        await loadData();
-    }, [loadData]);
-
-    // --- Subscriptions ---
-
-    useEffect(() => {
-        if (!appUser || !appUser.isActive) return;
-
-        loadData();
-
-        const now = new Date();
-        const m = now.getMonth() + 1;
-        const y = now.getFullYear();
-
-        const areaIds = getEffectiveAreaIds();
-
-        const attendanceSubscription = supabase
-            .channel('attendance_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, () => {
-                loadAttendance(m, y, areaIds, appUser.handledNationality);
-            })
-            .subscribe();
-
-        const workersSubscription = supabase
-            .channel('workers_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'workers' }, () => {
-                loadWorkers(areaIds, appUser.handledNationality);
-            })
-            .subscribe();
-
-        const usersSubscription = supabase
-            .channel('users_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => {
-                if (appUser.role === 'ADMIN' || appUser.role === 'HR') {
-                    loadUsers();
-                }
-            })
-            .subscribe();
-
-        return () => {
-            attendanceSubscription.unsubscribe();
-            workersSubscription.unsubscribe();
-            usersSubscription.unsubscribe();
-        };
-    }, [appUser, loadData, loadAttendance, loadWorkers, loadUsers, getEffectiveAreaIds]);
-
-    // --- Actions ---
-
-    const getWorkerAttendance = useCallback((workerId: string, month: number, year: number) => {
-        return attendanceRecords.find(
-            (r) => r.workerId === workerId && r.month === month && r.year === year
-        );
-    }, [attendanceRecords]);
-
-    const saveAttendance = useCallback(async (input: Omit<AttendanceRecord, "id" | "updatedAt" | "totalCalculatedDays">) => {
-        try {
-            setError(null);
-
-            // Smart Logic: If current user is GS, promote status immediately to skip self-approval
+    const saveAttendanceMutation = useMutation({
+        mutationFn: async (input: Omit<AttendanceRecord, "id" | "updatedAt" | "totalCalculatedDays">) => {
             let initialStatus = input.status || 'PENDING_GS';
             if (appUser?.role === 'GENERAL_SUPERVISOR' && initialStatus === 'PENDING_GS') {
                 initialStatus = 'PENDING_HEALTH';
@@ -256,58 +151,51 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
                 updatedAt: new Date().toISOString(),
             });
 
-            const savedRecord = await attendanceAPI.upsert(dbRecord);
-            const frontendRecord = attendanceFromDb(savedRecord);
-
-            setAttendanceRecords((prev) => {
-                const filtered = prev.filter((r) => r.id !== frontendRecord.id);
-                return [...filtered, frontendRecord];
-            });
-
+            return attendanceAPI.upsert(dbRecord);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['attendance'] });
             showToast("تم الحفظ بنجاح", "تم حفظ بيانات الحضور بنجاح");
-        } catch (err) {
-            handleError('Failed to save attendance', err);
+        },
+        onError: (err) => {
+            console.error('Failed to save attendance:', err);
             showToast("فشل الحفظ", "حدث خطأ أثناء محاولة حفظ البيانات", "error");
-            throw err;
         }
-    }, [appUser?.role, showToast, handleError]);
+    });
 
-    const addWorker = useCallback(async (worker: Worker) => {
-        try {
-            const dbWorker = workerToDb(worker);
-            await workersAPI.create(dbWorker);
-        } catch (err) {
-            console.error('Failed to add worker:', err);
-            throw err;
+    const addWorkerMutation = useMutation({
+        mutationFn: (worker: Worker) => workersAPI.create(workerToDb(worker)),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['workers'] });
+            showToast("تم بنجاح", "تم إضافة العامل بنجاح");
         }
-    }, []);
+    });
 
-    const updateWorker = useCallback(async (workerId: string, updates: Partial<Worker>) => {
-        try {
+    const updateWorkerMutation = useMutation({
+        mutationFn: ({ id, updates }: { id: string, updates: Partial<Worker> }) => {
             const dbUpdates: Record<string, unknown> = {};
             if (updates.name) dbUpdates.name = updates.name;
             if (updates.areaId) dbUpdates.area_id = updates.areaId;
             if (updates.baseSalary !== undefined) dbUpdates.base_salary = updates.baseSalary;
             if (updates.dayValue !== undefined) dbUpdates.day_value = updates.dayValue;
-
-            await workersAPI.update(workerId, dbUpdates);
-        } catch (err) {
-            console.error('Failed to update worker:', err);
-            throw err;
+            return workersAPI.update(id, dbUpdates);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['workers'] });
+            showToast("تم التحديث", "تم تحديث بيانات العامل");
         }
-    }, []);
+    });
 
-    const deleteWorker = useCallback(async (workerId: string) => {
-        try {
-            await workersAPI.delete(workerId);
-        } catch (err) {
-            console.error('Failed to delete worker:', err);
-            throw err;
+    const deleteWorkerMutation = useMutation({
+        mutationFn: workersAPI.delete,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['workers'] });
+            showToast("تم الحذف", "تم حذف العامل بنجاح");
         }
-    }, []);
+    });
 
-    const updateUser = useCallback(async (userId: string, updates: Partial<User>, areaIds?: string[]) => {
-        try {
+    const updateUserMutation = useMutation({
+        mutationFn: async ({ id, updates, areaIds }: { id: string, updates: Partial<User>, areaIds?: string[] }) => {
             const dbUpdates: Record<string, unknown> = {};
             if (updates.name) dbUpdates.name = updates.name;
             if (updates.role) dbUpdates.role = updates.role;
@@ -317,129 +205,167 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             if (updates.handledNationality !== undefined) dbUpdates.handled_nationality = updates.handledNationality;
 
             if (Object.keys(dbUpdates).length > 0) {
-                const { error } = await supabase.from('users').update(dbUpdates).eq('id', userId);
+                const { error } = await supabase.from('users').update(dbUpdates).eq('id', id);
                 if (error) throw error;
             }
 
             if (areaIds) {
-                await usersAPI.setUserAreas(userId, areaIds);
+                await usersAPI.setUserAreas(id, areaIds);
             }
-            await loadUsers();
-        } catch (err) {
-            console.error('Failed to update user:', err);
-            throw err;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+            showToast("تم التحديث", "تم تحديث بيانات المستخدم");
         }
-    }, [loadUsers]);
+    });
 
-    const deleteUser = useCallback(async (userId: string) => {
-        try {
-            const { error } = await supabase.from('users').delete().eq('id', userId);
+    const deleteUserMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await supabase.from('users').delete().eq('id', id);
             if (error) throw error;
-            await loadUsers();
-        } catch (err) {
-            console.error('Failed to delete user:', err);
-            throw err;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+            showToast("تم الحذف", "تم حذف المستخدم بنجاح");
         }
-    }, [loadUsers]);
+    });
 
-    const addArea = useCallback(async (name: string) => {
-        try {
-            await areasAPI.create(name);
-            await loadAreas();
-        } catch (err) {
-            console.error('Failed to add area:', err);
-            throw err;
+    const addAreaMutation = useMutation({
+        mutationFn: areasAPI.create,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['areas'] });
+            showToast("تمت الإضافة", "تم إضافة القطاع بنجاح");
         }
-    }, [loadAreas]);
+    });
 
-    const updateArea = useCallback(async (id: string, name: string) => {
-        try {
-            await areasAPI.update(id, name);
-            await loadAreas();
-        } catch (err) {
-            console.error('Failed to update area:', err);
-            throw err;
+    const updateAreaMutation = useMutation({
+        mutationFn: ({ id, name }: { id: string, name: string }) => areasAPI.update(id, name),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['areas'] });
+            showToast("تم التحديث", "تم تحديث اسم القطاع");
         }
-    }, [loadAreas]);
+    });
 
-    const deleteArea = useCallback(async (id: string) => {
-        try {
-            await areasAPI.delete(id);
-            await loadAreas();
-        } catch (err) {
-            console.error('Failed to delete area:', err);
-            throw err;
+    const deleteAreaMutation = useMutation({
+        mutationFn: areasAPI.delete,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['areas'] });
+            showToast("تم الحذف", "تم حذف القطاع بنجاح");
         }
-    }, [loadAreas]);
+    });
 
-    const approveAttendance = useCallback(async (recordId: string, nextStatus: AttendanceStatus) => {
-        try {
+    const approveAttendanceMutation = useMutation({
+        mutationFn: async ({ id, status }: { id: string, status: AttendanceStatus }) => {
             const { error } = await supabase
                 .from('attendance_records')
-                .update({ status: nextStatus })
-                .eq('id', recordId);
+                .update({ status })
+                .eq('id', id);
             if (error) throw error;
-
-            const now = new Date();
-            const areaIds = getEffectiveAreaIds();
-
-            await loadAttendance(now.getMonth() + 1, now.getFullYear(), areaIds);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['attendance'] });
             showToast("تم الاعتماد", "تم اعتماد كشف الحضور بنجاح");
-        } catch (err) {
-            handleError('Failed to approve attendance', err);
-            showToast("فشل الاعتماد", "حدث خطأ أثناء محاولة اعتماد البيانات", "error");
-            throw err;
         }
-    }, [loadAttendance, getEffectiveAreaIds, handleError, showToast]);
+    });
 
-    const rejectAttendance = useCallback(async (recordId: string, newStatus: AttendanceStatus, reason?: string) => {
-        try {
+    const rejectAttendanceMutation = useMutation({
+        mutationFn: async ({ id, status, reason }: { id: string, status: AttendanceStatus, reason?: string }) => {
             const { error } = await supabase
                 .from('attendance_records')
                 .update({
-                    status: newStatus,
+                    status: status,
                     rejection_notes: reason || null
                 })
-                .eq('id', recordId);
-
+                .eq('id', id);
             if (error) throw error;
-
-            const now = new Date();
-            const areaIds = getEffectiveAreaIds();
-
-            await loadAttendance(now.getMonth() + 1, now.getFullYear(), areaIds);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['attendance'] });
             showToast("تم الرفض", "تم إرجاع الكشف للمراجعة");
-        } catch (err) {
-            handleError('Failed to reject attendance', err);
-            showToast("فشل معالجة الطلب", "حدث خطأ أثناء محاولة رفض البيانات", "error");
-            throw err;
         }
-    }, [loadAttendance, getEffectiveAreaIds, handleError, showToast]);
+    });
+
+    // --- Subscriptions ---
+
+    React.useEffect(() => {
+        if (!appUser?.isActive) return;
+
+        const attendanceSubscription = supabase
+            .channel('attendance_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, () => {
+                queryClient.invalidateQueries({ queryKey: ['attendance'] });
+            })
+            .subscribe();
+
+        const workersSubscription = supabase
+            .channel('workers_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'workers' }, () => {
+                queryClient.invalidateQueries({ queryKey: ['workers'] });
+            })
+            .subscribe();
+
+        const usersSubscription = supabase
+            .channel('users_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => {
+                queryClient.invalidateQueries({ queryKey: ['users'] });
+            })
+            .subscribe();
+
+        return () => {
+            attendanceSubscription.unsubscribe();
+            workersSubscription.unsubscribe();
+            usersSubscription.unsubscribe();
+        };
+    }, [appUser?.isActive, queryClient]);
+
+    // --- Context Exports ---
+
+    const getWorkerAttendance = useCallback((workerId: string, month: number, year: number) => {
+        return attendanceQuery.data?.find(
+            (r) => r.workerId === workerId && r.month === month && r.year === year
+        );
+    }, [attendanceQuery.data]);
+
+    const refreshData = useCallback(async () => {
+        await queryClient.refetchQueries();
+    }, [queryClient]);
+
+    const loadAttendance = useCallback(async (month: number, year: number) => {
+        // In TanStack Query, we typically rely on key-driven refetching,
+        // but for specific month/year jumps, we can use this
+        await queryClient.fetchQuery({
+            queryKey: ['attendance', month, year, effectiveAreaIds, appUser?.handledNationality],
+            queryFn: async () => {
+                const dbRecords = await attendanceAPI.getByPeriod(month, year, effectiveAreaIds, appUser?.handledNationality);
+                return dbRecords.map(attendanceFromDb);
+            }
+        });
+    }, [queryClient, effectiveAreaIds, appUser?.handledNationality]);
 
     return (
         <AttendanceContext.Provider value={{
             currentUser: appUser,
-            workers,
-            attendanceRecords,
-            isLoading,
-            error,
-            users,
-            areas,
-            auditLogs,
+            workers: workersQuery.data || [],
+            attendanceRecords: attendanceQuery.data || [],
+            isLoading: workersQuery.isLoading || attendanceQuery.isLoading,
+            error: (workersQuery.error as Error)?.message || (attendanceQuery.error as Error)?.message || null,
+            users: usersQuery.data || [],
+            areas: areasQuery.data || [],
+            auditLogs: auditLogsQuery.data || [],
             getWorkerAttendance,
-            saveAttendance,
-            addWorker,
-            updateWorker,
-            deleteWorker,
-            updateUser,
-            deleteUser,
-            addArea,
-            updateArea,
-            deleteArea,
+            saveAttendance: async (input) => { await saveAttendanceMutation.mutateAsync(input); },
+            addWorker: async (worker) => { await addWorkerMutation.mutateAsync(worker); },
+            updateWorker: async (id, updates) => { await updateWorkerMutation.mutateAsync({ id, updates }); },
+            deleteWorker: async (id) => { await deleteWorkerMutation.mutateAsync(id); },
+            updateUser: (id, updates, areaIds) => updateUserMutation.mutateAsync({ id, updates, areaIds }),
+            deleteUser: deleteUserMutation.mutateAsync,
+            addArea: async (name) => { await addAreaMutation.mutateAsync(name); },
+            updateArea: async (id, name) => { await updateAreaMutation.mutateAsync({ id, name }); },
+            deleteArea: async (id) => { await deleteAreaMutation.mutateAsync(id); },
             refreshData,
             loadAttendance,
-            approveAttendance,
-            rejectAttendance
+            approveAttendance: (id, status) => approveAttendanceMutation.mutateAsync({ id, status }),
+            rejectAttendance: (id, status, reason) => rejectAttendanceMutation.mutateAsync({ id, status, reason })
         }}>
             {children}
         </AttendanceContext.Provider>

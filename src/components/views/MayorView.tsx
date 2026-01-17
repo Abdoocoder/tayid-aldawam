@@ -1,6 +1,16 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    Cell
+} from "recharts";
 import { useAttendance } from "@/context/AttendanceContext";
 import { MonthYearPicker } from "../ui/month-year-picker";
 import { Button } from "../ui/button";
@@ -10,18 +20,16 @@ import { MobileNav } from "../ui/mobile-nav";
 import {
     Activity,
     Users,
-    CheckCircle2,
     Clock,
     TrendingUp,
     Loader2,
     ShieldCheck,
-    Briefcase,
-    Landmark,
     Target,
     Printer,
     Menu,
     LayoutDashboard
 } from "lucide-react";
+import { ThemeToggle } from "../ui/theme-toggle";
 
 export function MayorView() {
     const { currentUser, workers, attendanceRecords, areas, isLoading } = useAttendance();
@@ -144,6 +152,7 @@ export function MayorView() {
                         </div>
 
                         <div className="flex items-center gap-3">
+                            <ThemeToggle />
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -158,13 +167,16 @@ export function MayorView() {
                                 <MonthYearPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
                             </div>
 
-                            {/* Mobile Menu Trigger */}
-                            <button
-                                onClick={() => setIsMobileNavOpen(true)}
-                                className="md:hidden p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
-                            >
-                                <Menu className="h-6 w-6" />
-                            </button>
+                            {/* Mobile Menu & Theme Trigger */}
+                            <div className="md:hidden flex items-center gap-2">
+                                <ThemeToggle />
+                                <button
+                                    onClick={() => setIsMobileNavOpen(true)}
+                                    className="p-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm active:scale-95 transition-all"
+                                >
+                                    <Menu className="h-6 w-6" />
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -260,25 +272,60 @@ export function MayorView() {
                             <div className="bg-emerald-50 text-emerald-700 text-[10px] font-black px-3 py-1 rounded-full border border-emerald-100 uppercase tracking-tighter">Live Monitor</div>
                         </div>
 
-                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-8">
-                            {[
-                                { label: "المراقب", count: stats.pendingStages.SUPERVISOR, color: "blue", icon: Users },
-                                { label: "المراقب العام", count: stats.pendingStages.GS, color: "indigo", icon: ShieldCheck },
-                                { label: "الصحة", count: stats.pendingStages.HEALTH, color: "emerald", icon: Activity },
-                                { label: "الموارد", count: stats.pendingStages.HR, color: "amber", icon: Briefcase },
-                                { label: "الرقابة", count: stats.pendingStages.AUDIT, color: "rose", icon: ShieldCheck },
-                                { label: "المالية", count: stats.pendingStages.FINANCE, color: "teal", icon: Landmark },
-                                { label: "الاعتماد", count: stats.totalApproved, color: "fuchsia", icon: CheckCircle2 }
-                            ].map((step, i) => (
-                                <div key={i} className="flex flex-col items-center group">
-                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 border-2 ${step.count > 0 ? `bg-${step.color}-50 border-${step.color}-100 text-${step.color}-600 shadow-lg shadow-${step.color}-500/10` : 'bg-slate-50 border-slate-100 text-slate-300 opacity-40'
-                                        } group-hover:scale-110`}>
-                                        <step.icon className="h-5 w-5" />
-                                    </div>
-                                    <span className="text-[9px] font-black text-slate-500 mt-2 text-center leading-tight">{step.label}</span>
-                                    <div className={`text-[11px] font-black mt-1 ${step.count > 0 ? `text-${step.color}-700` : 'text-slate-300'}`}>{step.count}</div>
-                                </div>
-                            ))}
+                        <div className="h-64 mt-4">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                    data={[
+                                        { name: "المراقب", count: stats.pendingStages.SUPERVISOR, color: "#3b82f6" },
+                                        { name: "المراقب العام", count: stats.pendingStages.GS, color: "#6366f1" },
+                                        { name: "الصحة", count: stats.pendingStages.HEALTH, color: "#10b981" },
+                                        { name: "الموارد", count: stats.pendingStages.HR, color: "#f59e0b" },
+                                        { name: "الرقابة", count: stats.pendingStages.AUDIT, color: "#f43f5e" },
+                                        { name: "المالية", count: stats.pendingStages.FINANCE, color: "#14b8a6" },
+                                        { name: "الاعتماد", count: stats.totalApproved, color: "#d946ef" }
+                                    ]}
+                                    margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis
+                                        dataKey="name"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        fontSize={10}
+                                        fontWeight="bold"
+                                        stroke="#64748b"
+                                        dy={10}
+                                    />
+                                    <YAxis axisLine={false} tickLine={false} fontSize={10} fontWeight="bold" stroke="#64748b" />
+                                    <Tooltip
+                                        cursor={{ fill: '#f8fafc' }}
+                                        content={({ active, payload }) => {
+                                            if (active && payload && payload.length) {
+                                                return (
+                                                    <div className="bg-white p-3 border border-slate-100 shadow-xl rounded-xl">
+                                                        <p className="text-[10px] font-black text-slate-500 uppercase mb-1">{payload[0].payload.name}</p>
+                                                        <p className="text-sm font-black text-slate-900">{payload[0].value} <span className="text-[10px] text-slate-400">سجل</span></p>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
+                                        }}
+                                    />
+                                    <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={40}>
+                                        {[
+                                            { color: "#3b82f6" },
+                                            { color: "#6366f1" },
+                                            { color: "#10b981" },
+                                            { color: "#f59e0b" },
+                                            { color: "#f43f5e" },
+                                            { color: "#14b8a6" },
+                                            { color: "#d946ef" }
+                                        ].map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
                         </div>
 
                         <div className="bg-gradient-to-br from-slate-50 to-white/50 border border-slate-100 p-5 rounded-2xl relative overflow-hidden">

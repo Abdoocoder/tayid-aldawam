@@ -7,19 +7,30 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --card-bg: rgba(255, 255, 255, 0.7);
+  --card-border: rgba(255, 255, 255, 0.3);
+  --mesh-1: #f0f7ff;
+  --mesh-2: #ffffff;
+  --mesh-3: #f5f3ff;
+  --mesh-4: #e0e7ff;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --card-bg: rgba(15, 23, 42, 0.7);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --mesh-1: #0f172a;
+  --mesh-2: #1e293b;
+  --mesh-3: #020617;
+  --mesh-4: #0f172a;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-cairo), sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @media print {
@@ -72,16 +83,16 @@ body {
 }
 
 .mesh-bg {
-  background: linear-gradient(-45deg, #f0f7ff, #ffffff, #f5f3ff, #e0e7ff);
+  background: linear-gradient(-45deg, var(--mesh-1), var(--mesh-2), var(--mesh-3), var(--mesh-4));
   background-size: 400% 400%;
   animation: mesh-gradient 15s ease infinite;
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--card-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--card-border);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 }
 

@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Cairo } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
-import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner";
 
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
@@ -32,12 +31,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body
         className={`${cairo.variable} antialiased font-sans bg-gray-50 text-gray-900`}
       >
         <Providers>
-          <ServiceWorkerCleaner />
           <main className="min-h-screen print:min-h-0 print:h-auto">
             {children}
             {/* Only load Vercel insights/analytics in non-local production environments */}
