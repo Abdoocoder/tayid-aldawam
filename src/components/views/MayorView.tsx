@@ -478,7 +478,7 @@ export function MayorView() {
             </div>
 
             {/* Printable Area for Executive Overview - Standardized Official Layout */}
-            <div className="hidden print:block font-sans">
+            <div className="fixed top-0 left-0 w-0 h-0 invisible overflow-hidden print:visible print:static print:w-full print:h-auto print:overflow-visible bg-white z-[9999]">
                 <div className="text-center mb-10 border-b-[6px] border-slate-900 pb-8">
                     <div className="flex justify-between items-center mb-6">
                         <div className="text-right">

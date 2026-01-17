@@ -204,16 +204,37 @@ export const AdminView = () => {
 
     return (
         <>
-            <MobileNav<'overview' | 'users' | 'workers' | 'logs' | 'areas'>
-                isOpen={isMobileNavOpen}
-                onClose={() => setIsMobileNavOpen(false)}
-                items={navItems}
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                user={{ name: appUser?.name || "مدير النظام", role: "الإدارة التقنية (IT Admin)" }}
-            />
+            <div className="print:hidden">
+                <MobileNav<'overview' | 'users' | 'workers' | 'logs' | 'areas'>
+                    isOpen={isMobileNavOpen}
+                    onClose={() => setIsMobileNavOpen(false)}
+                    items={navItems}
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    user={{ name: appUser?.name || "مدير النظام", role: "الإدارة التقنية (IT Admin)" }}
+                />
+            </div>
 
-            <div className="space-y-8 pb-24 print:hidden">
+            <div className="space-y-8 pb-24">
+                {/* Print Header */}
+                <div className="hidden print:block pb-6 border-b-2 border-slate-900 mb-6">
+                    <div className="flex justify-between items-center">
+                        <div className="text-right">
+                            <h1 className="text-2xl font-black text-slate-900">تقرير إدارة النظام</h1>
+                            <p className="text-sm font-bold text-slate-500 mt-1">
+                                {activeTab === 'users' ? 'سجل المستخدمين' :
+                                    activeTab === 'workers' ? 'سجل العمال' :
+                                        activeTab === 'areas' ? 'سجل القطاعات' :
+                                            activeTab === 'logs' ? 'سجل العمليات' : 'تقرير عام'}
+                            </p>
+                        </div>
+                        <div className="text-left">
+                            <p className="text-xs font-mono text-slate-400">{new Date().toLocaleDateString('ar-JO')}</p>
+                            <p className="text-[10px] uppercase text-slate-300 font-black tracking-widest">System Admin Report</p>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Header section - Sticky & Premium Glass */}
                 <div className="sticky top-0 z-30 -mx-4 px-4 py-4 bg-white/40 dark:bg-slate-950/40 backdrop-blur-2xl border-b border-white/20 dark:border-white/5 shadow-sm print:hidden">
                     <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -285,7 +306,7 @@ export const AdminView = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
-                    className="max-w-7xl mx-auto px-4"
+                    className="max-w-7xl mx-auto px-4 print:max-w-none print:px-0 print:w-full"
                 >
                     {/* Content based on active tab */}
                     <AnimatePresence mode="wait">

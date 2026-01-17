@@ -41,7 +41,7 @@ export function AdminPrintReport({ type, data, month, year }: AdminPrintReportPr
     }[type];
 
     return (
-        <div className="hidden print:block p-10 bg-white text-slate-900 font-sans dir-rtl" style={{ direction: 'rtl' }}>
+        <div className="fixed top-0 left-0 w-0 h-0 invisible overflow-hidden print:visible print:static print:w-full print:h-auto print:overflow-visible bg-white text-slate-900 font-sans dir-rtl z-[9999]" style={{ direction: 'rtl' }}>
             {/* Municipality Header */}
             <div className="flex justify-between items-start border-b-4 border-slate-900 pb-8 mb-10">
                 <div className="text-right space-y-2">

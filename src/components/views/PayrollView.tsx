@@ -483,7 +483,7 @@ export function PayrollView() {
             </div>
 
             {/* Print View */}
-            <div className="hidden print:block">
+            <div className="fixed top-0 left-0 w-0 h-0 invisible overflow-hidden print:visible print:static print:w-full print:h-auto print:overflow-visible bg-white z-[9999]">
                 <div className="text-center mb-10 border-b-4 border-slate-900 pb-8">
                     <h1 className="text-3xl font-black">كشف صرف الرواتب النهائي</h1>
                     <p className="mt-2 text-lg">الشهر: {month} / {year}</p>

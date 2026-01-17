@@ -518,7 +518,7 @@ export function InternalAuditView() {
             </div>
 
             {/* Formal Report View (Print Only) */}
-            <div className="hidden print:block p-12 bg-white text-slate-900" dir="rtl">
+            <div className="fixed top-0 left-0 w-0 h-0 invisible overflow-hidden print:visible print:static print:w-full print:h-auto print:overflow-visible bg-white text-slate-900 z-[9999]" dir="rtl">
                 <div className="text-center mb-12 border-b-4 border-slate-900 pb-8 relative">
                     <div className="flex justify-between items-start mb-6">
                         <div className="text-right">
