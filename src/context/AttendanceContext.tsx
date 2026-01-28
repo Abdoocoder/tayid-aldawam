@@ -190,6 +190,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             if (updates.areaId) dbUpdates.area_id = updates.areaId;
             if (updates.baseSalary !== undefined) dbUpdates.base_salary = updates.baseSalary;
             if (updates.dayValue !== undefined) dbUpdates.day_value = updates.dayValue;
+            if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
             return workersAPI.update(id, dbUpdates);
         },
         onSuccess: () => {

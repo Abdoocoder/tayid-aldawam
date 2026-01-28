@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { HardHat, Plus, MapPin, Edit2, Trash2 } from "lucide-react";
+import { HardHat, Plus, MapPin, Edit2, Trash2, X } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ interface WorkerSectionProps {
     searchTerm: string;
     onEdit: (worker: Worker | (Partial<Worker> & { id: 'NEW' })) => void;
     onDelete: (id: string) => void;
+    onToggleStatus: (id: string, currentStatus: boolean) => void;
     defaultNationality?: string;
 }
 
@@ -24,6 +25,7 @@ export const WorkerSection = React.memo(function WorkerSection({
     searchTerm,
     onEdit,
     onDelete,
+    onToggleStatus,
     defaultNationality = 'مصري'
 }: WorkerSectionProps) {
     const filteredWorkers = workers.filter(w => {
@@ -42,7 +44,7 @@ export const WorkerSection = React.memo(function WorkerSection({
                 </div>
                 <Button
                     className="bg-purple-600 hover:bg-purple-700 shadow-lg shadow-purple-100"
-                    onClick={() => onEdit({ id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0, nationality: defaultNationality })}
+                    onClick={() => onEdit({ id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0, nationality: defaultNationality, isActive: true })}
                 >
                     <Plus className="h-4 w-4 ml-2" />
                     إضافة عامل جديد
@@ -55,7 +57,7 @@ export const WorkerSection = React.memo(function WorkerSection({
                         title="لا يوجد عمال"
                         description={searchTerm ? "لم نجد عمالاً يطابقون بحثك" : "قم بإضافة العمال لبدء تسجيل الحضور"}
                         action={!searchTerm && (
-                            <Button variant="outline" onClick={() => onEdit({ id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0, nationality: defaultNationality })}>
+                            <Button variant="outline" onClick={() => onEdit({ id: 'NEW', name: '', areaId: '', dayValue: 0, baseSalary: 0, nationality: defaultNationality, isActive: true })}>
                                 إضافة أول عامل
                             </Button>
                         )}
@@ -69,6 +71,7 @@ export const WorkerSection = React.memo(function WorkerSection({
                                 <th className="p-4 border-b">القطاع / المنطقة</th>
                                 <th className="p-4 border-b text-center">الأجر اليومي</th>
                                 <th className="p-4 border-b text-center">الجنسية</th>
+                                <th className="p-4 border-b text-center">الحالة</th>
                                 <th className="p-4 border-b text-center">الإجراءات</th>
                             </tr>
                         </thead>
@@ -94,10 +97,24 @@ export const WorkerSection = React.memo(function WorkerSection({
                                             {w.nationality}
                                         </Badge>
                                     </td>
+                                    <td className="p-4 text-center">
+                                        <Badge variant="outline" className={`text-[10px] font-bold ${w.isActive ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+                                            {w.isActive ? 'على رأس عمله' : 'موقوف'}
+                                        </Badge>
+                                    </td>
                                     <td className="p-4">
                                         <div className="flex justify-center gap-2">
                                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50" onClick={() => onEdit(w)}>
                                                 <Edit2 className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className={`h-8 w-8 p-0 ${w.isActive ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
+                                                onClick={() => onToggleStatus(w.id, w.isActive)}
+                                                title={w.isActive ? 'إيقاف عن العمل' : 'إعادة للعمل'}
+                                            >
+                                                {w.isActive ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                                             </Button>
                                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600 hover:bg-red-50" onClick={() => onDelete(w.id)}>
                                                 <Trash2 className="h-4 w-4" />

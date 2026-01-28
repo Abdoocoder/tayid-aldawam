@@ -41,6 +41,7 @@ export interface Worker {
     nationality: string;
     baseSalary: number;
     dayValue: number; // Dinars
+    isActive: boolean;
 }
 
 export interface AttendanceRecord {

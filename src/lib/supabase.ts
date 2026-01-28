@@ -20,6 +20,7 @@ export interface Worker {
     nationality: string;
     base_salary: number;
     day_value: number;
+    is_active: boolean;
     created_at?: string;
     updated_at?: string;
     area?: Area; // Optional joined area

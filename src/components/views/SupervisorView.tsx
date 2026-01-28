@@ -40,6 +40,7 @@ export function SupervisorView() {
 
     // Filter workers by area(s) and search term
     const baseWorkers = workers.filter((w) => {
+        if (!w.isActive) return false;
         if (currentUser?.areaId === 'ALL') return true;
         const isPrimaryArea = w.areaId === currentUser?.areaId;
         const isInAssignedAreas = currentUser?.areas?.some(a => a.id === w.areaId || a.name === w.areaId);

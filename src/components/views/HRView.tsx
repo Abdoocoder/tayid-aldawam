@@ -165,6 +165,7 @@ export function HRView() {
                     dayValue: workerData.dayValue || 0,
                     baseSalary: workerData.baseSalary || 0,
                     nationality: workerData.nationality || 'مصري',
+                    isActive: true,
                 });
             }
             setEditingItem(null);
@@ -372,10 +373,10 @@ export function HRView() {
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id as 'reports' | 'supervisors' | 'workers' | 'areas')}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === tab.id
+                                    className={`flex items - center gap - 2 px - 4 py - 2 rounded - xl text - sm font - bold transition - all duration - 300 ${activeTab === tab.id
                                         ? "bg-white text-purple-700 shadow-sm ring-1 ring-slate-200/50"
                                         : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
-                                        }`}
+                                        } `}
                                 >
                                     <tab.icon className="h-4 w-4" />
                                     {tab.label}
@@ -447,7 +448,7 @@ export function HRView() {
                             desc: 'نسبة التغطية الحالية'
                         }
                     ].map((kpi, i) => (
-                        <div key={i} className={`relative group overflow-hidden bg-gradient-to-br ${kpi.gradient} rounded-[2rem] p-5 text-white shadow-lg transition-all duration-500 hover:shadow-xl hover:scale-[1.02]`}>
+                        <div key={i} className={`relative group overflow - hidden bg - gradient - to - br ${kpi.gradient} rounded - [2rem] p - 5 text - white shadow - lg transition - all duration - 500 hover: shadow - xl hover: scale - [1.02]`}>
                             <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl" />
 
                             <div className="relative z-10 flex flex-col gap-3">
@@ -783,6 +784,16 @@ export function HRView() {
                             searchTerm={searchTerm}
                             onEdit={(w) => setEditingItem({ type: 'worker', data: w })}
                             onDelete={handleDeleteWorker}
+                            onToggleStatus={async (id, currentStatus) => {
+                                if (!window.confirm(`هل أنت متأكد من ${currentStatus ? 'إيقاف' : 'إعادة'} هذا العامل؟`)) return;
+                                try {
+                                    await updateWorker(id, { isActive: !currentStatus });
+                                    showToast(currentStatus ? 'تم إيقاف العامل بنجاح' : 'تم إعادة العامل للعمل بنجاح');
+                                } catch (err) {
+                                    console.error(err);
+                                    showToast('فشل في تحديث حالة العامل', '', 'error');
+                                }
+                            }}
                             defaultNationality={appUser?.handledNationality !== 'ALL' ? appUser?.handledNationality : 'مصري'}
                         />
                     )}

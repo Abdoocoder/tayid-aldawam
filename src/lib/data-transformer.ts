@@ -13,6 +13,7 @@ export function workerToDb(worker: FrontendWorker): Omit<DbWorker, 'created_at' 
         nationality: worker.nationality,
         base_salary: worker.baseSalary,
         day_value: worker.dayValue,
+        is_active: worker.isActive,
     };
 }
 
@@ -28,6 +29,7 @@ export function workerFromDb(dbWorker: DbWorker): FrontendWorker {
         nationality: dbWorker.nationality || 'مصري',
         baseSalary: dbWorker.base_salary,
         dayValue: dbWorker.day_value,
+        isActive: dbWorker.is_active ?? true,
     };
 }
 
